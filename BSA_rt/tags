@@ -1,0 +1,539 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+AFL_BIND_PORT	include/config.h	27;"	d
+BSADebugging	include/config.h	43;"	d
+BSAFuzz	include/config.h	45;"	d
+BSARun	include/config.h	44;"	d
+BSAStop	include/config.h	46;"	d
+BSA_DOCKER_MASTER	include/config.h	64;"	d
+BSA_DOCKER_SLAVE	include/config.h	65;"	d
+BSA_ENTRY	include/config.h	68;"	d
+BSA_FAIL	include/config.h	33;"	d
+BSA_FD_MAX	include/config.h	36;"	d
+BSA_FUZZ_THRESHOLD	main.c	34;"	d	file:
+BSA_NON_DOCKER_MODE	include/config.h	63;"	d
+BSA_SHADOW_FD	include/config.h	59;"	d
+BSA_SHADOW_FD_MAX	include/config.h	60;"	d
+BSA_SUCCESS	include/config.h	32;"	d
+BSA_SYMBOLIC	include/config.h	69;"	d
+BSA_accept_channel	utils.c	/^void BSA_accept_channel(int* channel, const char* desc){$/;"	f
+BSA_afl_handshake	utils.c	/^void BSA_afl_handshake(){$/;"	f
+BSA_afl_input_thread	utils.c	/^void BSA_afl_input_thread(void* data){$/;"	f
+BSA_alarm_handler	afl.c	/^void BSA_alarm_handler(int sig){$/;"	f
+BSA_bind_socket	utils.c	/^int BSA_bind_socket(const char* name){$/;"	f
+BSA_blocked_map	afl.c	/^uint8_t* BSA_blocked_map = NULL;$/;"	v
+BSA_blocked_shmid	afl.c	/^int BSA_blocked_shmid;$/;"	v
+BSA_buf	include/storage.h	/^struct BSA_buf{$/;"	s
+BSA_buf_pool	include/storage.h	/^struct BSA_buf_pool{$/;"	s
+BSA_checkpoint	main.c	/^void BSA_checkpoint(int id){$/;"	f
+BSA_clear_buf	storage.c	/^void BSA_clear_buf(){$/;"	f
+BSA_clear_sk_list	utils.c	/^void BSA_clear_sk_list(){$/;"	f
+BSA_close_sockets	utils.c	/^void BSA_close_sockets(){$/;"	f
+BSA_conn_IA	utils.c	/^void BSA_conn_IA(int id){$/;"	f
+BSA_create_buf	storage.c	/^struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){$/;"	f
+BSA_criu_dump	temp_src/criu_rpc.c	/^int BSA_criu_dump()$/;"	f
+BSA_criu_get_sock_path	temp_src/criu_rpc.c	/^char* BSA_criu_get_sock_path(){$/;"	f
+BSA_criu_recv	temp_src/criu_rpc.c	/^CriuResp* BSA_criu_recv(int socket_fd)$/;"	f
+BSA_dump_buf	storage.c	/^int BSA_dump_buf(){$/;"	f
+BSA_dump_dir	storage.c	/^__thread char BSA_dump_dir[4096];$/;"	v
+BSA_dup_target_fd	utils.c	/^void BSA_dup_target_fd(){$/;"	f
+BSA_entry_value_map	main.c	/^u8 *BSA_entry_value_map;$/;"	v
+BSA_entry_value_shmid	main.c	/^int BSA_entry_value_shmid;$/;"	v
+BSA_err	include/config.h	76;"	d
+BSA_fuzz_forkserver_prep	utils.c	/^void BSA_fuzz_forkserver_prep(){$/;"	f
+BSA_fuzz_req	main.c	/^int BSA_fuzz_req = 0;$/;"	v
+BSA_get_image_fd	temp_src/criu_rpc.c	/^int BSA_get_image_fd(){$/;"	f
+BSA_hook_read	hook.c	/^ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len){$/;"	f
+BSA_hook_recv	hook.c	/^ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){$/;"	f
+BSA_hook_write	hook.c	/^ssize_t BSA_hook_write(int fd, uint8_t* buf, size_t len){$/;"	f
+BSA_hook_writev	hook.c	/^ssize_t BSA_hook_writev(int fd, const struct iovec *iov, int iovcnt){$/;"	f
+BSA_info	include/config.h	/^struct BSA_info{$/;"	s
+BSA_init_buf_pool	storage.c	/^void BSA_init_buf_pool(){$/;"	f
+BSA_initial	main.c	/^static void BSA_initial(){$/;"	f	file:
+BSA_log	include/config.h	80;"	d
+BSA_reopen_fd	utils.c	/^void BSA_reopen_fd(){$/;"	f
+BSA_request_handler	main.c	/^void* BSA_request_handler(void* arg){$/;"	f
+BSA_request_thread	main.c	/^pthread_t BSA_request_thread;$/;"	v
+BSA_setup_fuzzer_input_fd	utils.c	/^void BSA_setup_fuzzer_input_fd(){$/;"	f
+BSA_srv_addr	include/config.h	39;"	d
+BSA_srv_port	include/config.h	40;"	d
+BSA_state	main.c	/^int BSA_state = BSARun;$/;"	v
+BSA_update_fd_list	utils.c	/^void BSA_update_fd_list(struct FD_list** fd_list, int fd, mode_t mode){$/;"	f
+CC	Makefile	/^CC = gcc$/;"	m
+CFLAGS	Makefile	/^CFLAGS = -I.\/include -Wall -g -c -fPIC -lpthread -lgcc_s$/;"	m
+CGROUP_ROOT__INIT	include/rpc.pb-c.h	133;"	d
+CRIU_CG_MODE__CG_NONE	include/rpc.pb-c.h	/^  CRIU_CG_MODE__CG_NONE = 1,$/;"	e	enum:_CriuCgMode
+CRIU_CG_MODE__DEFAULT	include/rpc.pb-c.h	/^  CRIU_CG_MODE__DEFAULT = 6$/;"	e	enum:_CriuCgMode
+CRIU_CG_MODE__FULL	include/rpc.pb-c.h	/^  CRIU_CG_MODE__FULL = 4,$/;"	e	enum:_CriuCgMode
+CRIU_CG_MODE__IGNORE	include/rpc.pb-c.h	/^  CRIU_CG_MODE__IGNORE = 0,$/;"	e	enum:_CriuCgMode
+CRIU_CG_MODE__PROPS	include/rpc.pb-c.h	/^  CRIU_CG_MODE__PROPS = 2,$/;"	e	enum:_CriuCgMode
+CRIU_CG_MODE__SOFT	include/rpc.pb-c.h	/^  CRIU_CG_MODE__SOFT = 3,$/;"	e	enum:_CriuCgMode
+CRIU_CG_MODE__STRICT	include/rpc.pb-c.h	/^  CRIU_CG_MODE__STRICT = 5,$/;"	e	enum:_CriuCgMode
+CRIU_DUMP_RESP__INIT	include/rpc.pb-c.h	277;"	d
+CRIU_FEATURES__INIT	include/rpc.pb-c.h	316;"	d
+CRIU_NOTIFY__INIT	include/rpc.pb-c.h	299;"	d
+CRIU_OPTS__INIT	include/rpc.pb-c.h	266;"	d
+CRIU_PAGE_SERVER_INFO__INIT	include/rpc.pb-c.h	77;"	d
+CRIU_REQ_TYPE__CHECK	include/rpc.pb-c.h	/^  CRIU_REQ_TYPE__CHECK = 3,$/;"	e	enum:_CriuReqType
+CRIU_REQ_TYPE__CPUINFO_CHECK	include/rpc.pb-c.h	/^  CRIU_REQ_TYPE__CPUINFO_CHECK = 8,$/;"	e	enum:_CriuReqType
+CRIU_REQ_TYPE__CPUINFO_DUMP	include/rpc.pb-c.h	/^  CRIU_REQ_TYPE__CPUINFO_DUMP = 7,$/;"	e	enum:_CriuReqType
+CRIU_REQ_TYPE__DUMP	include/rpc.pb-c.h	/^  CRIU_REQ_TYPE__DUMP = 1,$/;"	e	enum:_CriuReqType
+CRIU_REQ_TYPE__EMPTY	include/rpc.pb-c.h	/^  CRIU_REQ_TYPE__EMPTY = 0,$/;"	e	enum:_CriuReqType
+CRIU_REQ_TYPE__FEATURE_CHECK	include/rpc.pb-c.h	/^  CRIU_REQ_TYPE__FEATURE_CHECK = 9,$/;"	e	enum:_CriuReqType
+CRIU_REQ_TYPE__NOTIFY	include/rpc.pb-c.h	/^  CRIU_REQ_TYPE__NOTIFY = 6,$/;"	e	enum:_CriuReqType
+CRIU_REQ_TYPE__PAGE_SERVER	include/rpc.pb-c.h	/^  CRIU_REQ_TYPE__PAGE_SERVER = 5,$/;"	e	enum:_CriuReqType
+CRIU_REQ_TYPE__PAGE_SERVER_CHLD	include/rpc.pb-c.h	/^  CRIU_REQ_TYPE__PAGE_SERVER_CHLD = 12$/;"	e	enum:_CriuReqType
+CRIU_REQ_TYPE__PRE_DUMP	include/rpc.pb-c.h	/^  CRIU_REQ_TYPE__PRE_DUMP = 4,$/;"	e	enum:_CriuReqType
+CRIU_REQ_TYPE__RESTORE	include/rpc.pb-c.h	/^  CRIU_REQ_TYPE__RESTORE = 2,$/;"	e	enum:_CriuReqType
+CRIU_REQ_TYPE__VERSION	include/rpc.pb-c.h	/^  CRIU_REQ_TYPE__VERSION = 10,$/;"	e	enum:_CriuReqType
+CRIU_REQ_TYPE__WAIT_PID	include/rpc.pb-c.h	/^  CRIU_REQ_TYPE__WAIT_PID = 11,$/;"	e	enum:_CriuReqType
+CRIU_REQ__INIT	include/rpc.pb-c.h	347;"	d
+CRIU_RESP__INIT	include/rpc.pb-c.h	369;"	d
+CRIU_RESTORE_RESP__INIT	include/rpc.pb-c.h	287;"	d
+CRIU_VERSION__INIT	include/rpc.pb-c.h	389;"	d
+CRIU_VETH_PAIR__INIT	include/rpc.pb-c.h	88;"	d
+CSHARED_FLAG	Makefile	/^CSHARED_FLAG = -I.\/include -fPIC -shared$/;"	m
+CTL_CHANNEL_FD	include/config.h	56;"	d
+CgroupRoot	include/rpc.pb-c.h	/^typedef struct _CgroupRoot CgroupRoot;$/;"	t	typeref:struct:_CgroupRoot
+CgroupRoot_Closure	include/rpc.pb-c.h	/^typedef void (*CgroupRoot_Closure)$/;"	t
+CriuCgMode	include/rpc.pb-c.h	/^} CriuCgMode;$/;"	t	typeref:enum:_CriuCgMode
+CriuDumpResp	include/rpc.pb-c.h	/^typedef struct _CriuDumpResp CriuDumpResp;$/;"	t	typeref:struct:_CriuDumpResp
+CriuDumpResp_Closure	include/rpc.pb-c.h	/^typedef void (*CriuDumpResp_Closure)$/;"	t
+CriuFeatures	include/rpc.pb-c.h	/^typedef struct _CriuFeatures CriuFeatures;$/;"	t	typeref:struct:_CriuFeatures
+CriuFeatures_Closure	include/rpc.pb-c.h	/^typedef void (*CriuFeatures_Closure)$/;"	t
+CriuNotify	include/rpc.pb-c.h	/^typedef struct _CriuNotify CriuNotify;$/;"	t	typeref:struct:_CriuNotify
+CriuNotify_Closure	include/rpc.pb-c.h	/^typedef void (*CriuNotify_Closure)$/;"	t
+CriuOpts	include/rpc.pb-c.h	/^typedef struct _CriuOpts CriuOpts;$/;"	t	typeref:struct:_CriuOpts
+CriuOpts_Closure	include/rpc.pb-c.h	/^typedef void (*CriuOpts_Closure)$/;"	t
+CriuPageServerInfo	include/rpc.pb-c.h	/^typedef struct _CriuPageServerInfo CriuPageServerInfo;$/;"	t	typeref:struct:_CriuPageServerInfo
+CriuPageServerInfo_Closure	include/rpc.pb-c.h	/^typedef void (*CriuPageServerInfo_Closure)$/;"	t
+CriuReq	include/rpc.pb-c.h	/^typedef struct _CriuReq CriuReq;$/;"	t	typeref:struct:_CriuReq
+CriuReqType	include/rpc.pb-c.h	/^} CriuReqType;$/;"	t	typeref:enum:_CriuReqType
+CriuReq_Closure	include/rpc.pb-c.h	/^typedef void (*CriuReq_Closure)$/;"	t
+CriuResp	include/rpc.pb-c.h	/^typedef struct _CriuResp CriuResp;$/;"	t	typeref:struct:_CriuResp
+CriuResp_Closure	include/rpc.pb-c.h	/^typedef void (*CriuResp_Closure)$/;"	t
+CriuRestoreResp	include/rpc.pb-c.h	/^typedef struct _CriuRestoreResp CriuRestoreResp;$/;"	t	typeref:struct:_CriuRestoreResp
+CriuRestoreResp_Closure	include/rpc.pb-c.h	/^typedef void (*CriuRestoreResp_Closure)$/;"	t
+CriuVersion	include/rpc.pb-c.h	/^typedef struct _CriuVersion CriuVersion;$/;"	t	typeref:struct:_CriuVersion
+CriuVersion_Closure	include/rpc.pb-c.h	/^typedef void (*CriuVersion_Closure)$/;"	t
+CriuVethPair	include/rpc.pb-c.h	/^typedef struct _CriuVethPair CriuVethPair;$/;"	t	typeref:struct:_CriuVethPair
+CriuVethPair_Closure	include/rpc.pb-c.h	/^typedef void (*CriuVethPair_Closure)$/;"	t
+EXT_MOUNT_MAP__INIT	include/rpc.pb-c.h	99;"	d
+ExtMountMap	include/rpc.pb-c.h	/^typedef struct _ExtMountMap ExtMountMap;$/;"	t	typeref:struct:_ExtMountMap
+ExtMountMap_Closure	include/rpc.pb-c.h	/^typedef void (*ExtMountMap_Closure)$/;"	t
+FD_list	include/config.h	/^struct FD_list{$/;"	s
+FD_node	include/config.h	/^struct FD_node{$/;"	s
+FILE_SERVER_READ_FD	include/config.h	53;"	d
+FILE_SERVER_WRITE_FD	include/config.h	54;"	d
+F_ID	main.c	/^typedef uint32_t F_ID;$/;"	t	file:
+HANDSHAKE_CHANNEL_FD	include/config.h	55;"	d
+INCLUDE_DIR	Makefile	/^INCLUDE_DIR = .\/include$/;"	m
+INHERIT_FD__INIT	include/rpc.pb-c.h	122;"	d
+InheritFd	include/rpc.pb-c.h	/^typedef struct _InheritFd InheritFd;$/;"	t	typeref:struct:_InheritFd
+InheritFd_Closure	include/rpc.pb-c.h	/^typedef void (*InheritFd_Closure)$/;"	t
+JOIN_NAMESPACE__INIT	include/rpc.pb-c.h	111;"	d
+JoinNamespace	include/rpc.pb-c.h	/^typedef struct _JoinNamespace JoinNamespace;$/;"	t	typeref:struct:_JoinNamespace
+JoinNamespace_Closure	include/rpc.pb-c.h	/^typedef void (*JoinNamespace_Closure)$/;"	t
+LD	Makefile	/^LD = ld $/;"	m
+LDFLAGS	Makefile	/^LDFLAGS = -r$/;"	m
+MAKE	Makefile	/^MAKE = make$/;"	m
+MAX_MSG_SIZE	include/criu_rpc.h	12;"	d
+MAX_MSG_SIZE	include/criu_rpc.h	13;"	d
+OBJ_DIR	Makefile	/^OBJ_DIR = .\/objs\/$/;"	m
+PINTOOL_READ_FD	include/config.h	49;"	d
+PINTOOL_WRITE_FD	include/config.h	50;"	d
+PROTOBUF_C__NO_DEPRECATED	temp_src/rpc.pb-c.c	6;"	d	file:
+PROTOBUF_C_rpc_2eproto__INCLUDED	include/rpc.pb-c.h	5;"	d
+SHELL	Makefile	/^SHELL:=\/bin\/bash$/;"	m
+SHM_ENV_VAR	include/config.h	29;"	d
+STS_CHANNEL_FD	include/config.h	57;"	d
+UNIX_SK__INIT	include/rpc.pb-c.h	143;"	d
+UnixSk	include/rpc.pb-c.h	/^typedef struct _UnixSk UnixSk;$/;"	t	typeref:struct:_UnixSk
+UnixSk_Closure	include/rpc.pb-c.h	/^typedef void (*UnixSk_Closure)$/;"	t
+_CONFIG_H_	include/config.h	2;"	d
+_CgroupRoot	include/rpc.pb-c.h	/^struct  _CgroupRoot$/;"	s
+_CriuCgMode	include/rpc.pb-c.h	/^typedef enum _CriuCgMode {$/;"	g
+_CriuDumpResp	include/rpc.pb-c.h	/^struct  _CriuDumpResp$/;"	s
+_CriuFeatures	include/rpc.pb-c.h	/^struct  _CriuFeatures$/;"	s
+_CriuNotify	include/rpc.pb-c.h	/^struct  _CriuNotify$/;"	s
+_CriuOpts	include/rpc.pb-c.h	/^struct  _CriuOpts$/;"	s
+_CriuPageServerInfo	include/rpc.pb-c.h	/^struct  _CriuPageServerInfo$/;"	s
+_CriuReq	include/rpc.pb-c.h	/^struct  _CriuReq$/;"	s
+_CriuReqType	include/rpc.pb-c.h	/^typedef enum _CriuReqType {$/;"	g
+_CriuResp	include/rpc.pb-c.h	/^struct  _CriuResp$/;"	s
+_CriuRestoreResp	include/rpc.pb-c.h	/^struct  _CriuRestoreResp$/;"	s
+_CriuVersion	include/rpc.pb-c.h	/^struct  _CriuVersion$/;"	s
+_CriuVethPair	include/rpc.pb-c.h	/^struct  _CriuVethPair$/;"	s
+_ExtMountMap	include/rpc.pb-c.h	/^struct  _ExtMountMap$/;"	s
+_GNU_SOURCE	include/config.h	4;"	d
+_GNU_SOURCE	main.c	1;"	d	file:
+_GNU_SOURCE	temp_src/criu_rpc.c	1;"	d	file:
+_HOOK_H_	include/hook.h	2;"	d
+_InheritFd	include/rpc.pb-c.h	/^struct  _InheritFd$/;"	s
+_JoinNamespace	include/rpc.pb-c.h	/^struct  _JoinNamespace$/;"	s
+_STORAGE_H	include/storage.h	2;"	d
+_UnixSk	include/rpc.pb-c.h	/^struct  _UnixSk$/;"	s
+__UTILS_H_	include/utils.h	2;"	d
+_afl_area_ptr	afl.c	/^uint8_t* _afl_area_ptr = NULL;$/;"	v
+_afl_maybe_log	afl.c	/^void _afl_maybe_log(uint32_t id){$/;"	f
+_afl_prev_loc	afl.c	/^uint32_t _afl_prev_loc = 0;$/;"	v
+_afl_setup_failure	afl.c	/^uint32_t _afl_setup_failure = 0;$/;"	v
+address	include/rpc.pb-c.h	/^  char *address;$/;"	m	struct:_CriuPageServerInfo
+afl_ctl_fd	include/config.h	/^    int afl_ctl_fd;$/;"	m	struct:BSA_info
+afl_dir	include/config.h	/^    char* afl_dir;$/;"	m	struct:BSA_info
+afl_handshake_fd	include/config.h	/^    int afl_handshake_fd;$/;"	m	struct:BSA_info
+afl_input_fd	include/config.h	/^    int afl_input_fd;$/;"	m	struct:BSA_info
+afl_input_fp	include/config.h	/^    FILE* afl_input_fp;$/;"	m	struct:BSA_info
+afl_shm_id	include/config.h	/^    int afl_shm_id;$/;"	m	struct:BSA_info
+afl_sts_fd	include/config.h	/^    int afl_sts_fd;$/;"	m	struct:BSA_info
+auto_dedup	include/rpc.pb-c.h	/^  protobuf_c_boolean auto_dedup;$/;"	m	struct:_CriuOpts
+auto_ext_mnt	include/rpc.pb-c.h	/^  protobuf_c_boolean auto_ext_mnt;$/;"	m	struct:_CriuOpts
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_CgroupRoot
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_CriuDumpResp
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_CriuFeatures
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_CriuNotify
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_CriuOpts
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_CriuPageServerInfo
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_CriuReq
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_CriuResp
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_CriuRestoreResp
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_CriuVersion
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_CriuVethPair
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_ExtMountMap
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_InheritFd
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_JoinNamespace
+base	include/rpc.pb-c.h	/^  ProtobufCMessage base;$/;"	m	struct:_UnixSk
+bsa_buf_pool	storage.c	/^__thread struct BSA_buf_pool* bsa_buf_pool = NULL;$/;"	v	typeref:struct:BSA_buf_pool
+bsa_info	main.c	/^struct BSA_info bsa_info = { $/;"	v	typeref:struct:BSA_info
+buf_head	include/storage.h	/^    struct BSA_buf* buf_head;$/;"	m	struct:BSA_buf_pool	typeref:struct:BSA_buf_pool::BSA_buf
+buf_tail	include/storage.h	/^    struct BSA_buf* buf_tail;$/;"	m	struct:BSA_buf_pool	typeref:struct:BSA_buf_pool::BSA_buf
+cg_root	include/rpc.pb-c.h	/^  CgroupRoot **cg_root;$/;"	m	struct:_CriuOpts
+cgroup_dump_controller	include/rpc.pb-c.h	/^  char **cgroup_dump_controller;$/;"	m	struct:_CriuOpts
+cgroup_props	include/rpc.pb-c.h	/^  char *cgroup_props;$/;"	m	struct:_CriuOpts
+cgroup_props_file	include/rpc.pb-c.h	/^  char *cgroup_props_file;$/;"	m	struct:_CriuOpts
+cgroup_root__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor cgroup_root__descriptor =$/;"	v
+cgroup_root__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor cgroup_root__field_descriptors[2] =$/;"	v	file:
+cgroup_root__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned cgroup_root__field_indices_by_name[] = {$/;"	v	file:
+cgroup_root__free_unpacked	temp_src/rpc.pb-c.c	/^void   cgroup_root__free_unpacked$/;"	f
+cgroup_root__get_packed_size	temp_src/rpc.pb-c.c	/^size_t cgroup_root__get_packed_size$/;"	f
+cgroup_root__init	temp_src/rpc.pb-c.c	/^void   cgroup_root__init$/;"	f
+cgroup_root__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange cgroup_root__number_ranges[1 + 1] =$/;"	v	file:
+cgroup_root__pack	temp_src/rpc.pb-c.c	/^size_t cgroup_root__pack$/;"	f
+cgroup_root__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t cgroup_root__pack_to_buffer$/;"	f
+cgroup_root__unpack	temp_src/rpc.pb-c.c	/^       cgroup_root__unpack$/;"	f
+cpu_cap	include/rpc.pb-c.h	/^  uint32_t cpu_cap;$/;"	m	struct:_CriuOpts
+cr_errmsg	include/rpc.pb-c.h	/^  char *cr_errmsg;$/;"	m	struct:_CriuResp
+cr_errno	include/rpc.pb-c.h	/^  int32_t cr_errno;$/;"	m	struct:_CriuResp
+criu_cg_mode__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCEnumDescriptor criu_cg_mode__descriptor =$/;"	v
+criu_cg_mode__enum_values_by_name	temp_src/rpc.pb-c.c	/^static const ProtobufCEnumValueIndex criu_cg_mode__enum_values_by_name[7] =$/;"	v	file:
+criu_cg_mode__enum_values_by_number	temp_src/rpc.pb-c.c	/^static const ProtobufCEnumValue criu_cg_mode__enum_values_by_number[7] =$/;"	v	file:
+criu_cg_mode__value_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange criu_cg_mode__value_ranges[] = {$/;"	v	file:
+criu_dump_resp__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor criu_dump_resp__descriptor =$/;"	v
+criu_dump_resp__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor criu_dump_resp__field_descriptors[1] =$/;"	v	file:
+criu_dump_resp__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned criu_dump_resp__field_indices_by_name[] = {$/;"	v	file:
+criu_dump_resp__free_unpacked	temp_src/rpc.pb-c.c	/^void   criu_dump_resp__free_unpacked$/;"	f
+criu_dump_resp__get_packed_size	temp_src/rpc.pb-c.c	/^size_t criu_dump_resp__get_packed_size$/;"	f
+criu_dump_resp__init	temp_src/rpc.pb-c.c	/^void   criu_dump_resp__init$/;"	f
+criu_dump_resp__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange criu_dump_resp__number_ranges[1 + 1] =$/;"	v	file:
+criu_dump_resp__pack	temp_src/rpc.pb-c.c	/^size_t criu_dump_resp__pack$/;"	f
+criu_dump_resp__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t criu_dump_resp__pack_to_buffer$/;"	f
+criu_dump_resp__unpack	temp_src/rpc.pb-c.c	/^       criu_dump_resp__unpack$/;"	f
+criu_fd	include/config.h	/^    int criu_fd;$/;"	m	struct:BSA_info
+criu_features__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor criu_features__descriptor =$/;"	v
+criu_features__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor criu_features__field_descriptors[2] =$/;"	v	file:
+criu_features__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned criu_features__field_indices_by_name[] = {$/;"	v	file:
+criu_features__free_unpacked	temp_src/rpc.pb-c.c	/^void   criu_features__free_unpacked$/;"	f
+criu_features__get_packed_size	temp_src/rpc.pb-c.c	/^size_t criu_features__get_packed_size$/;"	f
+criu_features__init	temp_src/rpc.pb-c.c	/^void   criu_features__init$/;"	f
+criu_features__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange criu_features__number_ranges[1 + 1] =$/;"	v	file:
+criu_features__pack	temp_src/rpc.pb-c.c	/^size_t criu_features__pack$/;"	f
+criu_features__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t criu_features__pack_to_buffer$/;"	f
+criu_features__unpack	temp_src/rpc.pb-c.c	/^       criu_features__unpack$/;"	f
+criu_notify__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor criu_notify__descriptor =$/;"	v
+criu_notify__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor criu_notify__field_descriptors[2] =$/;"	v	file:
+criu_notify__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned criu_notify__field_indices_by_name[] = {$/;"	v	file:
+criu_notify__free_unpacked	temp_src/rpc.pb-c.c	/^void   criu_notify__free_unpacked$/;"	f
+criu_notify__get_packed_size	temp_src/rpc.pb-c.c	/^size_t criu_notify__get_packed_size$/;"	f
+criu_notify__init	temp_src/rpc.pb-c.c	/^void   criu_notify__init$/;"	f
+criu_notify__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange criu_notify__number_ranges[1 + 1] =$/;"	v	file:
+criu_notify__pack	temp_src/rpc.pb-c.c	/^size_t criu_notify__pack$/;"	f
+criu_notify__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t criu_notify__pack_to_buffer$/;"	f
+criu_notify__unpack	temp_src/rpc.pb-c.c	/^       criu_notify__unpack$/;"	f
+criu_opts__cpu_cap__default_value	temp_src/rpc.pb-c.c	/^static const uint32_t criu_opts__cpu_cap__default_value = 4294967295u;$/;"	v	file:
+criu_opts__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor criu_opts__descriptor =$/;"	v
+criu_opts__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor criu_opts__field_descriptors[49] =$/;"	v	file:
+criu_opts__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned criu_opts__field_indices_by_name[] = {$/;"	v	file:
+criu_opts__free_unpacked	temp_src/rpc.pb-c.c	/^void   criu_opts__free_unpacked$/;"	f
+criu_opts__get_packed_size	temp_src/rpc.pb-c.c	/^size_t criu_opts__get_packed_size$/;"	f
+criu_opts__ghost_limit__default_value	temp_src/rpc.pb-c.c	/^static const uint32_t criu_opts__ghost_limit__default_value = 1048576u;$/;"	v	file:
+criu_opts__init	temp_src/rpc.pb-c.c	/^void   criu_opts__init$/;"	f
+criu_opts__log_level__default_value	temp_src/rpc.pb-c.c	/^static const int32_t criu_opts__log_level__default_value = 2;$/;"	v	file:
+criu_opts__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange criu_opts__number_ranges[2 + 1] =$/;"	v	file:
+criu_opts__pack	temp_src/rpc.pb-c.c	/^size_t criu_opts__pack$/;"	f
+criu_opts__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t criu_opts__pack_to_buffer$/;"	f
+criu_opts__unpack	temp_src/rpc.pb-c.c	/^       criu_opts__unpack$/;"	f
+criu_page_server_info__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor criu_page_server_info__descriptor =$/;"	v
+criu_page_server_info__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor criu_page_server_info__field_descriptors[4] =$/;"	v	file:
+criu_page_server_info__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned criu_page_server_info__field_indices_by_name[] = {$/;"	v	file:
+criu_page_server_info__free_unpacked	temp_src/rpc.pb-c.c	/^void   criu_page_server_info__free_unpacked$/;"	f
+criu_page_server_info__get_packed_size	temp_src/rpc.pb-c.c	/^size_t criu_page_server_info__get_packed_size$/;"	f
+criu_page_server_info__init	temp_src/rpc.pb-c.c	/^void   criu_page_server_info__init$/;"	f
+criu_page_server_info__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange criu_page_server_info__number_ranges[1 + 1] =$/;"	v	file:
+criu_page_server_info__pack	temp_src/rpc.pb-c.c	/^size_t criu_page_server_info__pack$/;"	f
+criu_page_server_info__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t criu_page_server_info__pack_to_buffer$/;"	f
+criu_page_server_info__unpack	temp_src/rpc.pb-c.c	/^       criu_page_server_info__unpack$/;"	f
+criu_req__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor criu_req__descriptor =$/;"	v
+criu_req__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor criu_req__field_descriptors[6] =$/;"	v	file:
+criu_req__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned criu_req__field_indices_by_name[] = {$/;"	v	file:
+criu_req__free_unpacked	temp_src/rpc.pb-c.c	/^void   criu_req__free_unpacked$/;"	f
+criu_req__get_packed_size	temp_src/rpc.pb-c.c	/^size_t criu_req__get_packed_size$/;"	f
+criu_req__init	temp_src/rpc.pb-c.c	/^void   criu_req__init$/;"	f
+criu_req__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange criu_req__number_ranges[1 + 1] =$/;"	v	file:
+criu_req__pack	temp_src/rpc.pb-c.c	/^size_t criu_req__pack$/;"	f
+criu_req__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t criu_req__pack_to_buffer$/;"	f
+criu_req__unpack	temp_src/rpc.pb-c.c	/^       criu_req__unpack$/;"	f
+criu_req_type__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCEnumDescriptor criu_req_type__descriptor =$/;"	v
+criu_req_type__enum_values_by_name	temp_src/rpc.pb-c.c	/^static const ProtobufCEnumValueIndex criu_req_type__enum_values_by_name[13] =$/;"	v	file:
+criu_req_type__enum_values_by_number	temp_src/rpc.pb-c.c	/^static const ProtobufCEnumValue criu_req_type__enum_values_by_number[13] =$/;"	v	file:
+criu_req_type__value_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange criu_req_type__value_ranges[] = {$/;"	v	file:
+criu_resp__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor criu_resp__descriptor =$/;"	v
+criu_resp__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor criu_resp__field_descriptors[11] =$/;"	v	file:
+criu_resp__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned criu_resp__field_indices_by_name[] = {$/;"	v	file:
+criu_resp__free_unpacked	temp_src/rpc.pb-c.c	/^void   criu_resp__free_unpacked$/;"	f
+criu_resp__get_packed_size	temp_src/rpc.pb-c.c	/^size_t criu_resp__get_packed_size$/;"	f
+criu_resp__init	temp_src/rpc.pb-c.c	/^void   criu_resp__init$/;"	f
+criu_resp__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange criu_resp__number_ranges[1 + 1] =$/;"	v	file:
+criu_resp__pack	temp_src/rpc.pb-c.c	/^size_t criu_resp__pack$/;"	f
+criu_resp__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t criu_resp__pack_to_buffer$/;"	f
+criu_resp__unpack	temp_src/rpc.pb-c.c	/^       criu_resp__unpack$/;"	f
+criu_restore_resp__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor criu_restore_resp__descriptor =$/;"	v
+criu_restore_resp__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor criu_restore_resp__field_descriptors[1] =$/;"	v	file:
+criu_restore_resp__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned criu_restore_resp__field_indices_by_name[] = {$/;"	v	file:
+criu_restore_resp__free_unpacked	temp_src/rpc.pb-c.c	/^void   criu_restore_resp__free_unpacked$/;"	f
+criu_restore_resp__get_packed_size	temp_src/rpc.pb-c.c	/^size_t criu_restore_resp__get_packed_size$/;"	f
+criu_restore_resp__init	temp_src/rpc.pb-c.c	/^void   criu_restore_resp__init$/;"	f
+criu_restore_resp__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange criu_restore_resp__number_ranges[1 + 1] =$/;"	v	file:
+criu_restore_resp__pack	temp_src/rpc.pb-c.c	/^size_t criu_restore_resp__pack$/;"	f
+criu_restore_resp__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t criu_restore_resp__pack_to_buffer$/;"	f
+criu_restore_resp__unpack	temp_src/rpc.pb-c.c	/^       criu_restore_resp__unpack$/;"	f
+criu_version__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor criu_version__descriptor =$/;"	v
+criu_version__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor criu_version__field_descriptors[6] =$/;"	v	file:
+criu_version__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned criu_version__field_indices_by_name[] = {$/;"	v	file:
+criu_version__free_unpacked	temp_src/rpc.pb-c.c	/^void   criu_version__free_unpacked$/;"	f
+criu_version__get_packed_size	temp_src/rpc.pb-c.c	/^size_t criu_version__get_packed_size$/;"	f
+criu_version__init	temp_src/rpc.pb-c.c	/^void   criu_version__init$/;"	f
+criu_version__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange criu_version__number_ranges[1 + 1] =$/;"	v	file:
+criu_version__pack	temp_src/rpc.pb-c.c	/^size_t criu_version__pack$/;"	f
+criu_version__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t criu_version__pack_to_buffer$/;"	f
+criu_version__unpack	temp_src/rpc.pb-c.c	/^       criu_version__unpack$/;"	f
+criu_veth_pair__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor criu_veth_pair__descriptor =$/;"	v
+criu_veth_pair__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor criu_veth_pair__field_descriptors[2] =$/;"	v	file:
+criu_veth_pair__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned criu_veth_pair__field_indices_by_name[] = {$/;"	v	file:
+criu_veth_pair__free_unpacked	temp_src/rpc.pb-c.c	/^void   criu_veth_pair__free_unpacked$/;"	f
+criu_veth_pair__get_packed_size	temp_src/rpc.pb-c.c	/^size_t criu_veth_pair__get_packed_size$/;"	f
+criu_veth_pair__init	temp_src/rpc.pb-c.c	/^void   criu_veth_pair__init$/;"	f
+criu_veth_pair__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange criu_veth_pair__number_ranges[1 + 1] =$/;"	v	file:
+criu_veth_pair__pack	temp_src/rpc.pb-c.c	/^size_t criu_veth_pair__pack$/;"	f
+criu_veth_pair__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t criu_veth_pair__pack_to_buffer$/;"	f
+criu_veth_pair__unpack	temp_src/rpc.pb-c.c	/^       criu_veth_pair__unpack$/;"	f
+ctrl	include/rpc.pb-c.h	/^  char *ctrl;$/;"	m	struct:_CgroupRoot
+data	include/storage.h	/^    uint8_t* data;$/;"	m	struct:BSA_buf
+dump	include/rpc.pb-c.h	/^  CriuDumpResp *dump;$/;"	m	struct:_CriuResp
+empty_ns	include/rpc.pb-c.h	/^  uint32_t empty_ns;$/;"	m	struct:_CriuOpts
+enable_fs	include/rpc.pb-c.h	/^  char **enable_fs;$/;"	m	struct:_CriuOpts
+evasive_devices	include/rpc.pb-c.h	/^  protobuf_c_boolean evasive_devices;$/;"	m	struct:_CriuOpts
+exec_cmd	include/rpc.pb-c.h	/^  char **exec_cmd;$/;"	m	struct:_CriuOpts
+ext_masters	include/rpc.pb-c.h	/^  protobuf_c_boolean ext_masters;$/;"	m	struct:_CriuOpts
+ext_mnt	include/rpc.pb-c.h	/^  ExtMountMap **ext_mnt;$/;"	m	struct:_CriuOpts
+ext_mount_map__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor ext_mount_map__descriptor =$/;"	v
+ext_mount_map__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor ext_mount_map__field_descriptors[2] =$/;"	v	file:
+ext_mount_map__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned ext_mount_map__field_indices_by_name[] = {$/;"	v	file:
+ext_mount_map__free_unpacked	temp_src/rpc.pb-c.c	/^void   ext_mount_map__free_unpacked$/;"	f
+ext_mount_map__get_packed_size	temp_src/rpc.pb-c.c	/^size_t ext_mount_map__get_packed_size$/;"	f
+ext_mount_map__init	temp_src/rpc.pb-c.c	/^void   ext_mount_map__init$/;"	f
+ext_mount_map__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange ext_mount_map__number_ranges[1 + 1] =$/;"	v	file:
+ext_mount_map__pack	temp_src/rpc.pb-c.c	/^size_t ext_mount_map__pack$/;"	f
+ext_mount_map__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t ext_mount_map__pack_to_buffer$/;"	f
+ext_mount_map__unpack	temp_src/rpc.pb-c.c	/^       ext_mount_map__unpack$/;"	f
+ext_sharing	include/rpc.pb-c.h	/^  protobuf_c_boolean ext_sharing;$/;"	m	struct:_CriuOpts
+ext_unix_sk	include/rpc.pb-c.h	/^  protobuf_c_boolean ext_unix_sk;$/;"	m	struct:_CriuOpts
+external	include/rpc.pb-c.h	/^  char **external;$/;"	m	struct:_CriuOpts
+extra	include/rpc.pb-c.h	/^  int32_t extra;$/;"	m	struct:_CriuVersion
+extra_opt	include/rpc.pb-c.h	/^  char *extra_opt;$/;"	m	struct:_JoinNamespace
+fd	include/config.h	/^    int     fd;$/;"	m	struct:FD_node
+fd	include/rpc.pb-c.h	/^  int32_t fd;$/;"	m	struct:_CriuPageServerInfo
+fd	include/rpc.pb-c.h	/^  int32_t fd;$/;"	m	struct:_InheritFd
+features	include/rpc.pb-c.h	/^  CriuFeatures *features;$/;"	m	struct:_CriuReq
+features	include/rpc.pb-c.h	/^  CriuFeatures *features;$/;"	m	struct:_CriuResp
+file_list	include/config.h	/^    struct FD_list* file_list;$/;"	m	struct:BSA_info	typeref:struct:BSA_info::FD_list
+file_locks	include/rpc.pb-c.h	/^  protobuf_c_boolean file_locks;$/;"	m	struct:_CriuOpts
+force_irmap	include/rpc.pb-c.h	/^  protobuf_c_boolean force_irmap;$/;"	m	struct:_CriuOpts
+freeze_cgroup	include/rpc.pb-c.h	/^  char *freeze_cgroup;$/;"	m	struct:_CriuOpts
+ghost_limit	include/rpc.pb-c.h	/^  uint32_t ghost_limit;$/;"	m	struct:_CriuOpts
+gitid	include/rpc.pb-c.h	/^  char *gitid;$/;"	m	struct:_CriuVersion
+has_auto_dedup	include/rpc.pb-c.h	/^  protobuf_c_boolean has_auto_dedup;$/;"	m	struct:_CriuOpts
+has_auto_ext_mnt	include/rpc.pb-c.h	/^  protobuf_c_boolean has_auto_ext_mnt;$/;"	m	struct:_CriuOpts
+has_cpu_cap	include/rpc.pb-c.h	/^  protobuf_c_boolean has_cpu_cap;$/;"	m	struct:_CriuOpts
+has_cr_errno	include/rpc.pb-c.h	/^  protobuf_c_boolean has_cr_errno;$/;"	m	struct:_CriuResp
+has_empty_ns	include/rpc.pb-c.h	/^  protobuf_c_boolean has_empty_ns;$/;"	m	struct:_CriuOpts
+has_evasive_devices	include/rpc.pb-c.h	/^  protobuf_c_boolean has_evasive_devices;$/;"	m	struct:_CriuOpts
+has_ext_masters	include/rpc.pb-c.h	/^  protobuf_c_boolean has_ext_masters;$/;"	m	struct:_CriuOpts
+has_ext_sharing	include/rpc.pb-c.h	/^  protobuf_c_boolean has_ext_sharing;$/;"	m	struct:_CriuOpts
+has_ext_unix_sk	include/rpc.pb-c.h	/^  protobuf_c_boolean has_ext_unix_sk;$/;"	m	struct:_CriuOpts
+has_extra	include/rpc.pb-c.h	/^  protobuf_c_boolean has_extra;$/;"	m	struct:_CriuVersion
+has_fd	include/rpc.pb-c.h	/^  protobuf_c_boolean has_fd;$/;"	m	struct:_CriuPageServerInfo
+has_file_locks	include/rpc.pb-c.h	/^  protobuf_c_boolean has_file_locks;$/;"	m	struct:_CriuOpts
+has_force_irmap	include/rpc.pb-c.h	/^  protobuf_c_boolean has_force_irmap;$/;"	m	struct:_CriuOpts
+has_ghost_limit	include/rpc.pb-c.h	/^  protobuf_c_boolean has_ghost_limit;$/;"	m	struct:_CriuOpts
+has_keep_open	include/rpc.pb-c.h	/^  protobuf_c_boolean has_keep_open;$/;"	m	struct:_CriuReq
+has_lazy_pages	include/rpc.pb-c.h	/^  protobuf_c_boolean has_lazy_pages;$/;"	m	struct:_CriuFeatures
+has_lazy_pages	include/rpc.pb-c.h	/^  protobuf_c_boolean has_lazy_pages;$/;"	m	struct:_CriuOpts
+has_leave_running	include/rpc.pb-c.h	/^  protobuf_c_boolean has_leave_running;$/;"	m	struct:_CriuOpts
+has_link_remap	include/rpc.pb-c.h	/^  protobuf_c_boolean has_link_remap;$/;"	m	struct:_CriuOpts
+has_log_level	include/rpc.pb-c.h	/^  protobuf_c_boolean has_log_level;$/;"	m	struct:_CriuOpts
+has_manage_cgroups	include/rpc.pb-c.h	/^  protobuf_c_boolean has_manage_cgroups;$/;"	m	struct:_CriuOpts
+has_manage_cgroups_mode	include/rpc.pb-c.h	/^  protobuf_c_boolean has_manage_cgroups_mode;$/;"	m	struct:_CriuOpts
+has_mem_track	include/rpc.pb-c.h	/^  protobuf_c_boolean has_mem_track;$/;"	m	struct:_CriuFeatures
+has_notify_scripts	include/rpc.pb-c.h	/^  protobuf_c_boolean has_notify_scripts;$/;"	m	struct:_CriuOpts
+has_notify_success	include/rpc.pb-c.h	/^  protobuf_c_boolean has_notify_success;$/;"	m	struct:_CriuReq
+has_orphan_pts_master	include/rpc.pb-c.h	/^  protobuf_c_boolean has_orphan_pts_master;$/;"	m	struct:_CriuOpts
+has_pid	include/rpc.pb-c.h	/^  protobuf_c_boolean has_pid;$/;"	m	struct:_CriuNotify
+has_pid	include/rpc.pb-c.h	/^  protobuf_c_boolean has_pid;$/;"	m	struct:_CriuOpts
+has_pid	include/rpc.pb-c.h	/^  protobuf_c_boolean has_pid;$/;"	m	struct:_CriuPageServerInfo
+has_pid	include/rpc.pb-c.h	/^  protobuf_c_boolean has_pid;$/;"	m	struct:_CriuReq
+has_port	include/rpc.pb-c.h	/^  protobuf_c_boolean has_port;$/;"	m	struct:_CriuPageServerInfo
+has_restored	include/rpc.pb-c.h	/^  protobuf_c_boolean has_restored;$/;"	m	struct:_CriuDumpResp
+has_rst_sibling	include/rpc.pb-c.h	/^  protobuf_c_boolean has_rst_sibling;$/;"	m	struct:_CriuOpts
+has_shell_job	include/rpc.pb-c.h	/^  protobuf_c_boolean has_shell_job;$/;"	m	struct:_CriuOpts
+has_status	include/rpc.pb-c.h	/^  protobuf_c_boolean has_status;$/;"	m	struct:_CriuResp
+has_status_fd	include/rpc.pb-c.h	/^  protobuf_c_boolean has_status_fd;$/;"	m	struct:_CriuOpts
+has_sublevel	include/rpc.pb-c.h	/^  protobuf_c_boolean has_sublevel;$/;"	m	struct:_CriuVersion
+has_tcp_established	include/rpc.pb-c.h	/^  protobuf_c_boolean has_tcp_established;$/;"	m	struct:_CriuOpts
+has_tcp_skip_in_flight	include/rpc.pb-c.h	/^  protobuf_c_boolean has_tcp_skip_in_flight;$/;"	m	struct:_CriuOpts
+has_timeout	include/rpc.pb-c.h	/^  protobuf_c_boolean has_timeout;$/;"	m	struct:_CriuOpts
+has_track_mem	include/rpc.pb-c.h	/^  protobuf_c_boolean has_track_mem;$/;"	m	struct:_CriuOpts
+has_weak_sysctls	include/rpc.pb-c.h	/^  protobuf_c_boolean has_weak_sysctls;$/;"	m	struct:_CriuOpts
+has_work_dir_fd	include/rpc.pb-c.h	/^  protobuf_c_boolean has_work_dir_fd;$/;"	m	struct:_CriuOpts
+head	include/config.h	/^    struct FD_node* head;$/;"	m	struct:FD_list	typeref:struct:FD_list::FD_node
+if_in	include/rpc.pb-c.h	/^  char *if_in;$/;"	m	struct:_CriuVethPair
+if_out	include/rpc.pb-c.h	/^  char *if_out;$/;"	m	struct:_CriuVethPair
+images_dir_fd	include/rpc.pb-c.h	/^  int32_t images_dir_fd;$/;"	m	struct:_CriuOpts
+inherit_fd	include/rpc.pb-c.h	/^  InheritFd **inherit_fd;$/;"	m	struct:_CriuOpts
+inherit_fd__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor inherit_fd__descriptor =$/;"	v
+inherit_fd__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor inherit_fd__field_descriptors[2] =$/;"	v	file:
+inherit_fd__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned inherit_fd__field_indices_by_name[] = {$/;"	v	file:
+inherit_fd__free_unpacked	temp_src/rpc.pb-c.c	/^void   inherit_fd__free_unpacked$/;"	f
+inherit_fd__get_packed_size	temp_src/rpc.pb-c.c	/^size_t inherit_fd__get_packed_size$/;"	f
+inherit_fd__init	temp_src/rpc.pb-c.c	/^void   inherit_fd__init$/;"	f
+inherit_fd__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange inherit_fd__number_ranges[1 + 1] =$/;"	v	file:
+inherit_fd__pack	temp_src/rpc.pb-c.c	/^size_t inherit_fd__pack$/;"	f
+inherit_fd__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t inherit_fd__pack_to_buffer$/;"	f
+inherit_fd__unpack	temp_src/rpc.pb-c.c	/^       inherit_fd__unpack$/;"	f
+inode	include/rpc.pb-c.h	/^  uint32_t inode;$/;"	m	struct:_UnixSk
+input_thread	utils.c	/^pthread_t input_thread;$/;"	v
+irmap_scan_paths	include/rpc.pb-c.h	/^  char **irmap_scan_paths;$/;"	m	struct:_CriuOpts
+join_namespace__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor join_namespace__descriptor =$/;"	v
+join_namespace__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor join_namespace__field_descriptors[3] =$/;"	v	file:
+join_namespace__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned join_namespace__field_indices_by_name[] = {$/;"	v	file:
+join_namespace__free_unpacked	temp_src/rpc.pb-c.c	/^void   join_namespace__free_unpacked$/;"	f
+join_namespace__get_packed_size	temp_src/rpc.pb-c.c	/^size_t join_namespace__get_packed_size$/;"	f
+join_namespace__init	temp_src/rpc.pb-c.c	/^void   join_namespace__init$/;"	f
+join_namespace__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange join_namespace__number_ranges[1 + 1] =$/;"	v	file:
+join_namespace__pack	temp_src/rpc.pb-c.c	/^size_t join_namespace__pack$/;"	f
+join_namespace__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t join_namespace__pack_to_buffer$/;"	f
+join_namespace__unpack	temp_src/rpc.pb-c.c	/^       join_namespace__unpack$/;"	f
+join_ns	include/rpc.pb-c.h	/^  JoinNamespace **join_ns;$/;"	m	struct:_CriuOpts
+keep_open	include/rpc.pb-c.h	/^  protobuf_c_boolean keep_open;$/;"	m	struct:_CriuReq
+key	include/rpc.pb-c.h	/^  char *key;$/;"	m	struct:_ExtMountMap
+key	include/rpc.pb-c.h	/^  char *key;$/;"	m	struct:_InheritFd
+lazy_pages	include/rpc.pb-c.h	/^  protobuf_c_boolean lazy_pages;$/;"	m	struct:_CriuFeatures
+lazy_pages	include/rpc.pb-c.h	/^  protobuf_c_boolean lazy_pages;$/;"	m	struct:_CriuOpts
+leave_running	include/rpc.pb-c.h	/^  protobuf_c_boolean leave_running;$/;"	m	struct:_CriuOpts
+len	include/storage.h	/^    size_t  len;$/;"	m	struct:BSA_buf
+link_remap	include/rpc.pb-c.h	/^  protobuf_c_boolean link_remap;$/;"	m	struct:_CriuOpts
+log_file	include/rpc.pb-c.h	/^  char *log_file;$/;"	m	struct:_CriuOpts
+log_level	include/rpc.pb-c.h	/^  int32_t log_level;$/;"	m	struct:_CriuOpts
+major	include/rpc.pb-c.h	/^  int32_t major;$/;"	m	struct:_CriuVersion
+manage_cgroups	include/rpc.pb-c.h	/^  protobuf_c_boolean manage_cgroups;$/;"	m	struct:_CriuOpts
+manage_cgroups_mode	include/rpc.pb-c.h	/^  CriuCgMode manage_cgroups_mode;$/;"	m	struct:_CriuOpts
+mem_track	include/rpc.pb-c.h	/^  protobuf_c_boolean mem_track;$/;"	m	struct:_CriuFeatures
+minor	include/rpc.pb-c.h	/^  int32_t minor;$/;"	m	struct:_CriuVersion
+n_cg_root	include/rpc.pb-c.h	/^  size_t n_cg_root;$/;"	m	struct:_CriuOpts
+n_cgroup_dump_controller	include/rpc.pb-c.h	/^  size_t n_cgroup_dump_controller;$/;"	m	struct:_CriuOpts
+n_enable_fs	include/rpc.pb-c.h	/^  size_t n_enable_fs;$/;"	m	struct:_CriuOpts
+n_exec_cmd	include/rpc.pb-c.h	/^  size_t n_exec_cmd;$/;"	m	struct:_CriuOpts
+n_ext_mnt	include/rpc.pb-c.h	/^  size_t n_ext_mnt;$/;"	m	struct:_CriuOpts
+n_external	include/rpc.pb-c.h	/^  size_t n_external;$/;"	m	struct:_CriuOpts
+n_inherit_fd	include/rpc.pb-c.h	/^  size_t n_inherit_fd;$/;"	m	struct:_CriuOpts
+n_irmap_scan_paths	include/rpc.pb-c.h	/^  size_t n_irmap_scan_paths;$/;"	m	struct:_CriuOpts
+n_join_ns	include/rpc.pb-c.h	/^  size_t n_join_ns;$/;"	m	struct:_CriuOpts
+n_skip_mnt	include/rpc.pb-c.h	/^  size_t n_skip_mnt;$/;"	m	struct:_CriuOpts
+n_unix_sk_ino	include/rpc.pb-c.h	/^  size_t n_unix_sk_ino;$/;"	m	struct:_CriuOpts
+n_veths	include/rpc.pb-c.h	/^  size_t n_veths;$/;"	m	struct:_CriuOpts
+name	include/rpc.pb-c.h	/^  char *name;$/;"	m	struct:_CriuVersion
+next	include/config.h	/^    struct  FD_node* next;$/;"	m	struct:FD_node	typeref:struct:FD_node::FD_node
+next	include/storage.h	/^    struct BSA_buf* next;$/;"	m	struct:BSA_buf	typeref:struct:BSA_buf::BSA_buf
+notify	include/rpc.pb-c.h	/^  CriuNotify *notify;$/;"	m	struct:_CriuResp
+notify_scripts	include/rpc.pb-c.h	/^  protobuf_c_boolean notify_scripts;$/;"	m	struct:_CriuOpts
+notify_success	include/rpc.pb-c.h	/^  protobuf_c_boolean notify_success;$/;"	m	struct:_CriuReq
+ns	include/rpc.pb-c.h	/^  char *ns;$/;"	m	struct:_JoinNamespace
+ns_file	include/rpc.pb-c.h	/^  char *ns_file;$/;"	m	struct:_JoinNamespace
+opts	include/rpc.pb-c.h	/^  CriuOpts *opts;$/;"	m	struct:_CriuReq
+orphan_pts_master	include/rpc.pb-c.h	/^  protobuf_c_boolean orphan_pts_master;$/;"	m	struct:_CriuOpts
+parent_img	include/rpc.pb-c.h	/^  char *parent_img;$/;"	m	struct:_CriuOpts
+path	include/rpc.pb-c.h	/^  char *path;$/;"	m	struct:_CgroupRoot
+pid	include/config.h	/^    int pid;$/;"	m	struct:BSA_info
+pid	include/rpc.pb-c.h	/^  int32_t pid;$/;"	m	struct:_CriuNotify
+pid	include/rpc.pb-c.h	/^  int32_t pid;$/;"	m	struct:_CriuOpts
+pid	include/rpc.pb-c.h	/^  int32_t pid;$/;"	m	struct:_CriuPageServerInfo
+pid	include/rpc.pb-c.h	/^  int32_t pid;$/;"	m	struct:_CriuRestoreResp
+pid	include/rpc.pb-c.h	/^  uint32_t pid;$/;"	m	struct:_CriuReq
+port	include/rpc.pb-c.h	/^  int32_t port;$/;"	m	struct:_CriuPageServerInfo
+possibility_denominator	include/config.h	/^    int possibility_denominator;$/;"	m	struct:BSA_info
+ps	include/rpc.pb-c.h	/^  CriuPageServerInfo *ps;$/;"	m	struct:_CriuOpts
+ps	include/rpc.pb-c.h	/^  CriuPageServerInfo *ps;$/;"	m	struct:_CriuResp
+restore	include/rpc.pb-c.h	/^  CriuRestoreResp *restore;$/;"	m	struct:_CriuResp
+restored	include/rpc.pb-c.h	/^  protobuf_c_boolean restored;$/;"	m	struct:_CriuDumpResp
+root	include/rpc.pb-c.h	/^  char *root;$/;"	m	struct:_CriuOpts
+rst_sibling	include/rpc.pb-c.h	/^  protobuf_c_boolean rst_sibling;$/;"	m	struct:_CriuOpts
+script	include/rpc.pb-c.h	/^  char *script;$/;"	m	struct:_CriuNotify
+set_stdin	main.c	/^int set_stdin = 0;$/;"	v
+shell_job	include/rpc.pb-c.h	/^  protobuf_c_boolean shell_job;$/;"	m	struct:_CriuOpts
+sk_list	include/config.h	/^    struct FD_list* sk_list;$/;"	m	struct:BSA_info	typeref:struct:BSA_info::FD_list
+skip_mnt	include/rpc.pb-c.h	/^  char **skip_mnt;$/;"	m	struct:_CriuOpts
+st_mode	include/config.h	/^    mode_t  st_mode;$/;"	m	struct:FD_node
+start_time	include/config.h	/^    time_t start_time;$/;"	m	struct:BSA_info
+status	afl.c	/^int status = 0;$/;"	v
+status	include/rpc.pb-c.h	/^  int32_t status;$/;"	m	struct:_CriuResp
+status_fd	include/rpc.pb-c.h	/^  int32_t status_fd;$/;"	m	struct:_CriuOpts
+sublevel	include/rpc.pb-c.h	/^  int32_t sublevel;$/;"	m	struct:_CriuVersion
+success	include/rpc.pb-c.h	/^  protobuf_c_boolean success;$/;"	m	struct:_CriuResp
+tail	include/config.h	/^    struct FD_node* tail;$/;"	m	struct:FD_list	typeref:struct:FD_list::FD_node
+tcp_established	include/rpc.pb-c.h	/^  protobuf_c_boolean tcp_established;$/;"	m	struct:_CriuOpts
+tcp_skip_in_flight	include/rpc.pb-c.h	/^  protobuf_c_boolean tcp_skip_in_flight;$/;"	m	struct:_CriuOpts
+timeout	include/rpc.pb-c.h	/^  uint32_t timeout;$/;"	m	struct:_CriuOpts
+track_mem	include/rpc.pb-c.h	/^  protobuf_c_boolean track_mem;$/;"	m	struct:_CriuOpts
+type	include/rpc.pb-c.h	/^  CriuReqType type;$/;"	m	struct:_CriuReq
+type	include/rpc.pb-c.h	/^  CriuReqType type;$/;"	m	struct:_CriuResp
+u32	include/config.h	/^typedef uint32_t    u32;$/;"	t
+u8	include/config.h	/^typedef uint8_t     u8;$/;"	t
+unix_sk__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor unix_sk__descriptor =$/;"	v
+unix_sk__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor unix_sk__field_descriptors[1] =$/;"	v	file:
+unix_sk__field_indices_by_name	temp_src/rpc.pb-c.c	/^static const unsigned unix_sk__field_indices_by_name[] = {$/;"	v	file:
+unix_sk__free_unpacked	temp_src/rpc.pb-c.c	/^void   unix_sk__free_unpacked$/;"	f
+unix_sk__get_packed_size	temp_src/rpc.pb-c.c	/^size_t unix_sk__get_packed_size$/;"	f
+unix_sk__init	temp_src/rpc.pb-c.c	/^void   unix_sk__init$/;"	f
+unix_sk__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange unix_sk__number_ranges[1 + 1] =$/;"	v	file:
+unix_sk__pack	temp_src/rpc.pb-c.c	/^size_t unix_sk__pack$/;"	f
+unix_sk__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t unix_sk__pack_to_buffer$/;"	f
+unix_sk__unpack	temp_src/rpc.pb-c.c	/^       unix_sk__unpack$/;"	f
+unix_sk_ino	include/rpc.pb-c.h	/^  UnixSk **unix_sk_ino;$/;"	m	struct:_CriuOpts
+val	include/rpc.pb-c.h	/^  char *val;$/;"	m	struct:_ExtMountMap
+version	include/rpc.pb-c.h	/^  CriuVersion *version;$/;"	m	struct:_CriuResp
+veths	include/rpc.pb-c.h	/^  CriuVethPair **veths;$/;"	m	struct:_CriuOpts
+weak_sysctls	include/rpc.pb-c.h	/^  protobuf_c_boolean weak_sysctls;$/;"	m	struct:_CriuOpts
+work_dir_fd	include/rpc.pb-c.h	/^  int32_t work_dir_fd;$/;"	m	struct:_CriuOpts

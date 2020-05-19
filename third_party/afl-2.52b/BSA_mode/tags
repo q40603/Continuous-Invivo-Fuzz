@@ -1,0 +1,49 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+AFLCoverage	afl-attach-llvm-pass.so.cc	/^      AFLCoverage() : ModulePass(ID) { }$/;"	f	class:__anon1::AFLCoverage
+AFLCoverage	afl-attach-llvm-pass.so.cc	/^  class AFLCoverage : public ModulePass {$/;"	c	namespace:__anon1	file:
+AFL_LLVM_PASS	afl-attach-llvm-pass.so.cc	25;"	d	file:
+AFL_MAIN	afl-attach-clang-fast.c	24;"	d	file:
+AFL_QUIET	Makefile	/^	unset AFL_USE_ASAN AFL_USE_MSAN AFL_INST_RATIO; AFL_QUIET=1 AFL_PATH=. AFL_CC=$(CC) ..\/afl-attach-clang-fast $(CFLAGS) ..\/test-instr.c -o test-instr $(LDFLAGS)$/;"	m
+BIN_PATH	Makefile	/^BIN_PATH     = $(PREFIX)\/bin$/;"	m
+CC	Makefile	/^  CC         = clang$/;"	m
+CFLAGS	Makefile	/^CFLAGS      ?= -O3 -funroll-loops$/;"	m
+CLANG_CFL	Makefile	/^CLANG_CFL    = `$(LLVM_CONFIG) --cxxflags` -fno-rtti -fpic $(CXXFLAGS)$/;"	m
+CLANG_LFL	Makefile	/^CLANG_LFL    = `$(LLVM_CONFIG) --ldflags` $(LDFLAGS)$/;"	m
+CONST_PRIO	afl-attach-llvm-rt.o.c	42;"	d	file:
+CONST_PRIO	afl-attach-llvm-rt.o.c	44;"	d	file:
+CXX	Makefile	/^  CXX        = clang++$/;"	m
+CXXFLAGS	Makefile	/^CXXFLAGS    ?= -O3 -funroll-loops$/;"	m
+HELPER_PATH	Makefile	/^HELPER_PATH  = $(PREFIX)\/lib\/afl$/;"	m
+ID	afl-attach-llvm-pass.so.cc	/^      static char ID;$/;"	m	class:__anon1::AFLCoverage	file:
+ID	afl-attach-llvm-pass.so.cc	/^char AFLCoverage::ID = 0;$/;"	m	class:AFLCoverage	file:
+LLVM_CONFIG	Makefile	/^LLVM_CONFIG ?= llvm-config$/;"	m
+PREFIX	Makefile	/^PREFIX      ?= \/usr\/local$/;"	m
+PROGS	Makefile	/^  PROGS      = ..\/afl-attach-clang-fast ..\/afl-attach-llvm-pass.so ..\/afl-attach-llvm-rt.o ..\/afl-attach-llvm-rt-32.o ..\/afl-attach-llvm-rt-64.o$/;"	m
+PROGS	Makefile	/^  PROGS      = ..\/afl-attach-clang-fast ..\/afl-attach-llvm-rt.o ..\/afl-attach-llvm-rt-32.o ..\/afl-attach-llvm-rt-64.o$/;"	m
+VERSION	Makefile	/^VERSION     = $(shell grep '^\\#define VERSION ' ..\/config.h | cut -d '"' -f2)$/;"	m
+__afl_area_initial	afl-attach-llvm-rt.o.c	/^u8  __afl_area_initial[MAP_SIZE];$/;"	v
+__afl_area_ptr	afl-attach-llvm-rt.o.c	/^u8* __afl_area_ptr = __afl_area_initial;$/;"	v
+__afl_auto_init	afl-attach-llvm-rt.o.c	/^__attribute__((constructor(CONST_PRIO))) void __afl_auto_init(void) {$/;"	f
+__afl_manual_init	afl-attach-llvm-rt.o.c	/^void __afl_manual_init(void) {$/;"	f
+__afl_map_shm	afl-attach-llvm-rt.o.c	/^static void __afl_map_shm(void) {$/;"	f	file:
+__afl_persistent_loop	afl-attach-llvm-rt.o.c	/^int __afl_persistent_loop(unsigned int max_cnt) {$/;"	f
+__afl_prev_loc	afl-attach-llvm-rt.o.c	/^__thread u32 __afl_prev_loc;$/;"	v
+__afl_start_forkserver	afl-attach-llvm-rt.o.c	/^static void __afl_start_forkserver(void) {$/;"	f	file:
+__sanitizer_cov_trace_pc_guard	afl-attach-llvm-rt.o.c	/^void __sanitizer_cov_trace_pc_guard(uint32_t* guard) {$/;"	f
+__sanitizer_cov_trace_pc_guard_init	afl-attach-llvm-rt.o.c	/^void __sanitizer_cov_trace_pc_guard_init(uint32_t* start, uint32_t* stop) {$/;"	f
+cc_par_cnt	afl-attach-clang-fast.c	/^static u32  cc_par_cnt = 1;         \/* Param count, including argv0      *\/$/;"	v	file:
+cc_params	afl-attach-clang-fast.c	/^static u8** cc_params;              \/* Parameters passed to the real CC  *\/$/;"	v	file:
+edit_params	afl-attach-clang-fast.c	/^static void edit_params(u32 argc, char** argv) {$/;"	f	file:
+find_obj	afl-attach-clang-fast.c	/^static void find_obj(u8* argv0) {$/;"	f	file:
+fsanitize	Makefile	/^	@echo "[!] Note: using -fsanitize=trace-pc mode (this will fail with older LLVM)."$/;"	m
+is_persistent	afl-attach-llvm-rt.o.c	/^static u8 is_persistent;$/;"	v	file:
+main	afl-attach-clang-fast.c	/^int main(int argc, char** argv) {$/;"	f
+obj_path	afl-attach-clang-fast.c	/^static u8*  obj_path;               \/* Path to runtime libraries         *\/$/;"	v	file:
+override	afl-attach-llvm-pass.so.cc	/^      bool runOnModule(Module &M) override;$/;"	m	class:__anon1::AFLCoverage	file:
+registerAFLPass	afl-attach-llvm-pass.so.cc	/^static void registerAFLPass(const PassManagerBuilder &,$/;"	f	file:
+runOnModule	afl-attach-llvm-pass.so.cc	/^bool AFLCoverage::runOnModule(Module &M) {$/;"	f	class:AFLCoverage
