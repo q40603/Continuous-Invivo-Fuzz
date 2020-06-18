@@ -23,16 +23,16 @@ uint32_t _afl_setup_failure = 0;
 
 uint8_t* BSA_blocked_map = NULL;
 int BSA_blocked_shmid;
-int status = 0;
+struct timeval tv1, tv2, tv3, tv4;
 
 void BSA_alarm_handler(int sig){
     BSA_log("Time out le \n");
     BSA_blocked_map[_afl_prev_loc] = 1;  
-    _exit(0);
+    exit(0);
 }
 
 void _afl_maybe_log(uint32_t id){
-    int shm_id, pid;
+    int shm_id, pid, status;
     struct itimerval it, old_it;
     
     // Move it to checkpoint entry 
@@ -43,7 +43,11 @@ void _afl_maybe_log(uint32_t id){
 _afl_store:
         _afl_area_ptr[_afl_prev_loc]++;
         if ( BSA_blocked_map[_afl_prev_loc] ){
-            _exit(0);
+            gettimeofday(&tv4,NULL);
+            unsigned long val = 1000000 * (tv4.tv_sec-tv1.tv_sec)+ (tv4.tv_usec-tv1.tv_usec); 
+            BSA_log("time child %ld\n", val);
+
+            exit(0);
         }
         return;
     }
@@ -60,7 +64,12 @@ _afl_store:
                     if (read(CTL_CHANNEL_FD, &status, 4) != 4){
                         exit(1);
                     }
+                    gettimeofday(&tv2,NULL);
+                    unsigned long val = 1000000 * (tv2.tv_sec-tv1.tv_sec)+ (tv2.tv_usec-tv1.tv_usec); 
+                    BSA_log("time2 %ld\n", val);
+
                     pid = fork();
+                    gettimeofday(&tv1,NULL);
                     if (pid < 0){
                         BSA_err("Fork fuzzing target failed\n");
                     }
@@ -80,6 +89,10 @@ _afl_store:
                     else{
                         write(STS_CHANNEL_FD, &pid, 4);
                         waitpid(pid,&status,0);
+                        gettimeofday(&tv3,NULL);
+                        unsigned long val = 1000000 * (tv3.tv_sec-tv1.tv_sec)+ (tv3.tv_usec-tv1.tv_usec); 
+                        BSA_log("time1 %ld\n", val);
+
                         if (status != 0){
                             BSA_log("Failed status 0x%x\n", status);
                             if(WIFEXITED(status)) BSA_log("Exit status 0x%x\n", WEXITSTATUS(status));

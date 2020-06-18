@@ -30,6 +30,7 @@ ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){
     
     ret = recv(sockfd, buf, len, flags);
     if (BSA_state == BSARun && ret > 0){
+        BSA_log("Tid: %ld\n", syscall(__NR_gettid))
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
             memcpy(dest->data, buf, ret);

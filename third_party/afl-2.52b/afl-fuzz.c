@@ -2594,6 +2594,10 @@ static u8 run_target(char** argv, u32 timeout) {
   if ((dumb_mode == 1 || no_forkserver) && tb4 == EXEC_FAIL_SIG)
     return FAULT_ERROR;
 
+  if ( WEXITSTATUS(status) != 0 ){
+      return FAULT_CRASH;
+  }
+
   return FAULT_NONE;
 
 }
@@ -2718,7 +2722,7 @@ static u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
     /* stop_soon is set by the handler for Ctrl+C. When it's pressed,
        we want to bail out quickly. */
     
-    if (stop_soon || (fault && (fault != crash_mode) )) goto abort_calibration;
+    if (stop_soon || fault != crash_mode ) goto abort_calibration;
 
     if (!dumb_mode && !stage_cur && !count_bytes(trace_bits)) {
       fault = FAULT_NOINST;
@@ -2873,7 +2877,7 @@ static void perform_dry_run(char** argv) {
 
         if (q == queue) check_map_coverage();
 
-        if (crash_mode & FAULT_CRASH) FATAL("Test case '%s' does *NOT* crash", fn);
+        if (crash_mode) FATAL("Test case '%s' does *NOT* crash", fn);
 
         break;
 
@@ -2918,7 +2922,7 @@ static void perform_dry_run(char** argv) {
 
       case FAULT_CRASH:  
 
-        if (crash_mode & FAULT_CRASH) break;
+        if (crash_mode) break;
 
         if (skip_crashes) {
           WARNF("Test case results in a crash (skipping)");
@@ -4130,12 +4134,12 @@ static void show_stats(void) {
 
   /* Let's start by drawing a centered banner. */
 
-  banner_len = (crash_mode & FAULT_CRASH ? 24 : 22) + strlen(VERSION) + strlen(use_banner);
+  banner_len = (crash_mode ? 24 : 22) + strlen(VERSION) + strlen(use_banner);
   banner_pad = (80 - banner_len) / 2;
   memset(tmp, ' ', banner_pad);
 
   sprintf(tmp + banner_pad, "%s " cLCY VERSION cLGN
-          " (%s)",  crash_mode & FAULT_CRASH ? cPIN "peruvian were-rabbit" : 
+          " (%s)",  crash_mode ? cPIN "peruvian were-rabbit" : 
           cYEL "american fuzzy lop", use_banner);
 
   SAYF("\n%s\n\n", tmp);
@@ -4188,7 +4192,7 @@ static void show_stats(void) {
      except when resuming fuzzing or running in non-instrumented mode. */
 
   if (!dumb_mode && (last_path_time || resuming_fuzz || queue_cycle == 1 ||
-      in_bitmap || (crash_mode&FAULT_CRASH))) {
+      in_bitmap || (crash_mode))) {
 
     SAYF(bV bSTOP "   last new path : " cRST "%-34s ",
          DTD(cur_ms, last_path_time));
@@ -4289,7 +4293,7 @@ static void show_stats(void) {
   sprintf(tmp, "%s (%s%s unique)", DI(total_crashes), DI(unique_crashes),
           (unique_crashes >= KEEP_UNIQUE_CRASH) ? "+" : "");
 
-  if (crash_mode & FAULT_CRASH) {
+  if (crash_mode) {
 
     SAYF(bV bSTOP " total execs : " cRST "%-21s " bSTG bV bSTOP
          "   new crashes : %s%-22s " bSTG bV "\n", DI(total_execs),
