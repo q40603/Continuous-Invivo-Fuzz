@@ -151,7 +151,7 @@ void BSA_checkpoint(int id, int is_entry){
                 BSA_fuzz_forkserver_prep();
                 
                 /* Dump previous input */
-                BSA_conn_IA(id); 
+                BSA_conn_IA(_afl_prev_loc); 
                 
                 /* setup afl relative socket */
                 BSA_accept_channel(&bsa_info.afl_handshake_fd, "afl_handshake");

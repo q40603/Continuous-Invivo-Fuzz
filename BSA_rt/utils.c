@@ -82,6 +82,10 @@ void BSA_close_sockets(){
             /* Not deal with this type fd */
             BSA_log(" is device!\n");
         }
+        else if(S_ISFIFO(st.st_mode)){
+            BSA_log("is FIFO warning!!\n");
+            close(fd);
+        }
 		else if (S_ISREG(st.st_mode)){
             /* Copy file descriptor*/
             BSA_update_fd_list(&bsa_info.file_list, fd, st.st_mode);

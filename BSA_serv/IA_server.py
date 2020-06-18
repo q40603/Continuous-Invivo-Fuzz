@@ -40,7 +40,8 @@ def fuzz_handshake(conn):
         payload += 'transfer-encoding: chunked\n'
         payload += 'Content-Length: 1001\n\n'
         payload += 'A' * 0x1000 + '\n'
-        open(seed_dir + '/test', 'w').write(payload)
+        #open(seed_dir + '/test', 'w').write(payload)
+        #subprocess.call('cp -f /root/eval/mysql-server-mysql-5.6.35/payload %s/test0' % seed_dir, shell=True)
 
         #else:
         cmd = '$HOME/BSA_test/third_party/afl-2.52b/afl-fuzz -R %d -i %s -o %s -t 200000000+ -p %d -P %d -b %d -s %d -- inter_fuzzing' % (threshold, seed_dir, output_dir, pid, ppid, entry_block, shm_id)
