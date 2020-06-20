@@ -9,8 +9,6 @@ int BSA_bind_socket(const char* name);
 
 void BSA_close_sockets();
 void BSA_conn_IA(int);
-void BSA_setup_fuzzer_input_fd();
-void BSA_afl_input_thread(void*);
 
 void BSA_accept_channel(int* channel,const char* desc);
 void BSA_afl_handshake();

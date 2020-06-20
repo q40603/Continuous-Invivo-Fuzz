@@ -7,7 +7,6 @@ extern struct BSA_buf_pool* bsa_buf_pool;
 extern __thread  char BSA_dump_dir[4096];
 extern bool set_stdin;
 
-pthread_t input_thread;
 
 void copy_shm_pages(){
     char path[1024];
@@ -148,8 +147,7 @@ int BSA_bind_socket(const char* name){
     sprintf(serv_addr.sun_path, "%s", name);
 
     if(bind(fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1){
-        BSA_log("%s", name);
-        BSA_err("Failed to bind socket");
+        BSA_err("%s Failed to bind socket\n", name);
     }
 
     if(listen(fd, 1) == -1){
@@ -355,90 +353,6 @@ void BSA_reopen_fd(){
     
 }
 
-void BSA_afl_input_thread(void* data){
-    
-    int listen_fd, file_fd, len;
-    
-    char* socket_name = NULL, *file_name = NULL;
-    char buf[4096];
-    char* fuzz_dir = bsa_info.afl_dir;
-
-    asprintf(&file_name, "%s/.cur_input", fuzz_dir);
-    asprintf(&socket_name, "%s/file.sock", fuzz_dir);
-    
-    if(access(socket_name, F_OK) == 0){
-        remove(socket_name);
-    }
-
-    file_fd = open(file_name, O_RDONLY);
-    if (file_fd == -1){
-        perror("open input file failed\n");
-        exit(1);
-    }
-    listen_fd = BSA_bind_socket(socket_name);
-    
-    /* wake up fuzz target after setup fuzzer input socket */
-    if (write(FILE_SERVER_WRITE_FD, &file_fd, 4) != 4){
-        BSA_log("[%s][%d] sync failed", __FILE__, __LINE__);
-    }
-    close(FILE_SERVER_WRITE_FD);
-
-    BSA_accept_channel(&listen_fd, "afl_input_thread");
-    while( (len = read(file_fd, buf, 4096)) > 0){
-        if (write(listen_fd, buf, len) <= 0){
-            //BSA_log("AFL_input_thread write down\n");
-            break;
-        }
-    }
-    //close(file_fd);
-    close(listen_fd);
-    pause();
-}
-
-
-/* setup fuzzer input socker server */
-void BSA_setup_fuzzer_input_fd(){
-    char sock_name[4096];
-    int addr_len;
-    struct sockaddr_un addr;
-    int pip[2];    
-    char buf[4];    
-    if(pipe(pip) < 0){  
-        BSA_err("Pipe fail\n");   
-    }    
-    dup2(pip[1], FILE_SERVER_WRITE_FD);    
-    dup2(pip[0], FILE_SERVER_READ_FD); 
-
-    if ( pthread_create(&input_thread, NULL, (void*)BSA_afl_input_thread, NULL) != 0){
-        perror("Thread_create failed\n");
-    }
-    
-	if(read(FILE_SERVER_READ_FD, buf, 4) != 4){
-		BSA_err("Can not recv from file socket server\n");
-	}
-	sprintf(sock_name, "%s/file.sock", bsa_info.afl_dir);
-	memset(&addr, 0, sizeof(addr));
-	if ( (bsa_info.afl_input_fd = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1){
-		BSA_err("Can't create bsa_handshake socket\n");
-	}
-	addr.sun_family = AF_LOCAL;
-	strcpy(addr.sun_path, sock_name);
-	addr_len = offsetof(struct sockaddr_un, sun_path) + strlen(addr.sun_path);
-	if(connect(bsa_info.afl_input_fd, (struct sockaddr*)&addr, addr_len) < 0){
-	   BSA_err("Can't connect bsa remote file server");
-	}
-    
-    /* close first, or will be bug */
-    close(pip[1]);
-	close(pip[0]);
-	close(FILE_SERVER_WRITE_FD);
-	close(FILE_SERVER_READ_FD);
-
-	// create FILE* for this fd
-	bsa_info.afl_input_fp = fdopen(bsa_info.afl_input_fd, "r");
-	BSA_dup_target_fd();
-	
-}
 
 void install_seccomp()
 {

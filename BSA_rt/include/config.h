@@ -59,8 +59,12 @@
 #define PINTOOL_WRITE_FD        194
 
 /* AFL_CHANNELs */
-#define FILE_SERVER_READ_FD     195
-#define FILE_SERVER_WRITE_FD    196
+
+#define FILE_SERVER_EVENT1_READ_FD     193
+#define FILE_SERVER_EVENT1_WRITE_FD    194
+
+#define FILE_SERVER_EVENT2_READ_FD     195
+#define FILE_SERVER_EVENT2_WRITE_FD    196
 #define HANDSHAKE_CHANNEL_FD    197
 #define CTL_CHANNEL_FD          198
 #define STS_CHANNEL_FD          199
@@ -87,7 +91,8 @@ typedef uint32_t    u32;
 typedef uint64_t    u64;
 
 #define BSA_err(x...)  \
-    perror(x);      \
+    fprintf(stderr,x);      \
+    perror(":");    \
     exit(1);
 
 #define BSA_log(x...)   \
