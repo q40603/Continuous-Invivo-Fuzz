@@ -2298,7 +2298,7 @@ EXP_ST void BSA_report(){
     sprintf(addr.sun_path, "/tmp/BSA_req_%d.sock", BSA_master_pid );
     addr_len = offsetof(struct sockaddr_un, sun_path) + strlen(addr.sun_path);
     if(connect(sockfd, (struct sockaddr*)&addr, addr_len) < 0){
-       perror("Can't connect bsa remote file server");
+       perror("Can't connect fuzzing target");
     }
     
     int resp[4];

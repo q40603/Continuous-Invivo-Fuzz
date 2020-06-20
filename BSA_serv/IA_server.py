@@ -39,8 +39,8 @@ def fuzz_handshake(conn):
         payload = 'GET / HTTP/1.0\n'
         payload += 'transfer-encoding: chunked\n'
         payload += 'Content-Length: 1001\n\n'
-        payload += 'A' * 0x1000 + '\n'
-        #open(seed_dir + '/test', 'w').write(payload)
+        payload += 'A' * 0x2000 + '\n'
+        open(seed_dir + '/test', 'w').write(payload)
         #subprocess.call('cp -f /root/eval/mysql-server-mysql-5.6.35/payload %s/test0' % seed_dir, shell=True)
 
         #else:
