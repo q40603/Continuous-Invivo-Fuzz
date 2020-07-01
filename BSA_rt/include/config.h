@@ -31,7 +31,7 @@
 #include <linux/audit.h>
 #include <sys/ptrace.h>
 #include <sys/prctl.h>
-
+#include <errno.h>
 
 #define AFL_BIND_PORT           5198
 
@@ -84,6 +84,12 @@
 #ifndef BSA_FUZZ_THRESHOLD  
 #define BSA_FUZZ_THRESHOLD  9
 #endif
+
+
+/* Math */
+#define MIN(x,y) ((x) < (y) ? (x) : (y)) 
+#define MAX(x,y) ((x) > (y) ? (x) : (y)) 
+
 
 /* Type Definition */
 typedef uint8_t     u8;

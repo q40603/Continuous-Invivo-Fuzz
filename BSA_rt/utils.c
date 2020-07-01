@@ -183,7 +183,6 @@ void BSA_conn_IA(int id){
     }
      
     asprintf(&out_dir, "%s_output", dump_path);
-    //printf("%s QQQQQQQQQQQQ", out_dir);
     mkdir(out_dir, 0700);
     free(out_dir);
 
@@ -361,10 +360,7 @@ void install_seccomp()
 
        BPF_STMT(BPF_LD | BPF_W | BPF_ABS,
 				(offsetof(struct seccomp_data, nr))),
-
-	   BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_tgkill, 0, 1),
-	   BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ERRNO | (SECCOMP_RET_DATA)),
-	   
+       #include "seccomp_macro.h"
        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
         
    };
