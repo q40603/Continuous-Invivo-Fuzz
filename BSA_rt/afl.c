@@ -21,7 +21,7 @@
 
 
 
-extern int BSA_state;
+extern __thread int BSA_state;
 extern struct BSA_info bsa_info;
 extern void BSA_setup_fuzzer_input_fd();
 
@@ -94,7 +94,10 @@ void _BSA_afl_initialize_forkserver(int shm_id){
     int pip[2];
     int pip2[2];
     
-    _afl_area_ptr = shmat(shm_id, NULL, 0);
+    if (( _afl_area_ptr = shmat(shm_id, NULL, 0) ) == -1){
+        perror("shmat failed");
+        exit(0);
+    }
     assert((BSA_blocked_shmid = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0600)) != -1);
     BSA_blocked_map = shmat(BSA_blocked_shmid, NULL, 0);
     
@@ -179,15 +182,20 @@ void _BSA_afl_initialize_fuzz_target(){
 
 }
 
-void _afl_maybe_log(uint32_t id){
+extern int edge;
+void _afl_maybe_log(int id){
     int shm_id, pid, status;
     
-    // Move it to checkpoint entry 
-    //_afl_prev_loc = (_afl_prev_loc>>1) ^ id;
-
     // check state value;
     if (_afl_area_ptr){
 _afl_store:
+       
+        /*
+        // edge testing
+        _afl_area_ptr[edge ^ id]++;
+        edge = id >> 1;
+        */
+
         _afl_area_ptr[_afl_prev_loc]++;
         if ( BSA_blocked_map[_afl_prev_loc] ){
             //PrintTime(tv2);
@@ -216,6 +224,7 @@ _afl_store:
                         BSA_err("Fork fuzzing target failed\n");
                     }
                     else if (!pid){
+                        BSA_state = BSAFuzz;
                         _BSA_afl_initialize_fuzz_target();
                         goto _afl_store;
                     }

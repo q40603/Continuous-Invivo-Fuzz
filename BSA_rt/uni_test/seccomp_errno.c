@@ -18,7 +18,7 @@ void install_seccomp()
 				(offsetof(struct seccomp_data, nr))),
        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_read, 0, 1), 
 	   
-       BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ERRNO | (EWOULDBLOCK &  SECCOMP_RET_DATA)), 
+       BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ERRNO | (0 &  SECCOMP_RET_DATA)), 
 
        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
         
@@ -42,6 +42,7 @@ void install_seccomp()
 int main(){
     install_seccomp();
     char buf[4];
-    read(0, buf, 4);
+    int a = read(0, buf, 4);
     perror("");
+    printf("%d\n", a);
 }

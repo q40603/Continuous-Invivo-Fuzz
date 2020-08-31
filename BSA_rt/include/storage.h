@@ -25,6 +25,7 @@ struct BSA_buf{
 struct BSA_buf_pool{
     struct BSA_buf* buf_head;
     struct BSA_buf* buf_tail;
+    ssize_t n_buf;
 };
 
 

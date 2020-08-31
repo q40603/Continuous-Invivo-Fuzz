@@ -33,6 +33,38 @@
 #include <sys/prctl.h>
 #include <errno.h>
 
+struct FD_node{
+    struct  FD_node* next;
+    int     fd;
+    mode_t  st_mode;
+};
+
+struct FD_list{
+    struct FD_node* head;
+    struct FD_node* tail;
+    
+};
+
+struct BSA_info{
+    int pid;
+    int master_pid;
+    time_t start_time;
+    int criu_fd;
+    int afl_handshake_fd;
+    int afl_sts_fd;
+    int afl_ctl_fd;
+    char afl_dir[1024];
+    int afl_input_fd;
+    FILE* afl_input_fp;
+    int afl_shm_id;
+    int possibility_denominator;
+    int debug_level;
+    struct FD_list* sk_list;
+    struct FD_list* file_list;
+};
+
+extern struct BSA_info bsa_info;
+
 #define AFL_BIND_PORT           5198
 
 #define SHM_ENV_VAR             "__AFL_SHM_ID"
@@ -53,6 +85,7 @@
 #define BSARun                  0
 #define BSAFuzz                 1
 #define BSAStop                 4
+#define BSAPrep                 2
 
 /* pintool channels */
 #define PINTOOL_READ_FD         193
@@ -102,35 +135,7 @@ typedef uint64_t    u64;
     exit(1);
 
 #define BSA_log(x...)   \
-    printf(x);   \
+    if (bsa_info.debug_level > 0 ) printf(x); 
 
-struct FD_node{
-    struct  FD_node* next;
-    int     fd;
-    mode_t  st_mode;
-};
-
-struct FD_list{
-    struct FD_node* head;
-    struct FD_node* tail;
-    
-};
-
-struct BSA_info{
-    int pid;
-    int master_pid;
-    time_t start_time;
-    int criu_fd;
-    int afl_handshake_fd;
-    int afl_sts_fd;
-    int afl_ctl_fd;
-    char* afl_dir;
-    int afl_input_fd;
-    FILE* afl_input_fp;
-    int afl_shm_id;
-    int possibility_denominator;
-    struct FD_list* sk_list;
-    struct FD_list* file_list;
-};
 
 #endif
