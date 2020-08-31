@@ -2336,14 +2336,8 @@ EXP_ST void init_BSA_forkserver() {
   if (forksrv_pid) {
       
       /* bsa handshake to tell shm_id  */
-      ACTF("BSA handshake...");
-      sprintf(sock_path, "/tmp/BSA_handshake_%d.sock", forksrv_pid);
-      bsa_handshake_fd = BSA_connect_sock(sock_path);
-      realpath(out_dir, resolved_path);
-      sprintf(buf, "BSA %s/ %d", resolved_path, shm_id);
-      write(bsa_handshake_fd, buf, strlen(buf));
-      close(bsa_handshake_fd);
-
+      ACTF("BSA Setup...");
+      
       /* setup sts fd */
       ACTF("Setup BSA %d sts channel...", forksrv_pid);
       sprintf(sock_path, "/tmp/BSA_sts_%d.sock", forksrv_pid);

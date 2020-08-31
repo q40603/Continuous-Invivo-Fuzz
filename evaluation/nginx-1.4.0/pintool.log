@@ -1,0 +1,4 @@
+Pin: pin-3.7-97619-0d0c92f4f
+Copyright (c) 2003-2018, Intel Corporation. All rights reserved.
+A:  Source/pin/pin_elf/image_elf.cpp: ResolveIFunc: 874: assertion failed: ImageInitSession()->_jitLoaderContext != NULL
+
