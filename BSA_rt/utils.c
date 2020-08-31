@@ -201,6 +201,8 @@ void BSA_conn_IA(int id){
     memcpy(buf+17, &(bsa_info.afl_shm_id), 4);
     memcpy(buf+21, &threshold, 4);
     memcpy(buf+25, dump_path, path_len);
+    
+    sprintf(bsa_info.afl_dir, "%s_output", dump_path);
 
     write(ia_fd, buf, buf_sz);
 
@@ -259,33 +261,6 @@ void BSA_fuzz_forkserver_prep(){
     
 }
 
-/* Get AFL-Fuzz Shared Memory ID and fuzzer input source */
-void BSA_afl_handshake(){
-    char buf[2048];
-    
-    BSA_log("AFL handshaking...\n");
-    read(bsa_info.afl_handshake_fd, buf, sizeof(buf));
-    
-    /* check magic bytes */
-    if (buf[0] == 'B' && buf[1] == 'S' && buf[2] == 'A'){
-        char* tmp_str;
-        tmp_str = strtok(buf, " ");
-        
-        // fuzzer dir
-        tmp_str = strtok(NULL, " ");
-        asprintf(&bsa_info.afl_dir, "%s", tmp_str);
-        BSA_log("fuzzer dir: %s\n", bsa_info.afl_dir);
-        
-        tmp_str = strtok(NULL, " ");
-        bsa_info.afl_shm_id = atoi(tmp_str);
-        printf("Get shm_id: %d\n", bsa_info.afl_shm_id);
-        close(bsa_info.afl_handshake_fd);
-    }
-    else{
-        BSA_err("Error handshake value!\n")
-    }
-
-}
 
 /*
  * Accept socket connection from AFL-fuzz

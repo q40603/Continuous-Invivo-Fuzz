@@ -1,0 +1,8 @@
+GET / HTTP/1.0
+User-Agent: curl/7.50.1
+Accept: */*
+Connection: Upgrade, HTTP2-Settings
+Upgrade: h2c
+HTTP2-Settings: AAMAAABkAAQAAP__
+Content-Length: 2
+

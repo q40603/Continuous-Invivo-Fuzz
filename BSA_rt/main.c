@@ -16,7 +16,7 @@
 
 typedef uint32_t F_ID;
 
-extern void _afl_maybe_log(uint32_t);
+extern void _afl_maybe_log();
 extern void BSA_init_buf_pool();
 extern void BSA_set_dump_dir(const char*);
 extern void BSA_clear_buf(int);
@@ -27,9 +27,9 @@ extern u32 _afl_prev_loc;
 
 pthread_t BSA_request_thread;
 int set_stdin = 0;
-int BSA_fuzz_req = 0;
+int BSA_fuzz_req = -1;
 // Global variables
-__thread u32 BSA_state = BSARun; // 0
+__thread u32 BSA_state = BSARun; 
 
 
 int BSA_entry_value_shmid;
@@ -45,10 +45,14 @@ struct BSA_info bsa_info = {
     .afl_sts_fd = -1,
     .afl_ctl_fd = -1,
     .afl_shm_id = -1,
-    .afl_dir = NULL,
     .afl_input_fd = -1,
     .afl_input_fp = NULL,
     .possibility_denominator = 100,
+#ifdef BSADEBUG
+    .debug_level = 1,
+#else
+    .debug_level = 0,
+#endif
     .sk_list = NULL,
     .file_list = NULL
 };
@@ -112,25 +116,32 @@ static void BSA_initial(){
     }
 }
 
-//void BSA_checkpoint(int id, int can_fuzz){
+int edge = 0;
 void BSA_checkpoint(int id, int is_entry){
+//void BSA_checkpoint(int id){
     
     struct timeval now;
     int pid, ret;
     char *dump_path;
+    int req_bbid, req_tid;
     
     _afl_prev_loc = (_afl_prev_loc>>1) ^ id;
+    //_afl_prev_loc = id >> 1;
+    
     switch(BSA_state){
     
     case BSADebugging:
     case BSARun:
-       
-        if ( BSA_fuzz_req && is_entry && *(BSA_entry_value_map+_afl_prev_loc) ){
-            if ( BSA_fuzz_req != syscall(__NR_gettid) ){
+        
+        req_bbid = BSA_fuzz_req >> 16;
+        req_tid = BSA_fuzz_req & 0xffff;
+
+        if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_prev_loc)) || (id == req_bbid && is_entry) ){
+            if ( req_tid != syscall(__NR_gettid) ){
                 return;
             }
             /* Set flags */
-            BSA_state = BSAFuzz;
+            BSA_state = BSAPrep;
 
             /* Set dump_path */
             gettimeofday(&now, NULL);
@@ -143,7 +154,8 @@ void BSA_checkpoint(int id, int is_entry){
             pid = fork();
             //ret = syscall(__NR_clone, CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, 0, 0, &pid, 0, 0);  
             if (!pid){
-                BSA_fuzz_req = 0;
+                
+                BSA_fuzz_req = -1;
                 /* setup dump dir */   
                 bsa_info.pid = getpid();
                 // close all opening socket, and record it. 
@@ -154,8 +166,6 @@ void BSA_checkpoint(int id, int is_entry){
                 BSA_conn_IA(_afl_prev_loc); 
                 
                 /* setup afl relative socket */
-                BSA_accept_channel(&bsa_info.afl_handshake_fd, "afl_handshake");
-                BSA_afl_handshake();
                 BSA_accept_channel(&bsa_info.afl_ctl_fd, "afl_ctl_fd");
                 BSA_accept_channel(&bsa_info.afl_sts_fd, "afl_sts_fd");
                 copy_shm_pages();
@@ -163,7 +173,7 @@ void BSA_checkpoint(int id, int is_entry){
                 _afl_maybe_log(id);
             }
             else if(pid > 0){
-                BSA_fuzz_req = 0;
+                BSA_fuzz_req = -1;
                 BSA_state = BSARun;
                 BSA_log("Yep\n");
             }
@@ -176,8 +186,7 @@ void BSA_checkpoint(int id, int is_entry){
     case BSAFuzz:
         _afl_maybe_log(id);
         break;
-
-    case BSAStop:
+    default:
         break;
     }
 }

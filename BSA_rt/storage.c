@@ -14,6 +14,7 @@ void BSA_init_buf_pool(){
     if (bsa_buf_pool == NULL){
         BSA_err("Can not init buf pool\n");
     }
+    bsa_buf_pool->n_buf = 0;
 }
 
 struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
@@ -44,7 +45,7 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
         return NULL;
     }
     
-    puts("return buf");
+    BSA_log("return buf\n");
     buf->len = buf_size;
     
     if (bsa_buf_pool->buf_head == NULL){
@@ -54,6 +55,7 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
         bsa_buf_pool->buf_tail->next = buf;
     }
     bsa_buf_pool->buf_tail = buf;
+    bsa_buf_pool->n_buf += 1;
 
     return buf;
 }
@@ -92,22 +94,7 @@ int BSA_dump_buf(){
     }
     else{
         return -1;
-        /*
-        int rand_fd;
-        char buf[4096];
-        printf("No testcase input\n");
-        rand_fd = open("/dev/urandom", O_RDONLY);
-        sprintf(path, "%s/no_testcase", BSA_dump_dir);
-        out_fd = open(path, O_CREAT|O_RDWR, 0600);  
-        if (!out_fd || !rand_fd){
-            BSA_err("Cannot create random seed for AFL\n");
-            return;
-        }
-        read(rand_fd, buf, 4096);
-        write(out_fd, buf, 4096);
-        close(rand_fd);
-        close(out_fd);
-        */
+        
     }
 }
 
@@ -124,5 +111,6 @@ void BSA_clear_buf(){
     }
     bsa_buf_pool->buf_head = NULL;
     bsa_buf_pool->buf_tail = NULL;
+    bsa_buf_pool->n_buf = 0;
 }
 

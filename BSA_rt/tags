@@ -4,32 +4,33 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-AFL_BIND_PORT	include/config.h	27;"	d
-BSADebugging	include/config.h	43;"	d
-BSAFuzz	include/config.h	45;"	d
-BSARun	include/config.h	44;"	d
-BSAStop	include/config.h	46;"	d
-BSA_DOCKER_MASTER	include/config.h	64;"	d
-BSA_DOCKER_SLAVE	include/config.h	65;"	d
-BSA_ENTRY	include/config.h	68;"	d
-BSA_FAIL	include/config.h	33;"	d
-BSA_FD_MAX	include/config.h	36;"	d
-BSA_FUZZ_THRESHOLD	main.c	34;"	d	file:
-BSA_NON_DOCKER_MODE	include/config.h	63;"	d
-BSA_SHADOW_FD	include/config.h	59;"	d
-BSA_SHADOW_FD_MAX	include/config.h	60;"	d
-BSA_SUCCESS	include/config.h	32;"	d
-BSA_SYMBOLIC	include/config.h	69;"	d
+AFL_BIND_PORT	include/config.h	36;"	d
+BSADebugging	include/config.h	52;"	d
+BSAFuzz	include/config.h	54;"	d
+BSARun	include/config.h	53;"	d
+BSAStop	include/config.h	55;"	d
+BSA_DOCKER_MASTER	include/config.h	77;"	d
+BSA_DOCKER_SLAVE	include/config.h	78;"	d
+BSA_ENTRY	include/config.h	81;"	d
+BSA_FAIL	include/config.h	42;"	d
+BSA_FD_MAX	include/config.h	45;"	d
+BSA_FUZZ_THRESHOLD	include/config.h	85;"	d
+BSA_HOOK_FUNCTION_DENY	hook.c	8;"	d	file:
+BSA_NON_DOCKER_MODE	include/config.h	76;"	d
+BSA_SHADOW_FD	include/config.h	72;"	d
+BSA_SHADOW_FD_MAX	include/config.h	73;"	d
+BSA_SUCCESS	include/config.h	41;"	d
+BSA_SYMBOLIC	include/config.h	82;"	d
 BSA_accept_channel	utils.c	/^void BSA_accept_channel(int* channel, const char* desc){$/;"	f
 BSA_afl_handshake	utils.c	/^void BSA_afl_handshake(){$/;"	f
-BSA_afl_input_thread	utils.c	/^void BSA_afl_input_thread(void* data){$/;"	f
+BSA_afl_input_thread	afl.c	/^void BSA_afl_input_thread(void* data){$/;"	f
 BSA_alarm_handler	afl.c	/^void BSA_alarm_handler(int sig){$/;"	f
 BSA_bind_socket	utils.c	/^int BSA_bind_socket(const char* name){$/;"	f
 BSA_blocked_map	afl.c	/^uint8_t* BSA_blocked_map = NULL;$/;"	v
 BSA_blocked_shmid	afl.c	/^int BSA_blocked_shmid;$/;"	v
 BSA_buf	include/storage.h	/^struct BSA_buf{$/;"	s
 BSA_buf_pool	include/storage.h	/^struct BSA_buf_pool{$/;"	s
-BSA_checkpoint	main.c	/^void BSA_checkpoint(int id){$/;"	f
+BSA_checkpoint	main.c	/^void BSA_checkpoint(int id, int is_entry){$/;"	f
 BSA_clear_buf	storage.c	/^void BSA_clear_buf(){$/;"	f
 BSA_clear_sk_list	utils.c	/^void BSA_clear_sk_list(){$/;"	f
 BSA_close_sockets	utils.c	/^void BSA_close_sockets(){$/;"	f
@@ -43,28 +44,30 @@ BSA_dump_dir	storage.c	/^__thread char BSA_dump_dir[4096];$/;"	v
 BSA_dup_target_fd	utils.c	/^void BSA_dup_target_fd(){$/;"	f
 BSA_entry_value_map	main.c	/^u8 *BSA_entry_value_map;$/;"	v
 BSA_entry_value_shmid	main.c	/^int BSA_entry_value_shmid;$/;"	v
-BSA_err	include/config.h	76;"	d
+BSA_err	include/config.h	99;"	d
 BSA_fuzz_forkserver_prep	utils.c	/^void BSA_fuzz_forkserver_prep(){$/;"	f
-BSA_fuzz_req	main.c	/^int BSA_fuzz_req = 0;$/;"	v
+BSA_fuzz_req	main.c	/^int BSA_fuzz_req = -1;$/;"	v
 BSA_get_image_fd	temp_src/criu_rpc.c	/^int BSA_get_image_fd(){$/;"	f
 BSA_hook_read	hook.c	/^ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len){$/;"	f
 BSA_hook_recv	hook.c	/^ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){$/;"	f
+BSA_hook_send	hook.c	/^ssize_t BSA_hook_send(int sockfd, const void *buf, size_t len, int flags){$/;"	f
+BSA_hook_sendmsg	hook.c	/^ssize_t BSA_hook_sendmsg(int sockfd, const struct msghdr *msg, int flags){$/;"	f
+BSA_hook_sendto	hook.c	/^ssize_t BSA_hook_sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen){$/;"	f
 BSA_hook_write	hook.c	/^ssize_t BSA_hook_write(int fd, uint8_t* buf, size_t len){$/;"	f
 BSA_hook_writev	hook.c	/^ssize_t BSA_hook_writev(int fd, const struct iovec *iov, int iovcnt){$/;"	f
 BSA_info	include/config.h	/^struct BSA_info{$/;"	s
 BSA_init_buf_pool	storage.c	/^void BSA_init_buf_pool(){$/;"	f
 BSA_initial	main.c	/^static void BSA_initial(){$/;"	f	file:
-BSA_log	include/config.h	80;"	d
+BSA_log	include/config.h	104;"	d
 BSA_reopen_fd	utils.c	/^void BSA_reopen_fd(){$/;"	f
 BSA_request_handler	main.c	/^void* BSA_request_handler(void* arg){$/;"	f
 BSA_request_thread	main.c	/^pthread_t BSA_request_thread;$/;"	v
-BSA_setup_fuzzer_input_fd	utils.c	/^void BSA_setup_fuzzer_input_fd(){$/;"	f
-BSA_srv_addr	include/config.h	39;"	d
-BSA_srv_port	include/config.h	40;"	d
-BSA_state	main.c	/^int BSA_state = BSARun;$/;"	v
+BSA_srv_addr	include/config.h	48;"	d
+BSA_srv_port	include/config.h	49;"	d
+BSA_state	main.c	/^__thread u32 BSA_state = BSARun; $/;"	v
 BSA_update_fd_list	utils.c	/^void BSA_update_fd_list(struct FD_list** fd_list, int fd, mode_t mode){$/;"	f
 CC	Makefile	/^CC = gcc$/;"	m
-CFLAGS	Makefile	/^CFLAGS = -I.\/include -Wall -g -c -fPIC -lpthread -lgcc_s$/;"	m
+CFLAGS	Makefile	/^CFLAGS = -I.\/include -Wall -g -c -fPIC -pthread -lgcc_s$/;"	m
 CGROUP_ROOT__INIT	include/rpc.pb-c.h	133;"	d
 CRIU_CG_MODE__CG_NONE	include/rpc.pb-c.h	/^  CRIU_CG_MODE__CG_NONE = 1,$/;"	e	enum:_CriuCgMode
 CRIU_CG_MODE__DEFAULT	include/rpc.pb-c.h	/^  CRIU_CG_MODE__DEFAULT = 6$/;"	e	enum:_CriuCgMode
@@ -97,7 +100,7 @@ CRIU_RESTORE_RESP__INIT	include/rpc.pb-c.h	287;"	d
 CRIU_VERSION__INIT	include/rpc.pb-c.h	389;"	d
 CRIU_VETH_PAIR__INIT	include/rpc.pb-c.h	88;"	d
 CSHARED_FLAG	Makefile	/^CSHARED_FLAG = -I.\/include -fPIC -shared$/;"	m
-CTL_CHANNEL_FD	include/config.h	56;"	d
+CTL_CHANNEL_FD	include/config.h	69;"	d
 CgroupRoot	include/rpc.pb-c.h	/^typedef struct _CgroupRoot CgroupRoot;$/;"	t	typeref:struct:_CgroupRoot
 CgroupRoot_Closure	include/rpc.pb-c.h	/^typedef void (*CgroupRoot_Closure)$/;"	t
 CriuCgMode	include/rpc.pb-c.h	/^} CriuCgMode;$/;"	t	typeref:enum:_CriuCgMode
@@ -127,10 +130,12 @@ ExtMountMap	include/rpc.pb-c.h	/^typedef struct _ExtMountMap ExtMountMap;$/;"	t	
 ExtMountMap_Closure	include/rpc.pb-c.h	/^typedef void (*ExtMountMap_Closure)$/;"	t
 FD_list	include/config.h	/^struct FD_list{$/;"	s
 FD_node	include/config.h	/^struct FD_node{$/;"	s
-FILE_SERVER_READ_FD	include/config.h	53;"	d
-FILE_SERVER_WRITE_FD	include/config.h	54;"	d
+FILE_SERVER_EVENT1_READ_FD	include/config.h	63;"	d
+FILE_SERVER_EVENT1_WRITE_FD	include/config.h	64;"	d
+FILE_SERVER_EVENT2_READ_FD	include/config.h	66;"	d
+FILE_SERVER_EVENT2_WRITE_FD	include/config.h	67;"	d
 F_ID	main.c	/^typedef uint32_t F_ID;$/;"	t	file:
-HANDSHAKE_CHANNEL_FD	include/config.h	55;"	d
+HANDSHAKE_CHANNEL_FD	include/config.h	68;"	d
 INCLUDE_DIR	Makefile	/^INCLUDE_DIR = .\/include$/;"	m
 INHERIT_FD__INIT	include/rpc.pb-c.h	122;"	d
 InheritFd	include/rpc.pb-c.h	/^typedef struct _InheritFd InheritFd;$/;"	t	typeref:struct:_InheritFd
@@ -141,19 +146,25 @@ JoinNamespace_Closure	include/rpc.pb-c.h	/^typedef void (*JoinNamespace_Closure)
 LD	Makefile	/^LD = ld $/;"	m
 LDFLAGS	Makefile	/^LDFLAGS = -r$/;"	m
 MAKE	Makefile	/^MAKE = make$/;"	m
+MAX	include/config.h	91;"	d
 MAX_MSG_SIZE	include/criu_rpc.h	12;"	d
 MAX_MSG_SIZE	include/criu_rpc.h	13;"	d
+MIN	include/config.h	90;"	d
 OBJ_DIR	Makefile	/^OBJ_DIR = .\/objs\/$/;"	m
-PINTOOL_READ_FD	include/config.h	49;"	d
-PINTOOL_WRITE_FD	include/config.h	50;"	d
+PINTOOL_READ_FD	include/config.h	58;"	d
+PINTOOL_WRITE_FD	include/config.h	59;"	d
 PROTOBUF_C__NO_DEPRECATED	temp_src/rpc.pb-c.c	6;"	d	file:
 PROTOBUF_C_rpc_2eproto__INCLUDED	include/rpc.pb-c.h	5;"	d
+PrintTime	afl.c	17;"	d	file:
+SECCOMP_DENY_SYSCALL	include/seccomp_macro.h	1;"	d
 SHELL	Makefile	/^SHELL:=\/bin\/bash$/;"	m
-SHM_ENV_VAR	include/config.h	29;"	d
-STS_CHANNEL_FD	include/config.h	57;"	d
+SHM_ENV_VAR	include/config.h	38;"	d
+STS_CHANNEL_FD	include/config.h	70;"	d
 UNIX_SK__INIT	include/rpc.pb-c.h	143;"	d
 UnixSk	include/rpc.pb-c.h	/^typedef struct _UnixSk UnixSk;$/;"	t	typeref:struct:_UnixSk
 UnixSk_Closure	include/rpc.pb-c.h	/^typedef void (*UnixSk_Closure)$/;"	t
+_BSA_afl_initialize_forkserver	afl.c	/^void _BSA_afl_initialize_forkserver(int shm_id){$/;"	f
+_BSA_afl_initialize_fuzz_target	afl.c	/^void _BSA_afl_initialize_fuzz_target(){$/;"	f
 _CONFIG_H_	include/config.h	2;"	d
 _CgroupRoot	include/rpc.pb-c.h	/^struct  _CgroupRoot$/;"	s
 _CriuCgMode	include/rpc.pb-c.h	/^typedef enum _CriuCgMode {$/;"	g
@@ -169,9 +180,11 @@ _CriuRestoreResp	include/rpc.pb-c.h	/^struct  _CriuRestoreResp$/;"	s
 _CriuVersion	include/rpc.pb-c.h	/^struct  _CriuVersion$/;"	s
 _CriuVethPair	include/rpc.pb-c.h	/^struct  _CriuVethPair$/;"	s
 _ExtMountMap	include/rpc.pb-c.h	/^struct  _ExtMountMap$/;"	s
+_GNU_SOURCE	afl.c	1;"	d	file:
 _GNU_SOURCE	include/config.h	4;"	d
 _GNU_SOURCE	main.c	1;"	d	file:
 _GNU_SOURCE	temp_src/criu_rpc.c	1;"	d	file:
+_GNU_SOURCE	uni_test/pipe_test.c	1;"	d	file:
 _HOOK_H_	include/hook.h	2;"	d
 _InheritFd	include/rpc.pb-c.h	/^struct  _InheritFd$/;"	s
 _JoinNamespace	include/rpc.pb-c.h	/^struct  _JoinNamespace$/;"	s
@@ -182,6 +195,7 @@ _afl_area_ptr	afl.c	/^uint8_t* _afl_area_ptr = NULL;$/;"	v
 _afl_maybe_log	afl.c	/^void _afl_maybe_log(uint32_t id){$/;"	f
 _afl_prev_loc	afl.c	/^uint32_t _afl_prev_loc = 0;$/;"	v
 _afl_setup_failure	afl.c	/^uint32_t _afl_setup_failure = 0;$/;"	v
+a	uni_test/macro_test.c	/^int a = 0;$/;"	v
 address	include/rpc.pb-c.h	/^  char *address;$/;"	m	struct:_CriuPageServerInfo
 afl_ctl_fd	include/config.h	/^    int afl_ctl_fd;$/;"	m	struct:BSA_info
 afl_dir	include/config.h	/^    char* afl_dir;$/;"	m	struct:BSA_info
@@ -225,6 +239,7 @@ cgroup_root__number_ranges	temp_src/rpc.pb-c.c	/^static const ProtobufCIntRange 
 cgroup_root__pack	temp_src/rpc.pb-c.c	/^size_t cgroup_root__pack$/;"	f
 cgroup_root__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t cgroup_root__pack_to_buffer$/;"	f
 cgroup_root__unpack	temp_src/rpc.pb-c.c	/^       cgroup_root__unpack$/;"	f
+copy_shm_pages	utils.c	/^void copy_shm_pages(){$/;"	f
 cpu_cap	include/rpc.pb-c.h	/^  uint32_t cpu_cap;$/;"	m	struct:_CriuOpts
 cr_errmsg	include/rpc.pb-c.h	/^  char *cr_errmsg;$/;"	m	struct:_CriuResp
 cr_errno	include/rpc.pb-c.h	/^  int32_t cr_errno;$/;"	m	struct:_CriuResp
@@ -434,7 +449,9 @@ inherit_fd__pack	temp_src/rpc.pb-c.c	/^size_t inherit_fd__pack$/;"	f
 inherit_fd__pack_to_buffer	temp_src/rpc.pb-c.c	/^size_t inherit_fd__pack_to_buffer$/;"	f
 inherit_fd__unpack	temp_src/rpc.pb-c.c	/^       inherit_fd__unpack$/;"	f
 inode	include/rpc.pb-c.h	/^  uint32_t inode;$/;"	m	struct:_UnixSk
-input_thread	utils.c	/^pthread_t input_thread;$/;"	v
+input_thread	afl.c	/^static pthread_t input_thread;$/;"	v	file:
+install_seccomp	uni_test/seccomp_errno.c	/^void install_seccomp()$/;"	f
+install_seccomp	utils.c	/^void install_seccomp()$/;"	f
 irmap_scan_paths	include/rpc.pb-c.h	/^  char **irmap_scan_paths;$/;"	m	struct:_CriuOpts
 join_namespace__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor join_namespace__descriptor =$/;"	v
 join_namespace__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor join_namespace__field_descriptors[3] =$/;"	v	file:
@@ -457,11 +474,17 @@ len	include/storage.h	/^    size_t  len;$/;"	m	struct:BSA_buf
 link_remap	include/rpc.pb-c.h	/^  protobuf_c_boolean link_remap;$/;"	m	struct:_CriuOpts
 log_file	include/rpc.pb-c.h	/^  char *log_file;$/;"	m	struct:_CriuOpts
 log_level	include/rpc.pb-c.h	/^  int32_t log_level;$/;"	m	struct:_CriuOpts
+main	uni_test/macro_test.c	/^int main(){$/;"	f
+main	uni_test/pipe_test.c	/^int main(){$/;"	f
+main	uni_test/seccomp_errno.c	/^int main(){$/;"	f
+main	uni_test/shm_test.c	/^int main(){$/;"	f
 major	include/rpc.pb-c.h	/^  int32_t major;$/;"	m	struct:_CriuVersion
 manage_cgroups	include/rpc.pb-c.h	/^  protobuf_c_boolean manage_cgroups;$/;"	m	struct:_CriuOpts
 manage_cgroups_mode	include/rpc.pb-c.h	/^  CriuCgMode manage_cgroups_mode;$/;"	m	struct:_CriuOpts
+master_pid	include/config.h	/^    int master_pid;$/;"	m	struct:BSA_info
 mem_track	include/rpc.pb-c.h	/^  protobuf_c_boolean mem_track;$/;"	m	struct:_CriuFeatures
 minor	include/rpc.pb-c.h	/^  int32_t minor;$/;"	m	struct:_CriuVersion
+n_buf	include/storage.h	/^    ssize_t n_buf;$/;"	m	struct:BSA_buf_pool
 n_cg_root	include/rpc.pb-c.h	/^  size_t n_cg_root;$/;"	m	struct:_CriuOpts
 n_cgroup_dump_controller	include/rpc.pb-c.h	/^  size_t n_cgroup_dump_controller;$/;"	m	struct:_CriuOpts
 n_enable_fs	include/rpc.pb-c.h	/^  size_t n_enable_fs;$/;"	m	struct:_CriuOpts
@@ -496,6 +519,8 @@ port	include/rpc.pb-c.h	/^  int32_t port;$/;"	m	struct:_CriuPageServerInfo
 possibility_denominator	include/config.h	/^    int possibility_denominator;$/;"	m	struct:BSA_info
 ps	include/rpc.pb-c.h	/^  CriuPageServerInfo *ps;$/;"	m	struct:_CriuOpts
 ps	include/rpc.pb-c.h	/^  CriuPageServerInfo *ps;$/;"	m	struct:_CriuResp
+recvfrom	hook.c	/^ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *src_addr, socklen_t *addrlen){$/;"	f
+recvmsg	hook.c	/^ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags){$/;"	f
 restore	include/rpc.pb-c.h	/^  CriuRestoreResp *restore;$/;"	m	struct:_CriuResp
 restored	include/rpc.pb-c.h	/^  protobuf_c_boolean restored;$/;"	m	struct:_CriuDumpResp
 root	include/rpc.pb-c.h	/^  char *root;$/;"	m	struct:_CriuOpts
@@ -507,7 +532,6 @@ sk_list	include/config.h	/^    struct FD_list* sk_list;$/;"	m	struct:BSA_info	ty
 skip_mnt	include/rpc.pb-c.h	/^  char **skip_mnt;$/;"	m	struct:_CriuOpts
 st_mode	include/config.h	/^    mode_t  st_mode;$/;"	m	struct:FD_node
 start_time	include/config.h	/^    time_t start_time;$/;"	m	struct:BSA_info
-status	afl.c	/^int status = 0;$/;"	v
 status	include/rpc.pb-c.h	/^  int32_t status;$/;"	m	struct:_CriuResp
 status_fd	include/rpc.pb-c.h	/^  int32_t status_fd;$/;"	m	struct:_CriuOpts
 sublevel	include/rpc.pb-c.h	/^  int32_t sublevel;$/;"	m	struct:_CriuVersion
@@ -517,9 +541,14 @@ tcp_established	include/rpc.pb-c.h	/^  protobuf_c_boolean tcp_established;$/;"	m
 tcp_skip_in_flight	include/rpc.pb-c.h	/^  protobuf_c_boolean tcp_skip_in_flight;$/;"	m	struct:_CriuOpts
 timeout	include/rpc.pb-c.h	/^  uint32_t timeout;$/;"	m	struct:_CriuOpts
 track_mem	include/rpc.pb-c.h	/^  protobuf_c_boolean track_mem;$/;"	m	struct:_CriuOpts
+tv1	afl.c	/^static struct timeval tv1, tv2, tv3, tv4;$/;"	v	typeref:struct:timeval	file:
+tv2	afl.c	/^static struct timeval tv1, tv2, tv3, tv4;$/;"	v	typeref:struct:	file:
+tv3	afl.c	/^static struct timeval tv1, tv2, tv3, tv4;$/;"	v	typeref:struct:	file:
+tv4	afl.c	/^static struct timeval tv1, tv2, tv3, tv4;$/;"	v	typeref:struct:	file:
 type	include/rpc.pb-c.h	/^  CriuReqType type;$/;"	m	struct:_CriuReq
 type	include/rpc.pb-c.h	/^  CriuReqType type;$/;"	m	struct:_CriuResp
 u32	include/config.h	/^typedef uint32_t    u32;$/;"	t
+u64	include/config.h	/^typedef uint64_t    u64;$/;"	t
 u8	include/config.h	/^typedef uint8_t     u8;$/;"	t
 unix_sk__descriptor	temp_src/rpc.pb-c.c	/^const ProtobufCMessageDescriptor unix_sk__descriptor =$/;"	v
 unix_sk__field_descriptors	temp_src/rpc.pb-c.c	/^static const ProtobufCFieldDescriptor unix_sk__field_descriptors[1] =$/;"	v	file:
@@ -537,3 +566,4 @@ version	include/rpc.pb-c.h	/^  CriuVersion *version;$/;"	m	struct:_CriuResp
 veths	include/rpc.pb-c.h	/^  CriuVethPair **veths;$/;"	m	struct:_CriuOpts
 weak_sysctls	include/rpc.pb-c.h	/^  protobuf_c_boolean weak_sysctls;$/;"	m	struct:_CriuOpts
 work_dir_fd	include/rpc.pb-c.h	/^  int32_t work_dir_fd;$/;"	m	struct:_CriuOpts
+x	uni_test/macro_test.c	5;"	d	file:
