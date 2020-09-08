@@ -48,7 +48,7 @@ struct BSA_info bsa_info = {
     .afl_input_fd = -1,
     .afl_input_fp = NULL,
     .possibility_denominator = 100,
-#ifdef BSADEBUG
+#ifdef _IV_DEBUG
     .debug_level = 1,
 #else
     .debug_level = 0,
@@ -57,21 +57,18 @@ struct BSA_info bsa_info = {
     .file_list = NULL
 };
 
+static int BSA_req_fd = -1;
 
 void* BSA_request_handler(void* arg){
-    char req_sk[1024];
-    int req = 0, req_fd, comm_fd;
+    int req = 0, comm_fd;
     struct sockaddr_un client_addr;
     socklen_t socklen = sizeof(client_addr);
 
-    sprintf(req_sk, "/tmp/BSA_req_%d.sock", getpid());
-    //BSA_log("Request_handler_init %s\n" ,req_sk);
-    req_fd = BSA_bind_socket(req_sk);
     memset(&client_addr, 0, sizeof(client_addr));
 
     while(1){
                 
-        if( (comm_fd = accept(req_fd, (struct sockaddr_un*)&client_addr, &socklen)) == -1){
+        if( (comm_fd = accept(BSA_req_fd, (struct sockaddr_un*)&client_addr, &socklen)) == -1){
             BSA_log("Accept incoming connection failed!\n");
             _exit(1);
         }
@@ -101,10 +98,19 @@ __attribute__((constructor))
 static void BSA_initial(){
     //srand(time(NULL));
     //bsa_info.master_pid = getpid();
+    int req_fd;
+    char req_sk[1024];
     if (BSA_state == BSARun){
         BSA_init_buf_pool();
-        pthread_create(&BSA_request_thread, NULL, BSA_request_handler, NULL);
+
+        sprintf(req_sk, "/tmp/BSA_req_%d.sock", getpid());
+        req_fd = BSA_bind_socket(req_sk);
+        if (req_fd == -1)
+            return;
         
+        BSA_req_fd = req_fd;
+        
+        pthread_create(&BSA_request_thread, NULL, BSA_request_handler, NULL);
         if (BSA_entry_value_shmid)
             shmdt(BSA_entry_value_map);
 
@@ -159,8 +165,8 @@ void BSA_checkpoint(int id, int is_entry){
                 /* setup dump dir */   
                 bsa_info.pid = getpid();
                 // close all opening socket, and record it. 
-                BSA_close_sockets();
-                BSA_fuzz_forkserver_prep();
+                BSA_sockets_handler();
+                BSA_forkserver_prep();
                 
                 /* Dump previous input */
                 BSA_conn_IA(_afl_prev_loc); 

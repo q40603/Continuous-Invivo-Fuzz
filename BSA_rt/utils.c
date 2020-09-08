@@ -46,7 +46,7 @@ void copy_shm_pages(){
 
 
 
-void BSA_close_sockets(){
+void BSA_sockets_handler(){
 	struct dirent* direntp;
     struct stat st;
     DIR* dirp;
@@ -90,7 +90,8 @@ void BSA_close_sockets(){
             BSA_update_fd_list(&bsa_info.file_list, fd, st.st_mode);
             BSA_log(" is normal!\n");
         }else {
-            BSA_update_fd_list(&bsa_info.file_list, fd, st.st_mode);
+            //BSA_update_fd_list(&bsa_info.file_list, fd, st.st_mode);
+            close(fd);
             BSA_log(" reopen extract fd\n");
         }
     }
@@ -147,11 +148,11 @@ int BSA_bind_socket(const char* name){
     sprintf(serv_addr.sun_path, "%s", name);
 
     if(bind(fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1){
-        BSA_err("%s Failed to bind socket\n", name);
+        return -1;
     }
 
     if(listen(fd, 1) == -1){
-        BSA_err("Failed to listen socket\n");
+        return -1;
     }
     return fd;
 }
@@ -212,7 +213,7 @@ void BSA_conn_IA(int id){
 /*
  * Setup AFL channels and some system resources 
  */
-void BSA_fuzz_forkserver_prep(){
+void BSA_forkserver_prep(){
     
     struct rlimit r;
     char file_path[256];

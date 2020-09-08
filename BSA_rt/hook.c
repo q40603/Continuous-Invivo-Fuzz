@@ -24,7 +24,7 @@ ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len){
     
     fstat(fd, &st);
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
-        //BSA_log("Tid: %ld\n", syscall(__NR_gettid))
+        BSA_log("Tid: %ld\n", syscall(__NR_gettid))
         dest = BSA_create_buf(fd, ret);
         if(dest != NULL){
             memcpy(dest->data, buf, ret);
@@ -40,7 +40,7 @@ ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){
     
     ret = recv(sockfd, buf, len, flags);
     if (BSA_state == BSARun && ret > 0){
-        //BSA_log("Tid: %ld\n", syscall(__NR_gettid))
+        BSA_log("Tid: %ld\n", syscall(__NR_gettid))
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
             memcpy(dest->data, buf, ret);
@@ -49,7 +49,7 @@ ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){
     return ret;
 }
 
-ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *src_addr, socklen_t *addrlen){
+ssize_t BSA_hook_recvfrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *src_addr, socklen_t *addrlen){
     ssize_t ret;
     struct BSA_buf* dest;
 
@@ -64,7 +64,7 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *
     return ret;
 }
 
-ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags){
+ssize_t BSA_hook_recvmsg(int sockfd, struct msghdr *msg, int flags){
     ssize_t ret, cnt;
     struct BSA_buf* dest;
     int i = 0;

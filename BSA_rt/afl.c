@@ -190,15 +190,15 @@ void _afl_maybe_log(int id){
     if (_afl_area_ptr){
 _afl_store:
        
-        /*
+        
         // edge testing
         _afl_area_ptr[edge ^ id]++;
         edge = id >> 1;
-        */
+        
 
-        _afl_area_ptr[_afl_prev_loc]++;
+        //_afl_area_ptr[_afl_prev_loc]++;
         if ( BSA_blocked_map[_afl_prev_loc] ){
-            //PrintTime(tv2);
+            PrintTime(tv3);
             exit(0);
         }
         return;
@@ -217,22 +217,23 @@ _afl_store:
                     }
 
                     //PrintTime(tv3);
+                    gettimeofday(&tv1,NULL);
                     pid = fork();
                     
-                    gettimeofday(&tv1,NULL);
                     if (pid < 0){
                         BSA_err("Fork fuzzing target failed\n");
                     }
                     else if (!pid){
                         BSA_state = BSAFuzz;
                         _BSA_afl_initialize_fuzz_target();
+                        PrintTime(tv2);
                         goto _afl_store;
                     }
                     else{
                         write(STS_CHANNEL_FD, &pid, 4);
                         waitpid(pid,&status,0);
                         
-                        //PrintTime(tv4);
+                        PrintTime(tv4);
 
                         if (status != 0){
                             BSA_log("Failed status 0x%x\n", status);

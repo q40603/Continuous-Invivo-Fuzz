@@ -142,6 +142,10 @@ bool AFLCoverage::runOnModule(Module &M) {
   string write_function = string("write");
   string scanf_function = string("__isoc99_scanf");
   string recv_function = string("recv");
+  string recvmsg_function = string("recvmsg");
+  string send_function = string("send");
+  string sendto_function = string("sendto");
+  string sendmsg_function = string("sendmsg");
   string writev_function = string("writev");
 
   GlobalVariable *BSA_state; 
@@ -168,9 +172,12 @@ bool AFLCoverage::runOnModule(Module &M) {
         std::string func_name = F.getName().str();
         if (func_name == read_function ) F.setName("BSA_hook_read"); 
         else if(func_name == write_function) F.setName("BSA_hook_write"); 
-        //else if(func_name == scanf_function) F.setName("BSA_hook_scanf");
-        else if(func_name == recv_function)  F.setName("BSA_hook_recv");
         else if(func_name == writev_function) F.setName("BSA_hook_writev");
+        else if(func_name == recvmsg_function) F.setName("BSA_hook_recvmsg");
+        else if(func_name == recv_function)  F.setName("BSA_hook_recv");
+        else if(func_name == send_function)  F.setName("BSA_hook_send");
+        else if(func_name == sendto_function)  F.setName("BSA_hook_sendto");
+        else if(func_name == sendmsg_function)  F.setName("BSA_hook_sendmsg");
         //else fprintf(stderr, "Bypass %s\n", F.getName().str().c_str());
     }
     for (auto &BB : F) {

@@ -1,2 +1,6 @@
 evaluation/httpd-2.4.25/install/logs/error_log
 evaluation/nginx-1.4.0/logs/access.log
+BSA_rt/core
+evaluation/httpd-2.4.25/install/logs/error_log
+evaluation/nginx-1.4.0/logs/access.log
+evaluation/redis-5.0-rc1/core

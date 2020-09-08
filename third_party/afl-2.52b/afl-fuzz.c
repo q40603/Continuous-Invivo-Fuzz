@@ -3382,7 +3382,7 @@ keep_as_crash:
          cases. */
 
       total_crashes++;
-
+      exit(0);
       if (unique_crashes >= KEEP_UNIQUE_CRASH) return keeping;
 
       if (!dumb_mode) {

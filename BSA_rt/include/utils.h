@@ -7,12 +7,12 @@
 void copy_shm_pages();
 int BSA_bind_socket(const char* name);
 
-void BSA_close_sockets();
+void BSA_sockets_handler();
 void BSA_conn_IA(int);
 
 void BSA_accept_channel(int* channel,const char* desc);
 void BSA_afl_handshake();
-void BSA_fuzz_forkserver_prep();
+void BSA_forkserver_prep();
 void BSA_update_fd_list(struct FD_list**, int fd, mode_t st);
 
 void BSA_dup_target_fd();
