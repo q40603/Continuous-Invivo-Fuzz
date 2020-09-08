@@ -1,0 +1,67 @@
+===== Information about the build process: =====
+Build was run at 2020-09-08 10:23:32 on host '617a67ca89c7'
+
+Build was done on  Linux-4.15.0-111-generic using x86_64
+Build was done using cmake 3.5.1 
+
+===== Compiler flags used (from the 'sql/' subdirectory): =====
+# compile C with /usr/bin/clang
+# compile CXX with /usr/bin/clang++
+C_FLAGS = /root/BSA_test/third_party/afl-2.52b/afl-BSA-llvm-rt.o -Xclang -load -Xclang /root/BSA_test/third_party/afl-2.52b/afl-BSA-llvm-pass.so -mllvm -config=/root/eval/mysql-server-mysql-5.6.35/config -mllvm -level=2 -pthread  -Wall -Wextra -Wformat-security -Wwrite-strings -Wdeclaration-after-statement  
+C_DEFINES = -DDBUG_OFF -DHAVE_CONFIG_H -DHAVE_EVENT_SCHEDULER -DHAVE_OPENSSL -DMYSQL_SERVER
+C_INCLUDES = -I/root/eval/mysql-server-mysql-5.6.35/bld2/include -I/root/eval/mysql-server-mysql-5.6.35/include -I/root/eval/mysql-server-mysql-5.6.35/sql -I/root/eval/mysql-server-mysql-5.6.35/regex -I/root/eval/mysql-server-mysql-5.6.35/zlib -I/usr/local/include -I/root/eval/mysql-server-mysql-5.6.35/bld2/sql 
+CXX_FLAGS = /root/BSA_test/third_party/afl-2.52b/afl-BSA-llvm-rt.o -Xclang -load -Xclang /root/BSA_test/third_party/afl-2.52b/afl-BSA-llvm-pass.so -mllvm -config=/root/eval/mysql-server-mysql-5.6.35/config -mllvm -level=2 -pthread  -Wall -Wextra -Wformat-security -Woverloaded-virtual -Wno-unused-parameter -Wno-null-conversion -Wno-unused-private-field  
+CXX_DEFINES = -DDBUG_OFF -DHAVE_CONFIG_H -DHAVE_EVENT_SCHEDULER -DHAVE_OPENSSL -DMYSQL_SERVER
+CXX_INCLUDES = -I/root/eval/mysql-server-mysql-5.6.35/bld2/include -I/root/eval/mysql-server-mysql-5.6.35/include -I/root/eval/mysql-server-mysql-5.6.35/sql -I/root/eval/mysql-server-mysql-5.6.35/regex -I/root/eval/mysql-server-mysql-5.6.35/zlib -I/usr/local/include -I/root/eval/mysql-server-mysql-5.6.35/bld2/sql 
+
+Pointer size: 8
+
+===== Feature flags used: =====
+-- Cache values
+CMAKE_BUILD_TYPE:STRING=
+CMAKE_INSTALL_PREFIX:PATH=/root/eval/mysql-server-mysql-5.6.35/bld2/mysql
+COMMUNITY_BUILD:BOOL=ON
+CRYPTO_LIBRARY:FILEPATH=/usr/local/lib/libcrypto.so
+ENABLED_PROFILING:BOOL=ON
+ENABLE_DEBUG_SYNC:BOOL=ON
+ENABLE_DOWNLOADS:BOOL=OFF
+ENABLE_GCOV:BOOL=OFF
+ENABLE_GPROF:BOOL=OFF
+ENABLE_MEMCACHED_SASL:BOOL=OFF
+ENABLE_MEMCACHED_SASL_PWDB:BOOL=OFF
+FEATURE_SET:STRING=community
+INSTALL_LAYOUT:STRING=STANDALONE
+MYSQL_DATADIR:PATH=/root/eval/mysql-server-mysql-5.6.35/bld2/data
+MYSQL_MAINTAINER_MODE:BOOL=OFF
+OPENSSL_INCLUDE_DIR:PATH=/usr/local/include
+OPENSSL_LIBRARY:FILEPATH=/usr/local/lib/libssl.so
+OPENSSL_ROOT_DIR:PATH=/usr/local
+OPTIMIZER_TRACE:BOOL=ON
+TMPDIR:PATH=P_tmpdir
+WITH_ARCHIVE_STORAGE_ENGINE:BOOL=ON
+WITH_ASAN:BOOL=OFF
+WITH_BLACKHOLE_STORAGE_ENGINE:BOOL=ON
+WITH_DEBUG:BOOL=0
+WITH_DEFAULT_COMPILER_OPTIONS:BOOL=ON
+WITH_DEFAULT_FEATURE_SET:BOOL=ON
+WITH_EDITLINE:STRING=bundled
+WITH_EMBEDDED_SERVER:BOOL=ON
+WITH_EMBEDDED_SHARED_LIBRARY:BOOL=OFF
+WITH_EXAMPLE_STORAGE_ENGINE:BOOL=OFF
+WITH_EXTRA_CHARSETS:STRING=all
+WITH_FEDERATED_STORAGE_ENGINE:BOOL=ON
+WITH_INNOBASE_STORAGE_ENGINE:BOOL=ON
+WITH_INNODB_MEMCACHED:BOOL=OFF
+WITH_LIBEVENT:STRING=bundled
+WITH_LIBWRAP:BOOL=OFF
+WITH_NUMA:BOOL=ON
+WITH_PARTITION_STORAGE_ENGINE:BOOL=ON
+WITH_PERFSCHEMA_STORAGE_ENGINE:BOOL=ON
+WITH_PIC:BOOL=OFF
+WITH_SSL:STRING=yes
+WITH_SYMVER16:BOOL=OFF
+WITH_UNIT_TESTS:BOOL=ON
+WITH_VALGRIND:BOOL=OFF
+WITH_ZLIB:STRING=bundled
+
+===== EOF =====
