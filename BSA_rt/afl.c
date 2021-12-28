@@ -94,6 +94,7 @@ void _BSA_afl_initialize_forkserver(int shm_id){
     int pip[2];
     int pip2[2];
     
+    
     if (( _afl_area_ptr = shmat(shm_id, NULL, 0) ) == -1){
         perror("shmat failed");
         exit(0);
@@ -122,6 +123,7 @@ void _BSA_afl_initialize_forkserver(int shm_id){
     }
 
     /* false positive/negative may happend */
+    install_seccomp();
     signal(SIGCHLD, SIG_DFL);
 }
 
@@ -198,16 +200,20 @@ _afl_store:
 
         //_afl_area_ptr[_afl_prev_loc]++;
         if ( BSA_blocked_map[_afl_prev_loc] ){
-            PrintTime(tv3);
+            //PrintTime(tv3);
             exit(0);
         }
         return;
     }
+    // else{
+    //     //BSA_log("_afl_area_ptr == NULL\n");
+    // }
     
     if ( !_afl_setup_failure ){
         shm_id = bsa_info.afl_shm_id;
         if( shm_id != -1 ){
 
+            // BSA_log("_BSA_afl_initialize_forkserver\n");
             _BSA_afl_initialize_forkserver(shm_id);
 
             if (write(STS_CHANNEL_FD, &status, 4) == 4){
@@ -225,15 +231,16 @@ _afl_store:
                     }
                     else if (!pid){
                         BSA_state = BSAFuzz;
+                        // BSA_log("_BSA_afl_initialize_fuzz_target\n");
                         _BSA_afl_initialize_fuzz_target();
-                        PrintTime(tv2);
+                        //PrintTime(tv2);
                         goto _afl_store;
                     }
                     else{
                         write(STS_CHANNEL_FD, &pid, 4);
                         waitpid(pid,&status,0);
                         
-                        PrintTime(tv4);
+                        //PrintTime(tv4);
 
                         if (status != 0){
                             BSA_log("Failed status 0x%x\n", status);

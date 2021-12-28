@@ -1,25 +1,18 @@
 /*
    american fuzzy lop - LLVM-mode instrumentation pass
    ---------------------------------------------------
-
    Written by Laszlo Szekeres <lszekeres@google.com> and
               Michal Zalewski <lcamtuf@google.com>
-
    LLVM integration design comes from Laszlo Szekeres. C bits copied-and-pasted
    from afl-as.c are Michal's fault.
-
    Copyright 2015, 2016 Google Inc. All rights reserved.
-
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at:
-
      http://www.apache.org/licenses/LICENSE-2.0
-
    This library is plugged into LLVM when invoking clang through afl-clang-fast.
    It tells the compiler to add code roughly equivalent to the bits discussed
    in ../afl-as.h.
-
  */
 
 #define AFL_LLVM_PASS
@@ -32,7 +25,7 @@
 #include <unistd.h>
 #include <map>
 #include <fstream>
-
+#include<iostream>
 #include "llvm/Pass.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/IR/IRBuilder.h"
@@ -67,7 +60,7 @@ namespace {
 
 char AFLCoverage::ID = 0;
 int is_config = 0;
-
+// static std::string map_file_path="/root/pure-ftpd/entryId_to_funcName_table";
 using namespace std;
 
 map<string, int> entry_map;
@@ -80,18 +73,34 @@ llvm::cl::opt<std::string> config_path("config", llvm::cl::desc("Specify the con
  * 2: set entry at specific function
  * */
 llvm::cl::opt<std::string> level("level", llvm::cl::desc("Specify the level of entry"), llvm::cl::value_desc("level") );    
-
+//add eval mode feature
+llvm::cl::opt<std::string> mode("mode", llvm::cl::desc("Specify the mode of program"),llvm::cl::value_desc("mode"));
+//
 bool AFLCoverage::runOnModule(Module &M) {
-
+    std::ofstream fp;
   LLVMContext &C = M.getContext();
 
   // IntegerType *Int8Ty  = IntegerType::getInt8Ty(C);
   // IntegerType *Int32Ty = IntegerType::getInt32Ty(C);
-
-  int entry_level = 0;
+//int mode_v=0;
+  // int entry_level = 0;
+  int entry_level = 1;
   if (level != "")
     entry_level = std::stoi(level);
   
+
+  //add eval mode
+  mode="eval";
+  if(mode!=""){
+      //mode_v=std::stoi(mode);
+    fp.open(mode.c_str(),ios::out|ios::app);
+    std::cout<<"open"<<mode<<std::endl;
+    if(!fp.is_open()){
+        FATAL("can not open %s\n",mode.c_str());
+        exit(-1);
+    }
+  }
+
   /* Show a banner */
   char be_quiet = 0;
 
@@ -118,6 +127,7 @@ bool AFLCoverage::runOnModule(Module &M) {
      __afl_prev_loc is thread-local. */
   
   /* Config file supply */
+  // config_path = "/root/eval/ntp-4.2.8p8/entry.conf";
   if(config_path != ""){
     fstream config_istream(config_path.c_str(), ios::in);
     while(config_istream >> tmp){
@@ -143,11 +153,22 @@ bool AFLCoverage::runOnModule(Module &M) {
   string scanf_function = string("__isoc99_scanf");
   string recv_function = string("recv");
   string recvmsg_function = string("recvmsg");
+  string recvfrom_function = string("recvfrom");
   string send_function = string("send");
   string sendto_function = string("sendto");
   string sendmsg_function = string("sendmsg");
   string writev_function = string("writev");
 
+  //add eval mode feature to add new global var record the map from entry id to function name
+  /*if(mode!=""){
+      if(mode=="eval"){
+        GlobalVariable *BSA_eid_fname_map;
+        Type* char_pt=(llvm::Type*)PointerType::get(IntegerType::get(C,8),0);
+        ArrayType* array_t=ArrayType::get(char_pt,MAP_SIZE);
+        BSA_eid_fname_map=new GlobalVariable(M,(llvm::Type*)array_t,false,GlobalValue::ExternalLinkage,0,"BSA_eid2fname");
+      }
+  }*/
+  //
   GlobalVariable *BSA_state; 
   GlobalVariable *BSA_fuzz_req; 
 
@@ -165,7 +186,11 @@ bool AFLCoverage::runOnModule(Module &M) {
                     Type::getVoidTy(M.getContext()), 
                     Type::getInt32Ty(M.getContext()),NULL);
 
+  //global array
+  //std::vector<llvm::Constant*> eid2fname_map(MAP_SIZE);
+  //
   for (auto &F : M){
+      //std::string func_name=F.getName().str();
     int is_entry = 1;
     if(F.isIntrinsic()) continue;
     else if(F.isDeclaration()){
@@ -174,11 +199,16 @@ bool AFLCoverage::runOnModule(Module &M) {
         else if(func_name == write_function) F.setName("BSA_hook_write"); 
         else if(func_name == writev_function) F.setName("BSA_hook_writev");
         else if(func_name == recvmsg_function) F.setName("BSA_hook_recvmsg");
+        else if(func_name == recvfrom_function) F.setName("BSA_hook_recvfrom");
         else if(func_name == recv_function)  F.setName("BSA_hook_recv");
         else if(func_name == send_function)  F.setName("BSA_hook_send");
         else if(func_name == sendto_function)  F.setName("BSA_hook_sendto");
         else if(func_name == sendmsg_function)  F.setName("BSA_hook_sendmsg");
         //else fprintf(stderr, "Bypass %s\n", F.getName().str().c_str());
+
+        //eval mode
+        
+        //
     }
     for (auto &BB : F) {
       
@@ -190,7 +220,26 @@ bool AFLCoverage::runOnModule(Module &M) {
       /* Make up cur_loc */
 
       unsigned int cur_loc = AFL_R(MAP_SIZE);
-      
+
+      //eval mode
+        //std::cout<<"instrument "<<std::hex<<cur_loc<<" "<<F.getName().str()<<std::endl;
+        //fp<<std::hex<<cur_loc<<" "<<F.getName().str()<<std::endl;
+      //if(is_entry==1){
+          fp<<cur_loc<<" ";
+          fp<<M.getSourceFileName()<<"      "<<F.getName().str()<<"\n";
+          llvm::errs()<<cur_loc<<" "<<M.getSourceFileName()<<"      "<<F.getName().str()<<"\n";
+      //}
+            /*//construct func_name array
+            std::string func_name=F.getName().str();
+            std::vector<llvm::Constant *> f_name(func_name.length());
+            auto char_t=llvm::IntegerType::get(M.getContext(),8);
+            for(unsigned int i=0;i<func_name.length();i++){
+                f_name[i]=llvm::ConstantInt::get(char_t,func_name[i]);
+            }
+            f_name.push_back(llvm::ConstantInt::get(char_t,0));
+            auto string_t=llvm::ArrayType::get(char_t,f_name.size());
+            eid2fname_map[cur_loc]=llvm::ConstantArray::get(string_t,f_name);*/
+      //}
    	  Value *args[2];
       args[0] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), cur_loc);
 
@@ -198,7 +247,6 @@ bool AFLCoverage::runOnModule(Module &M) {
 	  BasicBlock* new_BB = BasicBlock::Create(C, "new_entry", &F, &BB);
       BasicBlock* log_BB = BasicBlock::Create(C, "log_BB", &F, &BB);
       BasicBlock* temp_BB = BasicBlock::Create(C, "temp_BB", &F, &BB);
-
       IRBuilder<> log_builder(log_BB); 
       IRBuilder<> new_entry_builder(new_BB);
       LoadInst *load_state = new_entry_builder.CreateLoad(BSA_state);
@@ -237,6 +285,10 @@ bool AFLCoverage::runOnModule(Module &M) {
       else if (entry_level == 0){
       		is_entry = 1;
       }
+      // if(F.getName().str() == "read_network_packet"){
+      //   llvm::errs()<<cur_loc<<" "<<M.getSourceFileName()<<"      "<<F.getName().str()<<"\n";
+      //   is_entry = 1;
+      // }
       args[1] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), is_entry);
       	
       IRB.CreateCall(callee_checkpoint,args);
@@ -247,7 +299,16 @@ bool AFLCoverage::runOnModule(Module &M) {
     }
 
   }
+        //  auto char_t=llvm::IntegerType::get(M.getContext(),8);
+        //auto string_t=llvm::ArrayType::get(char_t,f_name.size());
 
+  /*  Type* char_pt=(llvm::Type*)PointerType::get(IntegerType::get(C,8),0);
+  auto eid2fname_map_t=llvm::ArrayType::get(char_pt,MAP_SIZE);
+  if(mode=="eval"){
+        GlobalVariable *BSA_eid_fname_map;
+        BSA_eid_fname_map=new GlobalVariable(M,(llvm::Type*)eid2fname_map_t,true,GlobalValue::ExternalLinkage,llvm::ConstantArray::get(eid2fname_map_t,eid2fname_map),"BSA_eid2fname");
+  }*/
+    
   /* Say something nice. */
 
   if (!be_quiet) {
@@ -259,7 +320,9 @@ bool AFLCoverage::runOnModule(Module &M) {
               "ASAN/MSAN" : "non-hardened"), inst_ratio);
 
   }
-
+  if(mode!=""){
+      fp.close();
+  }
   return true;
 
 }

@@ -24,7 +24,7 @@ ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len){
     
     fstat(fd, &st);
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
-        BSA_log("Tid: %ld\n", syscall(__NR_gettid))
+        //BSA_log("BSA_hook_read Tid: %ld\n", syscall(__NR_gettid));
         dest = BSA_create_buf(fd, ret);
         if(dest != NULL){
             memcpy(dest->data, buf, ret);
@@ -40,9 +40,10 @@ ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){
     
     ret = recv(sockfd, buf, len, flags);
     if (BSA_state == BSARun && ret > 0){
-        BSA_log("Tid: %ld\n", syscall(__NR_gettid))
+        //BSA_log("BSA_hook_recv Tid: %ld %d\n", syscall(__NR_gettid), ret);
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
+            //BSA_log("%s\n", dest->data);
             memcpy(dest->data, buf, ret);
         }
     }
@@ -55,11 +56,16 @@ ssize_t BSA_hook_recvfrom(int sockfd, void *buf, size_t len, int flags, struct s
 
     ret = recvfrom(sockfd, buf, len, flags, src_addr, addrlen);
     if (BSA_state == BSARun && ret > 0){
-        //BSA_log("Tid: %ld\n", syscall(__NR_gettid))
+        //BSA_log("BSA_hook_recvfrom Tid: %ld\n", syscall(__NR_gettid));
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
             memcpy(dest->data, buf, ret);
+            // BSA_log("%s\n", dest->data);
+            // int out_fd = open("./tmp1", O_CREAT|O_RDWR, 0777); 
+            // write(out_fd, dest->data, dest->len);
+            // close(out_fd);
         }
+        
     }
     return ret;
 }
@@ -72,7 +78,7 @@ ssize_t BSA_hook_recvmsg(int sockfd, struct msghdr *msg, int flags){
     cnt = ret = recvmsg(sockfd, msg, flags);
     
     if (BSA_state == BSARun && ret > 0){
-        //BSA_log("Tid: %ld\n", syscall(__NR_gettid))
+        //BSA_log("BSA_hook_recvfrom Tid: %ld\n", syscall(__NR_gettid))
         while(cnt > 0 && i < msg->msg_iovlen){
             ssize_t len = MIN(cnt, msg->msg_iov[i].iov_len);
             dest = BSA_create_buf(sockfd, len);

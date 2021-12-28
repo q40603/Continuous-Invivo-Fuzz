@@ -45,7 +45,7 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
         return NULL;
     }
     
-    BSA_log("return buf\n");
+    //BSA_log("return buf\n");
     buf->len = buf_size;
     
     if (bsa_buf_pool->buf_head == NULL){
@@ -92,10 +92,11 @@ int BSA_dump_buf(){
         BSA_clear_buf(); 
         return 0;
     }
-    else{
-        return -1;
+    // else{
+    //     return -1;
         
-    }
+    // }
+    return 0;
 }
 
 void BSA_clear_buf(){
