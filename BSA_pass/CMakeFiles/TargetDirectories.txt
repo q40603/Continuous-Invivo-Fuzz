@@ -1,3 +1,0 @@
-/root/BSA_test/BSA_pass/CMakeFiles/edit_cache.dir
-/root/BSA_test/BSA_pass/CMakeFiles/BSAPass.dir
-/root/BSA_test/BSA_pass/CMakeFiles/rebuild_cache.dir

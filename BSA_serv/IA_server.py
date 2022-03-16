@@ -45,8 +45,8 @@ def fuzz_handshake(conn):
 
         #else:
         cmd = '$HOME/BSA_test/third_party/afl-2.52b/afl-fuzz -R %d -i %s -o %s -t 200000000+ -p %d -P %d -b %d -s %d -- inter_fuzzing' % (threshold, seed_dir, output_dir, pid, ppid, entry_block, shm_id)
-        print(cmd)
-        #subprocess.call(cmd, shell=True)
+        #print(cmd)
+        subprocess.call(cmd, shell=True)
 
 
     else:
