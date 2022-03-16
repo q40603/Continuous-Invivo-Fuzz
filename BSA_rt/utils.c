@@ -90,7 +90,7 @@ void BSA_sockets_handler(){
             BSA_update_fd_list(&bsa_info.file_list, fd, st.st_mode);
             BSA_log(" is normal!\n");
         }else {
-            //BSA_update_fd_list(&bsa_info.file_list, fd, st.st_mode);
+            BSA_update_fd_list(&bsa_info.file_list, fd, st.st_mode);
             close(fd);
             BSA_log(" reopen extract fd\n");
         }
@@ -162,6 +162,7 @@ int BSA_bind_socket(const char* name){
  * And ask IA to launch AFL-fuzz
  */
 void BSA_conn_IA(int id){
+    BSA_log("BSA_conn_IA\n");
     char* dump_path;
     struct sockaddr_in srv;
     char* buf, *out_dir;
@@ -193,7 +194,13 @@ void BSA_conn_IA(int id){
     buf = calloc(buf_sz ,1);
     
     bsa_info.master_pid = getppid();
-    bsa_info.afl_shm_id = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0600);
+    assert((bsa_info.afl_shm_id = shmget(IPC_PRIVATE, MAP_SIZE, IPC_CREAT|IPC_EXCL|S_IWOTH|S_IROTH|0777)) != -1);
+    // uint8_t* trace_bits;
+    // trace_bits = shmat(bsa_info.afl_shm_id, NULL, 0);
+    // memset(trace_bits, 0, MAP_SIZE);
+
+    // bsa_info.afl_shm_id = shmget(IPC_PRIVATE, MAP_SIZE, IPC_CREAT|IPC_EXCL|0600);
+    BSA_log("bsa_info.afl_shm_id = %d pid = %d, ppid = %d, pointer = %p\n", bsa_info.afl_shm_id, getpid(), getppid());
 
     memcpy(buf+1, &(bsa_info.pid), 4);
     memcpy(buf+5, &(bsa_info.master_pid), 4);

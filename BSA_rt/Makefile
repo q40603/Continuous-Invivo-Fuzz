@@ -3,7 +3,8 @@ SHELL:=/bin/bash
 .PHONY: all
 
 INCLUDE_DIR = ./include
-CFLAGS = -I./include -Wall -g -c -fPIC -pthread -lgcc_s -D_IV_DEBUG
+#CFLAGS = -I./include -Wall -g -c -fPIC -pthread -lgcc_s -D_IV_DEBUG
+CFLAGS = -I./include -Wall -g -c -fPIC -pthread -lgcc_s -D_IV_DEBUG -DSECCOMP_DENY_epoll_wait 
 CSHARED_FLAG = -I./include -fPIC -shared
 OBJ_DIR = ./objs/
 

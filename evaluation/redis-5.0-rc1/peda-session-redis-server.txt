@@ -1,2 +1,0 @@
-break _afl_maybe_log
-

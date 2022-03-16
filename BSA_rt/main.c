@@ -7,7 +7,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <pthread.h>
-
+// #include <uninstd.h>
 #include "utils.h"
 #include "config.h"
 #include "storage.h"
@@ -130,7 +130,7 @@ void BSA_checkpoint(int id, int is_entry){
     int pid, ret;
     char *dump_path;
     int req_bbid, req_tid;
-    
+    // BSA_log("Yep %d\n", id);
     _afl_prev_loc = (_afl_prev_loc>>1) ^ id;
     //_afl_prev_loc = id >> 1;
     

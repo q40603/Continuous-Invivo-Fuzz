@@ -1,6 +1,8 @@
+#include "config.h"
+
 #define SECCOMP_DENY_SYSCALL(syscall) \
-    BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_#syscall, 0, 1), \
-	BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ERRNO | (EWOULDBLOCK &  SECCOMP_RET_DATA)), 
+    BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_##syscall, 0, 1), \
+	BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ERRNO | (0 &  SECCOMP_RET_DATA)), 
 
 
 #ifdef SECCOMP_DENY_read

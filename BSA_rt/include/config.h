@@ -65,6 +65,10 @@ struct BSA_info{
 
 extern struct BSA_info bsa_info;
 
+#define MAP_SIZE_POW2       16
+#define MAP_SIZE            (1 << MAP_SIZE_POW2)
+
+
 #define AFL_BIND_PORT           5198
 
 #define SHM_ENV_VAR             "__AFL_SHM_ID"

@@ -1352,6 +1352,8 @@ static void cull_queue(void) {
 
 EXP_ST void setup_shm(void) {
 
+
+  ACTF("setup_shm\n");
   u8* shm_str;
 
   if (!in_bitmap) memset(virgin_bits, 255, MAP_SIZE);
@@ -1363,7 +1365,7 @@ EXP_ST void setup_shm(void) {
     shm_id = shmget(IPC_PRIVATE, MAP_SIZE, IPC_CREAT | IPC_EXCL | 0600);
 
     if (shm_id < 0) PFATAL("shmget() failed");
-      
+    ACTF("setup_shm failed\n");
     atexit(remove_shm);
   }
 
@@ -1377,12 +1379,19 @@ EXP_ST void setup_shm(void) {
   if (!dumb_mode) setenv(SHM_ENV_VAR, shm_str, 1);
 
   ck_free(shm_str);
-
   trace_bits = shmat(shm_id, NULL, 0);
+  ACTF("Value of trace_bits = %d \n", trace_bits);
   
-  if (!trace_bits) PFATAL("shmat() failed");
+  
+  if (!trace_bits){
+    PFATAL("shmat() failed holy");
+  }
+  else{
+    ACTF("shmat() success");
+  }
 
 }
+
 
 
 /* Load postprocessor, if available. */
@@ -2398,7 +2407,6 @@ static u8 run_target(char** argv, u32 timeout) {
   /* After this memset, trace_bits[] are effectively volatile, so we
      must prevent any earlier operations from venturing into that
      territory. */
-
   memset(trace_bits, 0, MAP_SIZE);
   MEM_BARRIER();
 
@@ -2546,9 +2554,9 @@ static u8 run_target(char** argv, u32 timeout) {
 
   total_execs++;
   
-  if (BSA_forkserver && total_execs == 100000){
-    BSA_report();  
-  }
+  // if (BSA_forkserver && total_execs == 100000){
+  //   BSA_report();  
+  // }
   /* Any subsequent operations on trace_bits must not be moved by the
      compiler below this point. Past this location, trace_bits[] behave
      very normally and do not have to be treated as volatile. */
@@ -2711,14 +2719,15 @@ static u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
 
     write_to_testcase(use_mem, q->len);
 
+    
     fault = run_target(argv, use_tmout);
-
     /* stop_soon is set by the handler for Ctrl+C. When it's pressed,
        we want to bail out quickly. */
     
     if (stop_soon || fault != crash_mode ) goto abort_calibration;
 
     if (!dumb_mode && !stage_cur && !count_bytes(trace_bits)) {
+      ACTF("dump_mode = %d, stage_cur = %d, count_bytes = %d", dumb_mode, stage_cur, count_bytes(trace_bits));
       fault = FAULT_NOINST;
       goto abort_calibration;
     }
@@ -3382,7 +3391,7 @@ keep_as_crash:
          cases. */
 
       total_crashes++;
-      exit(0);
+      // exit(0);
       if (unique_crashes >= KEEP_UNIQUE_CRASH) return keeping;
 
       if (!dumb_mode) {
