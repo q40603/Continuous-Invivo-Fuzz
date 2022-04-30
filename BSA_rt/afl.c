@@ -25,14 +25,16 @@ extern __thread int BSA_state;
 extern struct BSA_info bsa_info;
 extern void BSA_setup_fuzzer_input_fd();
 
-uint8_t* _afl_area_ptr = NULL;
+
+u8  __afl_area_initial[MAP_SIZE];
+uint8_t* _afl_area_ptr = __afl_area_initial;
 uint32_t _afl_prev_loc = 0;
 uint32_t _afl_setup_failure = 0;
 
 uint8_t* BSA_blocked_map = NULL;
 int BSA_blocked_shmid;
 
-static struct timeval tv1, tv2, tv3, tv4;
+static struct timeval tv1;//;, tv2, tv3, tv4;
 static pthread_t input_thread;
 
 void BSA_alarm_handler(int sig){
@@ -95,7 +97,7 @@ void _BSA_afl_initialize_forkserver(int shm_id){
     int pip2[2];
     
     
-    if (( _afl_area_ptr = shmat(shm_id, NULL, 0) ) == -1){
+    if (( _afl_area_ptr = shmat(shm_id, NULL, 0) ) == (void *)-1){
         perror("shmat failed");
         exit(0);
     }
@@ -184,18 +186,34 @@ void _BSA_afl_initialize_fuzz_target(){
 
 }
 
-extern int edge;
+extern int _afl_edge;
+
+int tiny_afl_maybe_log(int id){
+    if(BSA_state != BSAFuzz)
+        return -1;
+    
+    _afl_area_ptr[_afl_edge ^ id]++;
+    _afl_edge = id >> 1;
+
+    return 1;
+}
+
+
 void _afl_maybe_log(int id){
+
+    // if(BSA_state != BSAFuzz)
+    //     return;
+
     int shm_id, pid, status;
     
     // check state value;
     if (_afl_area_ptr){
 _afl_store:
        
-        
-        // edge testing
-        _afl_area_ptr[edge ^ id]++;
-        edge = id >> 1;
+        //_afl_prev_loc = (_afl_prev_loc>>1) ^ id;
+        // _afl_edge testing
+        _afl_area_ptr[_afl_edge ^ id]++;
+        _afl_edge = id >> 1;
         
 
         //_afl_area_ptr[_afl_prev_loc]++;
@@ -213,7 +231,7 @@ _afl_store:
         shm_id = bsa_info.afl_shm_id;
         if( shm_id != -1 ){
 
-            // BSA_log("_BSA_afl_initialize_forkserver\n");
+            
             _BSA_afl_initialize_forkserver(shm_id);
 
             if (write(STS_CHANNEL_FD, &status, 4) == 4){
@@ -230,8 +248,8 @@ _afl_store:
                         BSA_err("Fork fuzzing target failed\n");
                     }
                     else if (!pid){
-                        BSA_state = BSAFuzz;
-                        // BSA_log("_BSA_afl_initialize_fuzz_target\n");
+                        // BSA_state = BSAFuzz;
+                        //BSA_log("_BSA_afl_initialize_fuzz_target\n");
                         _BSA_afl_initialize_fuzz_target();
                         //PrintTime(tv2);
                         goto _afl_store;

@@ -26,6 +26,9 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
         BSA_init_buf_pool();
         BSA_log("init buf\n");
     }
+    if(bsa_buf_pool->n_buf > 50){
+        BSA_clear_buf();
+    }
 
     /* check if it's socket */
     fstat(fd, &fd_stat);

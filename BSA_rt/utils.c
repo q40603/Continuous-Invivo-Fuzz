@@ -161,12 +161,11 @@ int BSA_bind_socket(const char* name){
  * Send pid, fuzz_seed_path, to IA
  * And ask IA to launch AFL-fuzz
  */
-void BSA_conn_IA(int id){
-    BSA_log("BSA_conn_IA\n");
+void BSA_conn_IA(int id, int function_entry_id){
     char* dump_path;
     struct sockaddr_in srv;
     char* buf, *out_dir;
-    int ia_fd, path_len, buf_sz, entry_id = id, threshold = BSA_FUZZ_THRESHOLD ;
+    int ia_fd, path_len, buf_sz, entry_id = id, threshold = BSA_FUZZ_THRESHOLD;
     
     dump_path = BSA_dump_dir; 
 
@@ -189,18 +188,12 @@ void BSA_conn_IA(int id){
     free(out_dir);
 
     path_len = strlen(dump_path);
-    buf_sz = 25 + path_len;
+    buf_sz = 29 + path_len;
     
     buf = calloc(buf_sz ,1);
     
     bsa_info.master_pid = getppid();
-    assert((bsa_info.afl_shm_id = shmget(IPC_PRIVATE, MAP_SIZE, IPC_CREAT|IPC_EXCL|S_IWOTH|S_IROTH|0777)) != -1);
-    // uint8_t* trace_bits;
-    // trace_bits = shmat(bsa_info.afl_shm_id, NULL, 0);
-    // memset(trace_bits, 0, MAP_SIZE);
-
-    // bsa_info.afl_shm_id = shmget(IPC_PRIVATE, MAP_SIZE, IPC_CREAT|IPC_EXCL|0600);
-    BSA_log("bsa_info.afl_shm_id = %d pid = %d, ppid = %d, pointer = %p\n", bsa_info.afl_shm_id, getpid(), getppid());
+    bsa_info.afl_shm_id = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0600);
 
     memcpy(buf+1, &(bsa_info.pid), 4);
     memcpy(buf+5, &(bsa_info.master_pid), 4);
@@ -208,8 +201,11 @@ void BSA_conn_IA(int id){
     memcpy(buf+13, &entry_id, 4);
     memcpy(buf+17, &(bsa_info.afl_shm_id), 4);
     memcpy(buf+21, &threshold, 4);
-    memcpy(buf+25, dump_path, path_len);
+    memcpy(buf+25, &function_entry_id, 4);
+    memcpy(buf+29, dump_path, path_len);
     
+
+    printf("function entry = %d\n", function_entry_id);
     sprintf(bsa_info.afl_dir, "%s_output", dump_path);
 
     write(ia_fd, buf, buf_sz);

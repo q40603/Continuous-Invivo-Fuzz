@@ -16,7 +16,6 @@
  */
 
 #define AFL_LLVM_PASS
-
 #include "../config.h"
 #include "../debug.h"
 
@@ -80,8 +79,8 @@ bool AFLCoverage::runOnModule(Module &M) {
     std::ofstream fp;
   LLVMContext &C = M.getContext();
 
-  // IntegerType *Int8Ty  = IntegerType::getInt8Ty(C);
-  // IntegerType *Int32Ty = IntegerType::getInt32Ty(C);
+  IntegerType *Int8Ty  = IntegerType::getInt8Ty(C);
+  IntegerType *Int32Ty = IntegerType::getInt32Ty(C);
 //int mode_v=0;
   // int entry_level = 0;
   int entry_level = 1;
@@ -158,6 +157,9 @@ bool AFLCoverage::runOnModule(Module &M) {
   string sendto_function = string("sendto");
   string sendmsg_function = string("sendmsg");
   string writev_function = string("writev");
+  string close_function = string("close");
+  string accept_function = string("accept");
+  string accept4_function = string("accept4");
 
   //add eval mode feature to add new global var record the map from entry id to function name
   /*if(mode!=""){
@@ -174,7 +176,13 @@ bool AFLCoverage::runOnModule(Module &M) {
 
   BSA_state = new GlobalVariable(M, (llvm::Type*)IntegerType::getInt32Ty(C), false, GlobalValue::ExternalLinkage, 0, "BSA_state",  nullptr, GlobalValue::GeneralDynamicTLSModel); 
 
+  GlobalVariable *AFLMapPtr =
+    new GlobalVariable(M, PointerType::get(Int8Ty, 0), false,
+                       GlobalValue::ExternalLinkage, 0, "_afl_area_ptr");
+
+
   GlobalVariable *AFLPrevLoc = new GlobalVariable(M, (llvm::Type*)IntegerType::getInt32Ty(C), false, GlobalValue::ExternalLinkage, 0,  "_afl_prev_loc");
+  GlobalVariable *AFLEdge = new GlobalVariable(M, (llvm::Type*)IntegerType::getInt32Ty(C), false, GlobalValue::ExternalLinkage, 0,  "_afl_edge");
 
   BSA_fuzz_req = new GlobalVariable(M, (llvm::Type*)IntegerType::getInt32Ty(C), false, GlobalValue::ExternalLinkage, 0, "BSA_fuzz_req" ); 
   
@@ -182,7 +190,7 @@ bool AFLCoverage::runOnModule(Module &M) {
                     Type::getVoidTy(M.getContext()), 
                     Type::getInt32Ty(M.getContext()),NULL);
   
-  Constant* callee_log = M.getOrInsertFunction("_afl_maybe_log",
+  Constant* callee_log = M.getOrInsertFunction("tiny_afl_maybe_log",
                     Type::getVoidTy(M.getContext()), 
                     Type::getInt32Ty(M.getContext()),NULL);
 
@@ -204,30 +212,83 @@ bool AFLCoverage::runOnModule(Module &M) {
         else if(func_name == send_function)  F.setName("BSA_hook_send");
         else if(func_name == sendto_function)  F.setName("BSA_hook_sendto");
         else if(func_name == sendmsg_function)  F.setName("BSA_hook_sendmsg");
+        else if(func_name == close_function) F.setName("BSA_hook_close");
+        else if(func_name == accept_function) F.setName("BSA_hook_accept");
+        else if(func_name == accept4_function) F.setName("BSA_hook_accept4");
         //else fprintf(stderr, "Bypass %s\n", F.getName().str().c_str());
 
         //eval mode
         
         //
     }
+    bool first = true;
     for (auto &BB : F) {
       
+
       BasicBlock::iterator IP = BB.getFirstInsertionPt();
       IRBuilder<> IRB(&(*IP));
       
       if (AFL_R(100) >= inst_ratio) continue;
 
       /* Make up cur_loc */
-
       unsigned int cur_loc = AFL_R(MAP_SIZE);
+      ConstantInt *CurLoc = ConstantInt::get(Int32Ty, cur_loc);
 
+      if(!first){
+        LoadInst *PrevLoc = IRB.CreateLoad(AFLPrevLoc);
+        PrevLoc->setMetadata(M.getMDKindID("nosanitize"), MDNode::get(C, None));
+
+
+        LoadInst *AFLPrevEdge = IRB.CreateLoad(AFLEdge);
+        AFLPrevEdge->setMetadata(M.getMDKindID("nosanitize"), MDNode::get(C, None));
+
+
+        
+        Value *PrevAFLedgeCasted = IRB.CreateZExt(AFLPrevEdge, IRB.getInt32Ty());
+
+        LoadInst *MapPtr = IRB.CreateLoad(AFLMapPtr);
+        MapPtr->setMetadata(M.getMDKindID("nosanitize"), MDNode::get(C, None));
+
+        Value *MapPtrIdx =
+        IRB.CreateGEP(MapPtr, IRB.CreateXor(PrevAFLedgeCasted, CurLoc));
+
+        LoadInst *Counter = IRB.CreateLoad(MapPtrIdx);
+        Counter->setMetadata(M.getMDKindID("nosanitize"), MDNode::get(C, None));
+        Value *Incr = IRB.CreateAdd(Counter, llvm::ConstantInt::get(Int8Ty, 1));
+        IRB.CreateStore(Incr, MapPtrIdx)
+            ->setMetadata(M.getMDKindID("nosanitize"), MDNode::get(C, None));
+
+        
+        StoreInst *Store =
+            IRB.CreateStore(llvm::ConstantInt::get(Int32Ty, cur_loc >> 1), AFLEdge);
+
+        Value *PrevLocCasted = IRB.CreateZExt(PrevLoc, IRB.getInt32Ty());
+        Value *ShiftedPrevLoc = IRB.CreateLShr(PrevLocCasted, 1);
+        Value *NewPrevLoc = IRB.CreateXor(ShiftedPrevLoc, ConstantInt::get((llvm::Type*)IntegerType::getInt32Ty(C), cur_loc));
+        IRB.CreateStore(NewPrevLoc, AFLPrevLoc);
+
+        // Store->setMetadata(M.getMDKindID("nosanitize"), MDNode::get(C, None));
+        
+
+
+
+        // Value *args_maybe[1];
+        // args_maybe[0] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), cur_loc);
+        // IRB.CreateCall(callee_log,args_maybe);
+
+
+        continue;
+
+      }
+
+
+      
       //eval mode
         //std::cout<<"instrument "<<std::hex<<cur_loc<<" "<<F.getName().str()<<std::endl;
         //fp<<std::hex<<cur_loc<<" "<<F.getName().str()<<std::endl;
       //if(is_entry==1){
-          fp<<cur_loc<<" ";
-          fp<<M.getSourceFileName()<<"      "<<F.getName().str()<<"\n";
-          llvm::errs()<<cur_loc<<" "<<M.getSourceFileName()<<"      "<<F.getName().str()<<"\n";
+
+          
       //}
             /*//construct func_name array
             std::string func_name=F.getName().str();
@@ -241,7 +302,16 @@ bool AFLCoverage::runOnModule(Module &M) {
             eid2fname_map[cur_loc]=llvm::ConstantArray::get(string_t,f_name);*/
       //}
    	  Value *args[2];
+      
       args[0] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), cur_loc);
+      
+
+      // if(!first){
+      //   IRB.CreateCall(callee_log,args_maybe);
+      //   inst_blocks++;
+      //   continue;
+      // }
+
 
     /* //Future improvement 
 	  BasicBlock* new_BB = BasicBlock::Create(C, "new_entry", &F, &BB);
@@ -256,17 +326,6 @@ bool AFLCoverage::runOnModule(Module &M) {
 	  log_builder.CreateCall(callee_log,args);
       log_builder.CreateBr(temp_BB);
      
-      
-      for (auto&I: BB){
-          PHINode *phinode = NULL;
-          if((phinode = dyn_cast<PHINode,Instruction>(&I))){
-                for(auto it=phinode->block_begin();it!=phinode->block_end();it++){
-                    if(*it==ori_predecessor){
-                        *it=new_predecessor;                                                      
-                    }                          
-                }
-          } 
-      }
       // logging     
       LoadInst *PrevLoc = IRB.CreateLoad(AFLPrevLoc);
       Value *PrevLocCasted = IRB.CreateZExt(PrevLoc, IRB.getInt32Ty());
@@ -285,17 +344,31 @@ bool AFLCoverage::runOnModule(Module &M) {
       else if (entry_level == 0){
       		is_entry = 1;
       }
+        // if(F.getName().str() == "socket_bucket_read"){
+        //   is_entry = 1;
+        // }
+        // else{
+        //   is_entry = 0;
+        // }
+        //if(is_entry){
+          fp<<is_entry<<"  "<<cur_loc<<" ";
+          fp<<M.getSourceFileName()<<"      "<<F.getName().str()<<"\n";
+          llvm::errs()<<cur_loc<<" "<<M.getSourceFileName()<<"      "<<F.getName().str()<<"\n";
+        //}
+          
       // if(F.getName().str() == "read_network_packet"){
       //   llvm::errs()<<cur_loc<<" "<<M.getSourceFileName()<<"      "<<F.getName().str()<<"\n";
       //   is_entry = 1;
       // }
       args[1] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), is_entry);
-      	
+      // auto char_t=llvm::IntegerType::get(M.getContext(),8);
+      // auto string_t=llvm::ArrayType::get(char_t,f_name.size());
       IRB.CreateCall(callee_checkpoint,args);
       is_entry = 0;
       
       
       inst_blocks++;
+      first = false;
     }
 
   }

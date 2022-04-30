@@ -139,6 +139,7 @@ static s32 out_fd,                    /* Persistent fd for out_file       */
 
 static s32 BSA_master_pid = 0,        /* PID of target parent             */
            BSA_entryblock_id = 0,     /* ID of fuzz entryblock            */
+           BSA_function_id = 0,
            forksrv_pid = 0,           /* PID of the fork server           */
            child_pid = -1,            /* PID of the fuzzed program        */
            out_dir_fd = -1;           /* FD of the lock file              */
@@ -1352,8 +1353,6 @@ static void cull_queue(void) {
 
 EXP_ST void setup_shm(void) {
 
-
-  ACTF("setup_shm\n");
   u8* shm_str;
 
   if (!in_bitmap) memset(virgin_bits, 255, MAP_SIZE);
@@ -1365,7 +1364,7 @@ EXP_ST void setup_shm(void) {
     shm_id = shmget(IPC_PRIVATE, MAP_SIZE, IPC_CREAT | IPC_EXCL | 0600);
 
     if (shm_id < 0) PFATAL("shmget() failed");
-    ACTF("setup_shm failed\n");
+      
     atexit(remove_shm);
   }
 
@@ -1379,19 +1378,12 @@ EXP_ST void setup_shm(void) {
   if (!dumb_mode) setenv(SHM_ENV_VAR, shm_str, 1);
 
   ck_free(shm_str);
+
   trace_bits = shmat(shm_id, NULL, 0);
-  ACTF("Value of trace_bits = %d \n", trace_bits);
   
-  
-  if (!trace_bits){
-    PFATAL("shmat() failed holy");
-  }
-  else{
-    ACTF("shmat() success");
-  }
+  if (!trace_bits) PFATAL("shmat() failed");
 
 }
-
 
 
 /* Load postprocessor, if available. */
@@ -2295,49 +2287,70 @@ EXP_ST int BSA_connect_sock(char* sock_name){
     return fd;
 } 
 
-EXP_ST void BSA_report(){
-    struct sockaddr_un addr;
-    int addr_len;
-    int sockfd;
+// EXP_ST void BSA_report(){
+//     struct sockaddr_un addr;
+//     int addr_len;
+//     int sockfd;
     
-    sockfd = socket(AF_LOCAL, SOCK_STREAM, 0);
+//     sockfd = socket(AF_LOCAL, SOCK_STREAM, 0);
     
-    memset(&addr, 0, sizeof(struct sockaddr_un)); 
-    addr.sun_family = AF_LOCAL;
-    sprintf(addr.sun_path, "/tmp/BSA_req_%d.sock", BSA_master_pid );
-    addr_len = offsetof(struct sockaddr_un, sun_path) + strlen(addr.sun_path);
-    if(connect(sockfd, (struct sockaddr*)&addr, addr_len) < 0){
-       perror("Can't connect fuzzing target");
-    }
+//     memset(&addr, 0, sizeof(struct sockaddr_un)); 
+//     addr.sun_family = AF_LOCAL;
+//     sprintf(addr.sun_path, "/tmp/BSA_req_%d.sock", BSA_master_pid );
+//     addr_len = offsetof(struct sockaddr_un, sun_path) + strlen(addr.sun_path);
+//     if(connect(sockfd, (struct sockaddr*)&addr, addr_len) < 0){
+//        perror("Can't connect fuzzing target");
+//     }
     
-    int resp[4];
-    resp[0] = 2;
-    resp[1] = getpid();
-    resp[2] = BSA_entryblock_id;
-    resp[3] = queued_discovered;
+//     int resp[4];
+//     resp[0] = 2;
+//     resp[1] = getpid();
+//     resp[2] = BSA_entryblock_id;
+//     resp[3] = 0;//queued_discovered;
     
-    if (write(sockfd, resp, 16) != 16){
-        perror("write failed");
-        exit(1);
-    }
-    ACTF("BSA_report %d\n", queued_paths);
-    close(sockfd);
-    if (resp[3] < BSA_threshold){
-        exit(0);
-    }
-    //kill(getpid(), SIGTERM);
+//     if (write(sockfd, resp, 16) != 16){
+//         perror("write failed");
+//         exit(1);
+//     }
+//     ACTF("BSA_report %d\n", queued_paths);
+//     close(sockfd);
 
-}
+
+//     char report_url[80];
+//     sprintf(report_url, "http://127.0.0.1:5000/report?edge=%d&entry=%d&paths=%d&crashes=%llu", BSA_entryblock_id, BSA_function_id ,queued_paths, unique_crashes);
+
+//     CURL *curl = curl_easy_init();
+//     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+//     curl_easy_setopt(curl,CURLOPT_URL,report_url);
+//     curl_easy_perform(curl);
+//     curl_easy_cleanup(curl);
+
+
+
+//     curl = curl_easy_init();
+//     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+//     curl_easy_setopt(curl,CURLOPT_URL,"http://127.0.0.1:5000/fuzznext");
+//     curl_easy_perform(curl);
+//     curl_easy_cleanup(curl);
+
+
+//     exit(0);
+//     // if (resp[3] < BSA_threshold){
+//     //     exit(0);
+//     // }
+//     //kill(getpid(), SIGTERM);
+
+// }
 
 EXP_ST void init_BSA_forkserver() {
 
   static struct itimerval it;
   int status;
   s32 rlen;
-  int bsa_handshake_fd;
+  // int bsa_handshake_fd;
   char sock_path[256];
-  char buf[1024];
-  char resolved_path[PATH_MAX];
+  // char buf[1024];
+  // char resolved_path[PATH_MAX];
 
   ACTF("Spinning up the BSA fork server...");
   printf("forksrv_pd: %d\n", forksrv_pid);
@@ -2407,6 +2420,7 @@ static u8 run_target(char** argv, u32 timeout) {
   /* After this memset, trace_bits[] are effectively volatile, so we
      must prevent any earlier operations from venturing into that
      territory. */
+
   memset(trace_bits, 0, MAP_SIZE);
   MEM_BARRIER();
 
@@ -2554,7 +2568,7 @@ static u8 run_target(char** argv, u32 timeout) {
 
   total_execs++;
   
-  // if (BSA_forkserver && total_execs == 100000){
+  // if (BSA_forkserver && total_execs == 500000){
   //   BSA_report();  
   // }
   /* Any subsequent operations on trace_bits must not be moved by the
@@ -2719,15 +2733,14 @@ static u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
 
     write_to_testcase(use_mem, q->len);
 
-    
     fault = run_target(argv, use_tmout);
+
     /* stop_soon is set by the handler for Ctrl+C. When it's pressed,
        we want to bail out quickly. */
     
     if (stop_soon || fault != crash_mode ) goto abort_calibration;
 
     if (!dumb_mode && !stage_cur && !count_bytes(trace_bits)) {
-      ACTF("dump_mode = %d, stage_cur = %d, count_bytes = %d", dumb_mode, stage_cur, count_bytes(trace_bits));
       fault = FAULT_NOINST;
       goto abort_calibration;
     }
@@ -7873,7 +7886,7 @@ int main(int argc, char** argv) {
   gettimeofday(&tv, &tz);
   srandom(tv.tv_sec ^ tv.tv_usec ^ getpid());
 
-  while ((opt = getopt(argc, argv, "+i:o:f:m:t:T:dnCB:S:M:x:Qp:b:P:s:R:")) > 0)
+  while ((opt = getopt(argc, argv, "+i:o:f:m:t:T:dnCB:S:M:x:Qp:b:P:s:R:e:")) > 0)
 
     switch (opt) {
 
@@ -8066,6 +8079,12 @@ int main(int argc, char** argv) {
         sscanf(optarg, "%d", &BSA_entryblock_id);
         SAYF(cCYA "[BSA_entryblock_id] %d\n", BSA_entryblock_id);
         break; 
+
+      case 'e':
+        sscanf(optarg, "%d", &BSA_function_id);
+        SAYF(cCYA "[BSA_function_id] %d\n", BSA_function_id);
+        break;
+        
 
       default:
 

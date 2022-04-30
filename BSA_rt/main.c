@@ -23,6 +23,8 @@ extern void BSA_clear_buf(int);
 extern __thread char BSA_dump_dir[4096];
 extern struct BSA_buf_pool* bsa_buf_pool;
 
+//u8  __afl_area_initial[MAP_SIZE];
+extern uint8_t* _afl_area_ptr;// = __afl_area_initial;
 extern u32 _afl_prev_loc; 
 
 pthread_t BSA_request_thread;
@@ -31,7 +33,7 @@ int BSA_fuzz_req = -1;
 // Global variables
 __thread u32 BSA_state = BSARun; 
 
-
+// int fun_cnt = 0;
 int BSA_entry_value_shmid;
 u8 *BSA_entry_value_map;
 
@@ -94,12 +96,51 @@ void* BSA_request_handler(void* arg){
     }
 }
 
-__attribute__((constructor)) 
+
+// static void __afl_map_shm(void) {
+    
+//     bsa_info.afl_shm_id = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0600);
+//     _afl_area_ptr = shmat(bsa_info.afl_shm_id, NULL, 0);
+
+//     /* Whooooops. */
+
+//     if (_afl_area_ptr == (void *)-1) _exit(1);
+
+//     /* Write something into the bitmap so that even with low AFL_INST_RATIO,
+//        our parent doesn't give up on us. */
+
+//     //BSA_log("afl shm create success\n");
+//     _afl_area_ptr[0] = 1;
+
+// }
+
+// static void __afl_del_shm(void) {
+    
+//     if( -1 == shmdt(bsa_info.afl_shm_id) ){
+//         perror("chmdt");
+//     }
+//     if(-1 == (shmctl(bsa_info.afl_shm_id, IPC_STAT, 0)))
+//     {   
+//         perror("shmctl");
+//     }   
+
+//     if(-1 == (shmctl(bsa_info.afl_shm_id, IPC_RMID, 0)))
+//     {   
+//         perror("shmctl");
+//     }   
+//     bsa_info.afl_shm_id = -1;
+//     _afl_area_ptr = NULL;
+
+// }
+
+
+__attribute__((constructor(CONST_PRIO)))
 static void BSA_initial(){
     //srand(time(NULL));
     //bsa_info.master_pid = getpid();
     int req_fd;
     char req_sk[1024];
+    //BSA_log("BSA_initial\n");
     if (BSA_state == BSARun){
         BSA_init_buf_pool();
 
@@ -114,20 +155,21 @@ static void BSA_initial(){
         if (BSA_entry_value_shmid)
             shmdt(BSA_entry_value_map);
 
-        BSA_entry_value_shmid = shmget(IPC_PRIVATE, sizeof(u8)*0x10000, IPC_CREAT|IPC_EXCL|0600);
+        BSA_entry_value_shmid = shmget(IPC_PRIVATE, sizeof(u8)*0x10000, IPC_CREAT|IPC_EXCL|0777);
         BSA_entry_value_map = (u8*)shmat(BSA_entry_value_shmid, NULL, 0);
         memset(BSA_entry_value_map, 1, sizeof(u8)*0x10000);
 
+        //__afl_map_shm();
         pthread_atfork(NULL, NULL, BSA_initial);
     }
 }
 
-int edge = 0;
+int _afl_edge = 0;
 void BSA_checkpoint(int id, int is_entry){
 //void BSA_checkpoint(int id){
     
     struct timeval now;
-    int pid, ret;
+    int pid;//, ret;
     char *dump_path;
     int req_bbid, req_tid;
     // BSA_log("Yep %d\n", id);
@@ -141,7 +183,7 @@ void BSA_checkpoint(int id, int is_entry){
         
         req_bbid = BSA_fuzz_req >> 16;
         req_tid = BSA_fuzz_req & 0xffff;
-
+        //fun_cnt ++;
         if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_prev_loc)) || (id == req_bbid && is_entry) ){
             if ( req_tid != syscall(__NR_gettid) ){
                 return;
@@ -164,18 +206,21 @@ void BSA_checkpoint(int id, int is_entry){
                 BSA_fuzz_req = -1;
                 /* setup dump dir */   
                 bsa_info.pid = getpid();
+                //__afl_del_shm();
                 // close all opening socket, and record it. 
                 BSA_sockets_handler();
                 BSA_forkserver_prep();
                 
                 /* Dump previous input */
-                BSA_conn_IA(_afl_prev_loc); 
+                BSA_conn_IA(_afl_prev_loc, id); 
                 
                 /* setup afl relative socket */
                 BSA_accept_channel(&bsa_info.afl_ctl_fd, "afl_ctl_fd");
                 BSA_accept_channel(&bsa_info.afl_sts_fd, "afl_sts_fd");
                 copy_shm_pages();
                 //install_seccomp();
+
+                BSA_state = BSAFuzz;
                 _afl_maybe_log(id);
             }
             else if(pid > 0){
@@ -190,6 +235,7 @@ void BSA_checkpoint(int id, int is_entry){
         }
         break;
     case BSAFuzz:
+        //BSA_log("id = %d\n", id);
         _afl_maybe_log(id);
         break;
     default:

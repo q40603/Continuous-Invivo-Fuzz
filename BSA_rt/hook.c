@@ -3,6 +3,7 @@
 #include "config.h"
 
 extern __thread u32 BSA_state;
+extern u32 _afl_prev_loc; 
 
 
 #define BSA_HOOK_FUNCTION_DENY(x) \
@@ -14,6 +15,44 @@ extern __thread u32 BSA_state;
         break;  \
     }
 
+int BSA_hook_close(int fd){
+    struct stat st;
+    fstat(fd, &st);
+    if (S_ISSOCK(st.st_mode) && BSA_state == BSARun){
+        BSA_log("session end\n");
+    }
+    return close(fd);
+}
+
+
+
+
+int BSA_hook_accept(
+    int socket, 
+    struct sockaddr *restrict address,
+    socklen_t *restrict address_len
+){
+
+    int sock_fd = accept(socket, address, address_len);
+    if(sock_fd > 0)
+        BSA_log("accept on fd %d\n", sock_fd);
+    return sock_fd;
+}
+
+
+int BSA_hook_accept4(
+    int socket, 
+    struct sockaddr *restrict address,
+    socklen_t *restrict address_len,
+    int flags
+){
+
+    int sock_fd = accept4(socket, address, address_len, flags);
+    if(sock_fd > 0)
+        BSA_log("accept on fd %d\n", sock_fd);
+    return sock_fd;
+}
+
 ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len){
     
     size_t ret;
@@ -24,6 +63,7 @@ ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len){
     
     fstat(fd, &st);
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
+        BSA_log("BSA_hook_read afl_prev_loc = %d, fd = %d\n",_afl_prev_loc, fd );
         //BSA_log("BSA_hook_read Tid: %ld\n", syscall(__NR_gettid));
         dest = BSA_create_buf(fd, ret);
         if(dest != NULL){
@@ -40,6 +80,7 @@ ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){
     
     ret = recv(sockfd, buf, len, flags);
     if (BSA_state == BSARun && ret > 0){
+        BSA_log("BSA_hook_recv afl_prev_loc = %d\n",_afl_prev_loc );
         //BSA_log("BSA_hook_recv Tid: %ld %d\n", syscall(__NR_gettid), ret);
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
@@ -56,6 +97,7 @@ ssize_t BSA_hook_recvfrom(int sockfd, void *buf, size_t len, int flags, struct s
 
     ret = recvfrom(sockfd, buf, len, flags, src_addr, addrlen);
     if (BSA_state == BSARun && ret > 0){
+        BSA_log("BSA_hook_recvfrom Tid afl_prev_loc = %d\n", _afl_prev_loc );
         //BSA_log("BSA_hook_recvfrom Tid: %ld\n", syscall(__NR_gettid));
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
@@ -78,7 +120,8 @@ ssize_t BSA_hook_recvmsg(int sockfd, struct msghdr *msg, int flags){
     cnt = ret = recvmsg(sockfd, msg, flags);
     
     if (BSA_state == BSARun && ret > 0){
-        //BSA_log("BSA_hook_recvfrom Tid: %ld\n", syscall(__NR_gettid))
+        BSA_log("BSA_hook_recvmsg Tid afl_prev_loc = %d\n", _afl_prev_loc );
+       //BSA_log("BSA_hook_recvfrom Tid: %ld\n", syscall(__NR_gettid))
         while(cnt > 0 && i < msg->msg_iovlen){
             ssize_t len = MIN(cnt, msg->msg_iov[i].iov_len);
             dest = BSA_create_buf(sockfd, len);
