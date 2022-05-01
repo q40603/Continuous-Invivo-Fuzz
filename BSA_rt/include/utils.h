@@ -6,6 +6,7 @@
 
 void copy_shm_pages();
 int BSA_bind_socket(const char* name);
+int BSA_unlink_socket(const char* name);
 
 void BSA_sockets_handler();
 void BSA_conn_IA(int, int);

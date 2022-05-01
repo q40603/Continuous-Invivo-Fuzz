@@ -134,13 +134,27 @@ void* BSA_request_handler(void* arg){
 // }
 
 
-__attribute__((constructor(CONST_PRIO)))
-static void BSA_initial(){
+void BSA_clean(void){
+    //BSA_log("BSA clean up\n");
+    char req_sk[1024];
+    if(BSA_state == BSARun){
+        sprintf(req_sk, "/tmp/BSA_req_%d.sock", getpid());
+        BSA_unlink_socket(req_sk);
+        pthread_atfork(NULL, NULL, BSA_clean);
+    }
+
+}
+
+__attribute__((constructor(INVIVO_PRIO)))
+void BSA_initial(void){
     //srand(time(NULL));
     //bsa_info.master_pid = getpid();
     int req_fd;
     char req_sk[1024];
     //BSA_log("BSA_initial\n");
+    //BSA_log("atexit(BSA_clean)\n");
+    atexit(BSA_clean);
+    
     if (BSA_state == BSARun){
         BSA_init_buf_pool();
 
@@ -161,8 +175,14 @@ static void BSA_initial(){
 
         //__afl_map_shm();
         pthread_atfork(NULL, NULL, BSA_initial);
+
     }
 }
+
+
+
+
+
 
 int _afl_edge = 0;
 void BSA_checkpoint(int id, int is_entry){

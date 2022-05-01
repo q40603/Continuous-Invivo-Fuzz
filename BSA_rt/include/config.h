@@ -66,7 +66,7 @@ struct BSA_info{
 extern struct BSA_info bsa_info;
 
 
-#define CONST_PRIO 0
+#define INVIVO_PRIO 5
 
 #define MAP_SIZE_POW2       16
 #define MAP_SIZE            (1 << MAP_SIZE_POW2)

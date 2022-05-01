@@ -157,6 +157,16 @@ int BSA_bind_socket(const char* name){
     return fd;
 }
 
+int BSA_unlink_socket(const char* name){
+    if(unlink(name) == -1){
+        perror("BSA_unlink_socket");
+        return -1;
+    }
+
+    return 0;
+}
+
+
 /*
  * Send pid, fuzz_seed_path, to IA
  * And ask IA to launch AFL-fuzz

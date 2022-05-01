@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "hook.h"
 #include "storage.h"
 #include "config.h"
