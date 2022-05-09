@@ -1,0 +1,1 @@
+INVIVO=1 AFL_DEBUG=1 make

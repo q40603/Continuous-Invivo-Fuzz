@@ -45,6 +45,58 @@ void copy_shm_pages(){
 }
 
 
+void BSA_sockets_handler_nofork(){
+	struct dirent* direntp;
+    struct stat st;
+    DIR* dirp;
+    int fd;
+    int val;
+    socklen_t val_length = sizeof(int);
+
+    if ((dirp = opendir("/proc/self/fd")) == NULL){
+        return;
+    }
+    
+    while((direntp=readdir(dirp)) != NULL) {
+        if (strcmp(direntp->d_name, ".") == 0 || strcmp(direntp->d_name, "..") == 0)
+            continue;
+        fd = atoi(direntp->d_name);
+        fstat(fd, &st);
+        
+        // How about listening socket ???
+        BSA_log("checking fd %d ...", fd);
+        if (S_ISSOCK(st.st_mode)){
+            BSA_log(" is socket!\n");
+            getsockopt(fd, SOL_SOCKET, SO_ACCEPTCONN, &val, &val_length);
+            if (val){
+                BSA_log("close listening fd: %d\n", fd);
+                //close(fd);
+            }
+            else{
+    		    BSA_update_fd_list(&bsa_info.sk_list, fd, st.st_mode);
+            }
+        }
+        else if (S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode) ){
+            /* Not deal with this type fd */
+            BSA_log(" is device!\n");
+        }
+        else if(S_ISFIFO(st.st_mode)){
+            BSA_log("is FIFO warning!!\n");
+            //close(fd);
+        }
+		else if (S_ISREG(st.st_mode)){
+            /* Copy file descriptor*/
+            BSA_update_fd_list(&bsa_info.file_list, fd, st.st_mode);
+            BSA_log(" is normal!\n");
+        }else {
+            BSA_update_fd_list(&bsa_info.file_list, fd, st.st_mode);
+            //close(fd);
+            BSA_log(" reopen extract fd\n");
+        }
+    }
+    closedir(dirp);
+}
+
 
 void BSA_sockets_handler(){
 	struct dirent* direntp;
@@ -287,7 +339,7 @@ void BSA_accept_channel(int* channel, const char* desc){
     int comm_fd;
     if( (comm_fd = accept(*channel, (struct sockaddr_un*)&client_addr, &socklen)) == -1){
         BSA_log("[BSA setup channel][%s] Accept incoming connection failed!\n", desc);
-        perror("");
+        perror("BSA_accept_channel fail");
         exit(1);
     }
     dup2(comm_fd, *channel);

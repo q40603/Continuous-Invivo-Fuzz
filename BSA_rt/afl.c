@@ -25,23 +25,28 @@
 
 extern __thread int BSA_state;
 extern struct BSA_info bsa_info;
-extern void BSA_setup_fuzzer_input_fd();
 
 
-u8  __afl_area_initial[MAP_SIZE];
-uint8_t* _afl_area_ptr = __afl_area_initial;
-uint32_t _afl_prev_loc = 0;
-uint32_t _afl_setup_failure = 0;
 
-uint8_t* BSA_blocked_map = NULL;
+u32 _afl_setup_failure = 0;
+
+extern u8 * __afl_area_ptr;
+extern __thread PREV_LOC_T __afl_prev_loc[NGRAM_SIZE_MAX];
+extern PREV_LOC_T __afl_prev_caller[CTX_MAX_K];
+extern u32        __afl_prev_ctx;
+
+extern int _afl_edge;
+
+u8* BSA_blocked_map = NULL;
 int BSA_blocked_shmid;
 
 static struct timeval tv1;//;, tv2, tv3, tv4;
 static pthread_t input_thread;
 
 void BSA_alarm_handler(int sig){
-    BSA_log("Time out le \n");
-    BSA_blocked_map[_afl_prev_loc] = 1;  
+    //BSA_log("Time out le \n");
+    //BSA_blocked_map[__afl_prev_loc[0]] = 1;  
+    BSA_blocked_map[_afl_edge] = 1;
     exit(0);
 }
 
@@ -53,8 +58,8 @@ void BSA_afl_input_thread(void* data){
     char buf[4096];
     char* fuzz_dir = bsa_info.afl_dir;
 
-    asprintf(&file_name, "%s/.cur_input", fuzz_dir);
-    asprintf(&socket_name, "%s/file.sock", fuzz_dir);
+    asprintf(&file_name, "%s/default/.cur_input", fuzz_dir);
+    asprintf(&socket_name, "%s/default/file.sock", fuzz_dir);
     
     while(1){
         
@@ -82,10 +87,11 @@ void BSA_afl_input_thread(void* data){
         }
 
         while( (len = read(file_fd, buf, 4096)) > 0){
+            //BSA_log("afl input read %d\n", len);
             if (write(listen_fd, buf, len) <= 0){
-                //BSA_log("AFL_input_thread write down\n");
                 break;
             }
+            //BSA_log("-  afl write to interested socket %d with %s\n", len, buf);
         }
         close(file_fd);
         close(listen_fd);
@@ -94,12 +100,14 @@ void BSA_afl_input_thread(void* data){
 
 
 void _BSA_afl_initialize_forkserver(int shm_id){
+
+
     
     int pip[2];
     int pip2[2];
     
     
-    if (( _afl_area_ptr = shmat(shm_id, NULL, 0) ) == (void *)-1){
+    if (( __afl_area_ptr = shmat(shm_id, NULL, 0) ) == (void *)-1){
         perror("shmat failed");
         exit(0);
     }
@@ -112,11 +120,36 @@ void _BSA_afl_initialize_forkserver(int shm_id){
     if(pipe(pip2) < 0){  
         BSA_err("Pipe fail\n");   
     }   
-    dup2(pip[1], FILE_SERVER_EVENT1_WRITE_FD);    
-    dup2(pip[0], FILE_SERVER_EVENT1_READ_FD); 
+
+
+    if(dup2(pip[1], FILE_SERVER_EVENT1_WRITE_FD) == -1){
+        BSA_err("dup2(pip[1], FILE_SERVER_EVENT1_WRITE_FD) 121 fails");   
+        fflush(stderr); 
+    }
+        
+
     
-    dup2(pip2[1], FILE_SERVER_EVENT2_WRITE_FD);    
-    dup2(pip2[0], FILE_SERVER_EVENT2_READ_FD); 
+
+    if(dup2(pip[0], FILE_SERVER_EVENT1_READ_FD) == -1){
+        BSA_err("dup2(pip[0], FILE_SERVER_EVENT1_READ_FD) 124 fails");  
+        fflush(stderr);
+    }
+          
+
+    
+
+
+    if(dup2(pip2[1], FILE_SERVER_EVENT2_WRITE_FD) == -1){
+        BSA_err("dup2(pip2[1], FILE_SERVER_EVENT2_WRITE_FD) 133 fails"); 
+        fflush(stderr);
+    }
+         
+
+    if(dup2(pip2[0], FILE_SERVER_EVENT2_READ_FD) == -1){
+        BSA_err("dup2(pip2[0], FILE_SERVER_EVENT2_READ_FD)  135 fails"); 
+        fflush(stderr);
+    }
+        
 
     close(pip[1]); close(pip[0]);
     close(pip2[1]); close(pip2[0]);
@@ -127,7 +160,7 @@ void _BSA_afl_initialize_forkserver(int shm_id){
     }
 
     /* false positive/negative may happend */
-    install_seccomp();
+    //install_seccomp();
     signal(SIGCHLD, SIG_DFL);
 }
 
@@ -150,7 +183,7 @@ void _BSA_afl_initialize_fuzz_target(){
 	if(read(FILE_SERVER_EVENT2_READ_FD, buf, 4) != 4){
 		BSA_err("Can not recv from file socket server\n");
 	}
-	sprintf(sock_name, "%s/file.sock", bsa_info.afl_dir);
+	sprintf(sock_name, "%s/default/file.sock", bsa_info.afl_dir);
 	memset(&addr, 0, sizeof(addr));
 	if ( (bsa_info.afl_input_fd = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1){
 		BSA_err("Can't create bsa_handshake socket\n");
@@ -175,7 +208,7 @@ void _BSA_afl_initialize_fuzz_target(){
 	BSA_dup_target_fd();
     
     signal(SIGALRM, BSA_alarm_handler);
-    BSA_reopen_fd();
+    //BSA_reopen_fd();
     it.it_value.tv_usec = 0;
     it.it_value.tv_sec = 1;
     sigemptyset(&new);
@@ -184,21 +217,19 @@ void _BSA_afl_initialize_fuzz_target(){
     if (setitimer(ITIMER_REAL, &it, &old_it) < 0){
         perror("Settimer");
     }
-    
-
 }
 
-extern int _afl_edge;
 
-int tiny_afl_maybe_log(int id){
-    if(BSA_state != BSAFuzz)
-        return -1;
+
+// int tiny_afl_maybe_log(int id){
+//     if(BSA_state != BSAFuzz)
+//         return -1;
     
-    _afl_area_ptr[_afl_edge ^ id]++;
-    _afl_edge = id >> 1;
+//     __afl_area_ptr[_afl_edge ^ id]++;
+//     _afl_edge = id >> 1;
 
-    return 1;
-}
+//     return 1;
+// }
 
 
 void _afl_maybe_log(int id){
@@ -209,38 +240,47 @@ void _afl_maybe_log(int id){
     int shm_id, pid, status;
     
     // check state value;
-    if (_afl_area_ptr){
-_afl_store:
+    // if (__afl_area_ptr){
+// _afl_store:
        
-        //_afl_prev_loc = (_afl_prev_loc>>1) ^ id;
+        //__afl_prev_loc = (__afl_prev_loc>>1) ^ id;
         // _afl_edge testing
-        _afl_area_ptr[_afl_edge ^ id]++;
-        _afl_edge = id >> 1;
+        // __afl_area_ptr[__afl_prev_loc[0] ^ id]++;
+        //_afl_edge = id >> 1;
         
 
-        //_afl_area_ptr[_afl_prev_loc]++;
-        if ( BSA_blocked_map[_afl_prev_loc] ){
-            //PrintTime(tv3);
-            exit(0);
-        }
-        return;
-    }
+        //_afl_area_ptr[__afl_prev_loc]++;
+        // if ( BSA_blocked_map[__afl_prev_loc[0]] ){
+        //     //PrintTime(tv3);
+        //     exit(0);
+        // }
+        //return;
+    // }
+
     // else{
     //     //BSA_log("_afl_area_ptr == NULL\n");
     // }
     
     if ( !_afl_setup_failure ){
         shm_id = bsa_info.afl_shm_id;
+        //BSA_err("shm_id = %d, shm_id != -1 %d\n", shm_id, (shm_id != -1));
+        //fflush(stderr);
         if( shm_id != -1 ){
 
-            
+            // printf("_BSA_afl_initialize_forkserver .....\n");
+            // fflush(stdout);       
             _BSA_afl_initialize_forkserver(shm_id);
+            // printf("success .....\n");
+            // fflush(stdout);
 
             if (write(STS_CHANNEL_FD, &status, 4) == 4){
+                //BSA_log("write STS_CHANNEL_FD success %d\n", status);
                 while(1){
                     if (read(CTL_CHANNEL_FD, &status, 4) != 4){
+                        perror("read CTL_CHANNEL_FD failed");
                         exit(1);
                     }
+                    
 
                     //PrintTime(tv3);
                     gettimeofday(&tv1,NULL);
@@ -253,8 +293,10 @@ _afl_store:
                         // BSA_state = BSAFuzz;
                         //BSA_log("_BSA_afl_initialize_fuzz_target\n");
                         _BSA_afl_initialize_fuzz_target();
+                        //__afl_area_ptr[__afl_prev_loc[0] ^ id]++;
+                        return;
                         //PrintTime(tv2);
-                        goto _afl_store;
+                        // goto _afl_store;
                     }
                     else{
                         write(STS_CHANNEL_FD, &pid, 4);

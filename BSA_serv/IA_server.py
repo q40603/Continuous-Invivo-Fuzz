@@ -9,7 +9,7 @@ Port = 8001
 
 #null_fp = open('/dev/null', 'rw')
 def fuzz_handshake(conn):
-    req = conn.recv(25)
+    req = conn.recv(29)
     print(req)
     tp = chr(req[0])
     pid = struct.unpack('<I', req[1:5])[0]
@@ -18,6 +18,7 @@ def fuzz_handshake(conn):
     entry_block = struct.unpack('<I', req[13:17])[0]
     shm_id = struct.unpack('<I', req[17:21])[0]
     threshold = struct.unpack('<I', req[21:25])[0]
+    function_entry = struct.unpack('<I', req[25:29])[0]
 
     seed_dir = conn.recv(seed_dir_len)
     print('seed_dir:', seed_dir)
@@ -36,17 +37,18 @@ def fuzz_handshake(conn):
             print('[-] Get request but there is no seed file')
             open(seed_dir + '/test', 'w').write("fuck")
 
-        payload = 'GET / HTTP/1.0\n'
-        payload += 'transfer-encoding: chunked\n'
-        payload += 'Content-Length: 1001\n\n'
-        payload += 'A' * 0x3000 + '\n'
+        # payload = 'GET / HTTP/1.0\n'
+        # payload += 'transfer-encoding: chunked\n'
+        # payload += 'Content-Length: 1001\n\n'
+        # payload += 'A' * 0x3000 + '\n'
         #open(seed_dir + '/test', 'w').write(payload)
         #subprocess.call('cp -f /root/eval/mysql-server-mysql-5.6.35/payload %s/test0' % seed_dir, shell=True)
 
         #else:
-        cmd = '$HOME/BSA_test/third_party/afl-2.52b/afl-fuzz -R %d -i %s -o %s -t 200000000+ -p %d -P %d -b %d -s %d -- inter_fuzzing' % (threshold, seed_dir, output_dir, pid, ppid, entry_block, shm_id)
-        #print(cmd)
-        subprocess.call(cmd, shell=True)
+        cmd = 'INVIVO=1 AFL_FAST_CAL=1 /root/AFLplusplus/afl-fuzz -D -i %s -o %s -t 200000000+ -P %d -r %d -y %d -H %d -u %d -- inter_fuzzing' % (seed_dir, output_dir, pid, ppid, entry_block, shm_id, function_entry)
+        print(cmd)
+        
+        #subprocess.call(cmd, shell=True)
 
 
     else:
@@ -68,4 +70,3 @@ if __name__ == '__main__':
         print('Connected by ', addr)
 
         fuzz_handshake(conn)
-
