@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <unistd.h>
 // #include <uninstd.h>
 #include "utils.h"
 #include "config.h"
@@ -31,6 +32,7 @@ int set_stdin = 0;
 int BSA_fuzz_req = -1;
 // Global variables
 __thread u32 BSA_state = BSARun; 
+extern __thread char container_id[13];
 
 // int fun_cnt = 0;
 int BSA_entry_value_shmid;
@@ -107,6 +109,10 @@ void BSA_clean(void){
 
 }
 
+
+
+
+
 __attribute__((constructor(INVIVO_PRIO)))
 void BSA_initial(void){
     //srand(time(NULL));
@@ -117,6 +123,8 @@ void BSA_initial(void){
     //atexit(BSA_clean);
     
     if (BSA_state == BSARun){
+
+        set_container_id();
         BSA_init_buf_pool();
 
         sprintf(req_sk, "/tmp/BSA_req_%d.sock", getpid());
@@ -141,7 +149,10 @@ void BSA_initial(void){
 
 
 
-
+void pause_signal_handler(int signal)
+{
+        printf("Signal %d caught\n", signal);
+}
 
 
 int _afl_edge = 0;
@@ -164,8 +175,20 @@ void BSA_checkpoint_nofork(int id, int is_entry){
             if ( req_tid != syscall(__NR_gettid) ){
                 return;
             }
+
             /* Set flags */
             BSA_state = BSAPrep;
+
+            struct sigaction act;
+            int ret = 0;
+
+            act.sa_handler =  pause_signal_handler;
+            sigaction(SIGCONT, &act, NULL);
+            ret = pause();
+            // if (-1 == ret){
+            //     BSA_err("Process exited\n");
+            // }
+                
 
             /* Set dump_path */
             gettimeofday(&now, NULL);

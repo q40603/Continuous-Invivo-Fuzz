@@ -45,7 +45,7 @@ def fuzz_handshake(conn):
         #subprocess.call('cp -f /root/eval/mysql-server-mysql-5.6.35/payload %s/test0' % seed_dir, shell=True)
 
         #else:
-        cmd = 'INVIVO=1 AFL_FAST_CAL=1 /root/AFLplusplus/afl-fuzz -D -i %s -o %s -t 200000000+ -P %d -r %d -y %d -H %d -u %d -- inter_fuzzing' % (seed_dir, output_dir, pid, ppid, entry_block, shm_id, function_entry)
+        cmd = 'INVIVO=1 AFL_FAST_CAL=1 /root/scalable-invivo/third_party/AFLplusplus/afl-fuzz -D -i %s -o %s -t 200000000+ -P %d -r %d -y %d -H %d -u %d -- inter_fuzzing' % (seed_dir, output_dir, pid, ppid, entry_block, shm_id, function_entry)
         print(cmd)
         
         #subprocess.call(cmd, shell=True)
