@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdio.h>
 
 /*
  * storing user input as afl seed

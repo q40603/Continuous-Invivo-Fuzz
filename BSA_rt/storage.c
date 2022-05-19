@@ -1,3 +1,4 @@
+#define _GNU_SOURCE  
 #include "storage.h"
 #include "config.h"
 #include "utils.h"
@@ -67,7 +68,7 @@ int BSA_dump_buf(){
     struct BSA_buf* buf; 
     int out_fd;
     int count = 0;
-    char path[256];
+    char *path;
 
     if (access(BSA_dump_dir, F_OK) !=0 && (mkdir(BSA_dump_dir, 0700) != 0)){
         BSA_err("Can not create dump directory");
@@ -82,7 +83,7 @@ int BSA_dump_buf(){
     buf = bsa_buf_pool->buf_head;
     if (buf != NULL){
         while(buf){
-            sprintf(path, "%s/testcase_%d", BSA_dump_dir, count++);
+            asprintf(&path, "%s/testcase_%d", BSA_dump_dir, count++);
             out_fd = open(path, O_CREAT|O_RDWR, 0600);    
             BSA_log("creating testcase: %s\n", path);
             if (out_fd == -1){

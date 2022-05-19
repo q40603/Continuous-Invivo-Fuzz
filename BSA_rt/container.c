@@ -1,6 +1,10 @@
-#include "container.h"
+#define _GNU_SOURCE
 
-__thread char container_id[13];
+#include "container.h"
+#include "config.h"
+
+
+char container_id[13];
 
 void set_container_id(){
     FILE * f = fopen ("/proc/sys/kernel/hostname", "rb");
@@ -11,7 +15,7 @@ void set_container_id(){
     }
 }
 
-bool container_match(){
+int container_match(){
     char cur_container_id[13];
     int result;
     FILE * f = fopen ("/proc/sys/kernel/hostname", "rb");
@@ -21,13 +25,13 @@ bool container_match(){
         fclose (f);
         result = strcmp(cur_container_id, container_id);
         if(result == 0){
-            return true;
+            return 1;
         }
         else{
-            return false;
+            return 0;
         }
     }
-    return false;
+    return 0;
 }
 
 

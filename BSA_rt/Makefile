@@ -18,11 +18,11 @@ all:
 	mkdir -p $(OBJ_DIR)
 	$(MAKE) BSA
 
-BSA: $(OBJ_DIR)main.o $(OBJ_DIR)hook.o $(OBJ_DIR)storage.o $(OBJ_DIR)afl.o $(OBJ_DIR)utils.o
+BSA: $(OBJ_DIR)main.o $(OBJ_DIR)hook.o $(OBJ_DIR)storage.o $(OBJ_DIR)afl.o $(OBJ_DIR)utils.o $(OBJ_DIR)container.o
 	$(LD) -o $@.o $(LDFLAGS) $^
 
 
-lib: $(OBJ_DIR)main.o $(OBJ_DIR)hook.o $(OBJ_DIR)storage.o $(OBJ_DIR)afl.o $(OBJ_DIR)utils.o 
+lib: $(OBJ_DIR)main.o $(OBJ_DIR)hook.o $(OBJ_DIR)storage.o $(OBJ_DIR)afl.o $(OBJ_DIR)utils.o $(OBJ_DIR)container.o
 #criu.o 
 	$(CC) -o libBSA.so $(CSHARED_FLAG) $^ 
 	sudo cp -f ./libBSA.so /usr/lib/

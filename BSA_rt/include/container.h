@@ -10,6 +10,6 @@
 
 //function
 void set_container_id();
-bool container_match();
+int container_match();
 
 #endif

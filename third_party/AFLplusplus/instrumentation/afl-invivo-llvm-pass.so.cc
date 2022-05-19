@@ -172,7 +172,7 @@ uint64_t PowerOf2Ceil(unsigned in) {
 #endif
 
 
-/*-----------------------------  Invivo variable -----------------------------------*/
+/*-----------------------------  Invivo section -----------------------------------*/
 using namespace std;
 
 llvm::cl::opt<std::string> config_path("config", llvm::cl::desc("Specify the config file of entry"), llvm::cl::value_desc("config_file") );    
@@ -526,14 +526,18 @@ bool AFLCoverage::runOnModule(Module &M) {
     "BSA_checkpoint",
     Type::getVoidTy(M.getContext()), 
     Type::getInt32Ty(M.getContext()),
-    Type::getInt32Ty(M.getContext())).getCallee();
+    Type::getInt32Ty(M.getContext()),
+    Type::getInt8PtrTy(M.getContext())
+    ).getCallee();
 
   if (getenv("NOFORK")){
       callee_checkpoint = M.getOrInsertFunction(
         "BSA_checkpoint_nofork",
         Type::getVoidTy(M.getContext()), 
         Type::getInt32Ty(M.getContext()),
-        Type::getInt32Ty(M.getContext())).getCallee();
+        Type::getInt32Ty(M.getContext()),
+        Type::getInt8PtrTy(M.getContext())
+        ).getCallee();
   }
   
   //Function *open = cast<Function>(callee_checkpoint);
@@ -700,9 +704,10 @@ bool AFLCoverage::runOnModule(Module &M) {
         if(strcmp(F.getName().str().c_str(), "readQueryFromClient") == 0 ){
           firstBB = 1;
         }
-        Value *val[2];
+        Value *val[3];
         val[0] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), cur_loc);
         val[1] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), firstBB);
+        val[2] = IRB.CreateGlobalStringPtr(F.getName().str().c_str());
         IRB.CreateCall(Fun,val);
         if(firstBB)
           OKF("Inserting IV_checkpoint to %s (%zu)", F.getName().str().c_str(), F.size());
