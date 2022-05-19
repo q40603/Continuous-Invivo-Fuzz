@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <limits.h>
+#include <sys/uio.h>
 
 ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len);
 ssize_t BSA_hook_write(int fd, uint8_t* buf, size_t len);

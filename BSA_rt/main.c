@@ -35,7 +35,7 @@ int BSA_fuzz_req = -1;
 // Global variables
 __thread u32 BSA_state = BSARun; 
 extern char container_id[13];
-char *program_name;
+
 
 // int fun_cnt = 0;
 int BSA_entry_value_shmid;
@@ -72,8 +72,6 @@ void* BSA_request_handler(void* arg){
     struct sockaddr_un client_addr;
     socklen_t socklen = sizeof(client_addr);
     printf("container id = %s\n", container_id);
-    printf("program name = %s\n", program_invocation_name);
-    printf("llvm program name = %s\n", program_name);
     memset(&client_addr, 0, sizeof(client_addr));
 
     while(1){
@@ -116,18 +114,11 @@ void* BSA_request_handler(void* arg){
 
 // }
 
-void set_program_name(){
+void create_output_top_dir(){
     struct stat st = {0};
-    char *out_dir;
-    char *pLastSlash = strrchr(program_invocation_name, '/');
-    program_name = pLastSlash ? pLastSlash + 1 : program_invocation_name;
-
-    asprintf(&out_dir, "/tmp/%s", program_name);
-
-    if (stat(out_dir, &st) == -1) {
-        mkdir(out_dir, 0700);
+    if (stat("/tmp/fuzz", &st) == -1) {
+        mkdir("/tmp/fuzz", 0700);
     }
-    free(out_dir);
 }
 
 
@@ -145,7 +136,7 @@ void BSA_initial(void){
     if (BSA_state == BSARun){
 
         set_container_id();
-        set_program_name();
+        create_output_top_dir();
         BSA_init_buf_pool();
 
         sprintf(req_sk, "/tmp/BSA_req_%d.sock", getpid());
@@ -201,11 +192,14 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
             BSA_state = BSAPrep;
 
             struct sigaction act;
-            int ret = 0;
 
             act.sa_handler =  pause_signal_handler;
             sigaction(SIGCONT, &act, NULL);
-            ret = pause();
+            pause();
+            if(container_match()){
+                BSA_state = BSARun;
+                return;
+            }
             // if (-1 == ret){
             //     BSA_err("Process exited\n");
             // }
@@ -214,7 +208,7 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
             /* Set dump_path */
             gettimeofday(&now, NULL);
             dump_path = BSA_dump_dir;
-            sprintf(dump_path, "/tmp/%s/fuzz_%ld.%ld", program_name,  now.tv_sec, now.tv_usec);
+            sprintf(dump_path, "/tmp/fuzz/fuzz_%ld.%ld",  now.tv_sec, now.tv_usec);
             if (BSA_dump_buf() == -1 ){
                 BSA_state = BSARun;
                 return;
@@ -289,7 +283,7 @@ void BSA_checkpoint(int id, int is_entry, char *function_name){
             /* Set dump_path */
             gettimeofday(&now, NULL);
             dump_path = BSA_dump_dir;
-            sprintf(dump_path, "/tmp/fuzz_%ld.%ld", now.tv_sec, now.tv_usec);
+            sprintf(dump_path, "/tmp/fuzz/fuzz_%ld.%ld", now.tv_sec, now.tv_usec);
             if (BSA_dump_buf() == -1 ){
                 BSA_state = BSARun;
                 return;
@@ -308,7 +302,7 @@ void BSA_checkpoint(int id, int is_entry, char *function_name){
                 
                 /* Dump previous input */
                 //BSA_conn_IA(__afl_prev_loc[0], id); 
-                BSA_conn_IA(_afl_edge, id); 
+                BSA_conn_IA(_afl_edge, id);
                 
                 /* setup afl relative socket */
                 BSA_accept_channel(&bsa_info.afl_ctl_fd, "afl_ctl_fd");

@@ -73,7 +73,10 @@
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 
+#include <iostream>
+
 using namespace llvm;
+using namespace std;
 
 namespace {
 
@@ -173,7 +176,6 @@ uint64_t PowerOf2Ceil(unsigned in) {
 
 
 /*-----------------------------  Invivo section -----------------------------------*/
-using namespace std;
 
 llvm::cl::opt<std::string> config_path("config", llvm::cl::desc("Specify the config file of entry"), llvm::cl::value_desc("config_file") );    
 map<string, int> entry_map;
@@ -402,9 +404,18 @@ bool AFLCoverage::runOnModule(Module &M) {
   #endif
     );
 #endif
-
-
-
+  // Constant *const_array = ConstantDataArray::getString(M.getContext(), "redis");
+  // //ArrayType* ArrayTy_0 = ArrayType::get(PointerType::get(Int8Ty, 0), 40);
+  //   GlobalVariable* program_name = new GlobalVariable(
+  //     /*Module=*/M, 
+  //   /*Type=*/const_array->getType(),
+  //   /*isConstant=*/true,
+  //   /*Linkage=*/GlobalValue::ExternalLinkage,
+  //   /*Initializer=*/const_array,
+  //   /*Name=*/"program_name");
+    //program_name->setAlignment(MaybeAlign(8));
+    
+    // program_name->setInitializer(const_array_4);
   /* Get globals for the SHM region and the previous location. Note that
      __afl_prev_loc is thread-local. */
 
