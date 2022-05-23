@@ -549,7 +549,7 @@ int main(int argc, char **argv_orig, char **envp) {
   while (
       (opt = getopt(
            argc, argv,
-           "+Ab:B:c:CdDe:E:H:hi:I:f:F:g:G:l:L:m:M:nNOo:p:P:r:RQs:S:t:T:u:UV:WXx:Yy:Z")) >
+           "+Ab:B:c:CdDe:E:H:hi:I:f:F:g:G:l:L:m:M:nNOo:p:P:r:RQs:S:t:T:u:j:UV:WXx:Yy:Z")) >
       0) {
 
     switch (opt) {
@@ -1307,6 +1307,11 @@ int main(int argc, char **argv_orig, char **envp) {
       case 'u':
         sscanf(optarg, "%d", &afl->Invivo_function_id);
         SAYF(cCYA "[Invivo_function_id] %d\n", afl->Invivo_function_id);
+        break;
+
+      case 'j':
+        sscanf(optarg, "%d", &afl->Invivo_count);
+        SAYF(cCYA "[invivo_count] %d\n", afl->Invivo_count);
         break;
 
       default:

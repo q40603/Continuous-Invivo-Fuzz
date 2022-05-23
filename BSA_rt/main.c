@@ -34,12 +34,15 @@ int set_stdin = 0;
 int BSA_fuzz_req = -1;
 // Global variables
 __thread u32 BSA_state = BSARun; 
-extern char container_id[13];
-
+extern char container_id[20];
+extern sem_t mutex; 
 
 // int fun_cnt = 0;
 int BSA_entry_value_shmid;
 u8 *BSA_entry_value_map;
+
+__thread int invivo_count = 0;
+__thread char *function_entry_name;
 
 
 
@@ -71,7 +74,7 @@ void* BSA_request_handler(void* arg){
     int req = 0, comm_fd;
     struct sockaddr_un client_addr;
     socklen_t socklen = sizeof(client_addr);
-    printf("container id = %s\n", container_id);
+    //printf("container id = %s\n", container_id);
     memset(&client_addr, 0, sizeof(client_addr));
 
     while(1){
@@ -97,7 +100,7 @@ void* BSA_request_handler(void* arg){
             }
             BSA_log("[BSA_request_handler] id: 0x%x, val: %d\n", id, val);
         }
-        printf("%d\n", req);
+        //printf("%d\n", req);
         close(comm_fd);
     }
 }
@@ -134,7 +137,7 @@ void BSA_initial(void){
     //atexit(BSA_clean);
     
     if (BSA_state == BSARun){
-
+        sem_init(&mutex, 0, 1); 
         set_container_id();
         create_output_top_dir();
         BSA_init_buf_pool();
@@ -152,7 +155,10 @@ void BSA_initial(void){
 
         BSA_entry_value_shmid = shmget(IPC_PRIVATE, sizeof(u8)*0x10000, IPC_CREAT|IPC_EXCL|0777);
         BSA_entry_value_map = (u8*)shmat(BSA_entry_value_shmid, NULL, 0);
-        memset(BSA_entry_value_map, 1, sizeof(u8)*0x10000);
+
+
+
+        memset(BSA_entry_value_map, 0, sizeof(u8)*0x10000);
 
         pthread_atfork(NULL, NULL, BSA_initial);
 
@@ -175,6 +181,7 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
     char *dump_path;
     int req_bbid, req_tid;
     _afl_edge = (_afl_edge >> 1) ^ id;
+    function_entry_name = function_name;
     switch(BSA_state){
     
     case BSADebugging:
@@ -183,23 +190,25 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
         req_bbid = BSA_fuzz_req >> 16;
         req_tid = BSA_fuzz_req & 0xffff;
         //fun_cnt ++;
-        if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_edge)) || (id == req_bbid && is_entry) ){
-            if ( req_tid != syscall(__NR_gettid) ){
-                return;
-            }
+        // if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_edge)) ){
+        if ( (req_bbid == 0 && *(BSA_entry_value_map+_afl_edge)) ){
+            // if ( req_tid != syscall(__NR_gettid) ){
+            //     return;
+            // }
 
             /* Set flags */
             BSA_state = BSAPrep;
+            // function_entry_name = function_name;
 
             struct sigaction act;
 
             act.sa_handler =  pause_signal_handler;
             sigaction(SIGCONT, &act, NULL);
             pause();
-            if(container_match()){
-                BSA_state = BSARun;
-                return;
-            }
+            // if(container_match()){
+            //     BSA_state = BSARun;
+            //     return;
+            // }
             // if (-1 == ret){
             //     BSA_err("Process exited\n");
             // }
@@ -213,6 +222,8 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
                 BSA_state = BSARun;
                 return;
             }
+            invivo_count ++;
+
             pid = getpid();
  
                 
@@ -273,7 +284,8 @@ void BSA_checkpoint(int id, int is_entry, char *function_name){
         req_bbid = BSA_fuzz_req >> 16;
         req_tid = BSA_fuzz_req & 0xffff;
         //fun_cnt ++;
-        if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_edge)) || (id == req_bbid && is_entry) ){
+        //if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_edge)) || (id == req_bbid && is_entry) ){
+        if ( (req_bbid == 0 && *(BSA_entry_value_map+_afl_edge)) ){
             if ( req_tid != syscall(__NR_gettid) ){
                 return;
             }

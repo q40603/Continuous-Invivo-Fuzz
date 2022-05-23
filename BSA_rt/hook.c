@@ -5,7 +5,11 @@
 
 extern __thread u32 BSA_state;
 extern __thread PREV_LOC_T __afl_prev_loc[NGRAM_SIZE_MAX];
+extern u8 *BSA_entry_value_map;
+extern int _afl_edge;
 
+int readc_count = 0;
+extern __thread char *function_entry_name;
 
 #define BSA_HOOK_FUNCTION_DENY(x) \
     switch(BSA_state){  \
@@ -25,13 +29,12 @@ int BSA_hook_close(int fd){
     //if (S_ISSOCK(st.st_mode) && BSA_state == BSARun){
     if (S_ISSOCK(st.st_mode)){
         if(BSA_state == BSARun){
-            BSA_log("session end\n");
+            //BSA_log("session end\n");
         }
         else if(BSA_state == BSAFuzz){
             close(fd);
             exit(0);
         }
-        
     }
     return close(fd);
 }
@@ -43,8 +46,8 @@ int BSA_hook_accept(
 ){
 
     int sock_fd = accept(socket, address, address_len);
-    if(sock_fd > 0)
-        BSA_log("accept on fd %d\n", sock_fd);
+    // if(sock_fd > 0)
+    //     BSA_log("accept on fd %d\n", sock_fd);
     return sock_fd;
 }
 
@@ -57,8 +60,8 @@ int BSA_hook_accept4(
 ){
 
     int sock_fd = accept4(socket, address, address_len, flags);
-    if(sock_fd > 0)
-        BSA_log("accept on fd %d\n", sock_fd);
+    // if(sock_fd > 0)
+    //     BSA_log("accept on fd %d\n", sock_fd);
     return sock_fd;
 }
 
@@ -72,13 +75,20 @@ ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len){
     
     fstat(fd, &st);
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
-        BSA_log("BSA_hook_read afl_prev_loc = %d, fd = %d\n",__afl_prev_loc[0], fd );
+        *(u8*)(BSA_entry_value_map+_afl_edge) = 1;
+        BSA_log("setting afl_edge %d to 1 %s\n", _afl_edge, function_entry_name);
+        //BSA_log("BSA_hook_read afl_prev_loc = %d, fd = %d\n",__afl_prev_loc[0], fd );
         //BSA_log("BSA_hook_read Tid: %ld\n", syscall(__NR_gettid));
         dest = BSA_create_buf(fd, ret);
+        
         if(dest != NULL){
+            dest->_afl_edge = _afl_edge;
             memcpy(dest->data, buf, ret);
         }
     }
+    // else if (BSA_state == BSAFuzz && ret > 0){
+    //     BSA_log("fuzzing afl_edge %d\n", _afl_edge);
+    // }
     // if(BSA_state == BSAFuzz){
     //     BSA_log("fuzz-  BSA_hook_read afl_prev_loc = %d, fd = %d, ret = %ld\n",__afl_prev_loc[0], fd, ret );
     // }
@@ -92,14 +102,20 @@ ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){
     
     ret = recv(sockfd, buf, len, flags);
     if (BSA_state == BSARun && ret > 0){
-        BSA_log("BSA_hook_recv afl_prev_loc = %d\n",__afl_prev_loc[0] );
+        BSA_log("setting afl_edge %d to 1 %s\n", _afl_edge, function_entry_name);
+        *(u8*)(BSA_entry_value_map+_afl_edge) = 1;
+        //BSA_log("BSA_hook_recv afl_prev_loc = %d\n",__afl_prev_loc[0] );
         //BSA_log("BSA_hook_recv Tid: %ld %d\n", syscall(__NR_gettid), ret);
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
             //BSA_log("%s\n", dest->data);
+            dest->_afl_edge = _afl_edge;
             memcpy(dest->data, buf, ret);
         }
     }
+    // else if (BSA_state == BSAFuzz && ret > 0){
+    //     BSA_log("fuzzing afl_edge %d\n", _afl_edge);
+    // }
     return ret;
 }
 
@@ -109,10 +125,13 @@ ssize_t BSA_hook_recvfrom(int sockfd, void *buf, size_t len, int flags, struct s
 
     ret = recvfrom(sockfd, buf, len, flags, src_addr, addrlen);
     if (BSA_state == BSARun && ret > 0){
-        BSA_log("BSA_hook_recvfrom Tid afl_prev_loc = %d\n", __afl_prev_loc[0] );
+        BSA_log("setting afl_edge %d to 1 %s\n", _afl_edge, function_entry_name);
+        *(u8*)(BSA_entry_value_map+_afl_edge) = 1;
+        //BSA_log("BSA_hook_recvfrom Tid afl_prev_loc = %d\n", __afl_prev_loc[0] );
         //BSA_log("BSA_hook_recvfrom Tid: %ld\n", syscall(__NR_gettid));
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
+            dest->_afl_edge = _afl_edge;
             memcpy(dest->data, buf, ret);
             // BSA_log("%s\n", dest->data);
             // int out_fd = open("./tmp1", O_CREAT|O_RDWR, 0777); 
@@ -121,6 +140,9 @@ ssize_t BSA_hook_recvfrom(int sockfd, void *buf, size_t len, int flags, struct s
         }
         
     }
+    // else if (BSA_state == BSAFuzz && ret > 0){
+    //     BSA_log("fuzzing afl_edge %d\n", _afl_edge);
+    // }
     return ret;
 }
 
@@ -132,17 +154,23 @@ ssize_t BSA_hook_recvmsg(int sockfd, struct msghdr *msg, int flags){
     cnt = ret = recvmsg(sockfd, msg, flags);
     
     if (BSA_state == BSARun && ret > 0){
-        BSA_log("BSA_hook_recvmsg Tid afl_prev_loc = %d\n", __afl_prev_loc[0] );
+        BSA_log("setting afl_edge %d to 1\n", _afl_edge);
+        *(u8*)(BSA_entry_value_map+_afl_edge) = 1;
+        //BSA_log("BSA_hook_recvmsg Tid afl_prev_loc = %d\n", __afl_prev_loc[0] );
        //BSA_log("BSA_hook_recvfrom Tid: %ld\n", syscall(__NR_gettid))
         while(cnt > 0 && i < msg->msg_iovlen){
             ssize_t len = MIN(cnt, msg->msg_iov[i].iov_len);
             dest = BSA_create_buf(sockfd, len);
             if(dest != NULL){
+                dest->_afl_edge = _afl_edge;
                 memcpy(dest->data, msg->msg_iov[i].iov_base, len);
             }
             cnt -= len;
         }
     }
+    // else if (BSA_state == BSAFuzz && ret > 0){
+    //     BSA_log("fuzzing afl_edge %d\n", _afl_edge);
+    // }
     return ret;
 }
 

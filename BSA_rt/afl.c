@@ -208,7 +208,7 @@ void _BSA_afl_initialize_fuzz_target(){
 	BSA_dup_target_fd();
     
     signal(SIGALRM, BSA_alarm_handler);
-    //BSA_reopen_fd();
+    BSA_reopen_fd();
     it.it_value.tv_usec = 0;
     it.it_value.tv_sec = 1;
     sigemptyset(&new);

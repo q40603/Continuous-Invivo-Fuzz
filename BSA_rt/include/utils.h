@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include <pthread.h>
+#include <errno.h>
 
 void copy_shm_pages();
 int BSA_bind_socket(const char* name);

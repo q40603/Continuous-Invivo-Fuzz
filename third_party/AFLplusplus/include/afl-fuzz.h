@@ -465,7 +465,8 @@ typedef struct afl_state {
   s32    key_lv;
 
   s32   Invivo_path_entry_id,     /* ID of fuzz entryblock            */
-        Invivo_function_id;
+        Invivo_function_id,
+        Invivo_count;
 
 
 

@@ -1,3 +1,4 @@
+#define _GNU_SOURCE 
 #include "utils.h"
 #include "config.h"
 #include "storage.h"
@@ -7,6 +8,8 @@ extern struct BSA_buf_pool* bsa_buf_pool;
 extern __thread  char BSA_dump_dir[4096];
 extern bool set_stdin;
 
+extern __thread int invivo_count;
+extern __thread char *function_entry_name;
 
 void copy_shm_pages(){
     char path[1024];
@@ -228,6 +231,9 @@ void BSA_conn_IA(int id, int function_entry_id){
     struct sockaddr_in srv;
     char* buf, *out_dir;
     int ia_fd, path_len, buf_sz, entry_id = id, threshold = BSA_FUZZ_THRESHOLD;
+
+
+    int function_len, program_len;
     
     dump_path = BSA_dump_dir; 
 
@@ -249,25 +255,33 @@ void BSA_conn_IA(int id, int function_entry_id){
     mkdir(out_dir, 0700);
     free(out_dir);
 
+    function_len = strlen(function_entry_name);
     path_len = strlen(dump_path);
-    buf_sz = 29 + path_len;
+    program_len = strlen(program_invocation_short_name);
+    buf_sz = 41 + function_len + path_len + program_len;
     
     buf = calloc(buf_sz ,1);
     
     bsa_info.master_pid = getppid();
     bsa_info.afl_shm_id = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0600);
 
-    memcpy(buf+1, &(bsa_info.pid), 4);
-    memcpy(buf+5, &(bsa_info.master_pid), 4);
-    memcpy(buf+9, &path_len, 4);
-    memcpy(buf+13, &entry_id, 4);
-    memcpy(buf+17, &(bsa_info.afl_shm_id), 4);
-    memcpy(buf+21, &threshold, 4);
-    memcpy(buf+25, &function_entry_id, 4);
-    memcpy(buf+29, dump_path, path_len);
+    memcpy(buf + 1, &(bsa_info.pid), 4);
+    memcpy(buf + 5, &(bsa_info.master_pid), 4);
+    memcpy(buf + 9, &path_len, 4);
+    memcpy(buf + 13, &entry_id, 4);
+    memcpy(buf + 17, &(bsa_info.afl_shm_id), 4);
+    memcpy(buf + 21, &threshold, 4);
+    memcpy(buf + 25, &function_entry_id, 4);
+    memcpy(buf + 29, &invivo_count, 4);
+    memcpy(buf + 33, &function_len, 4);
+    memcpy(buf + 37, &program_len, 4);
+    memcpy(buf + 41, program_invocation_short_name, program_len);
+    memcpy(buf + 41 + program_len, function_entry_name, function_len);
+    memcpy(buf + 41 + program_len + function_len, dump_path, path_len);
+
     
 
-    printf("function entry = %d\n", function_entry_id);
+    printf("function entry id = %d \n function entry name = %s\n program name = %s\n", function_entry_id, function_entry_name, program_invocation_short_name);
     sprintf(bsa_info.afl_dir, "%s_output", dump_path);
 
     write(ia_fd, buf, buf_sz);

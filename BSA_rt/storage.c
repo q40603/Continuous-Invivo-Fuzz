@@ -3,10 +3,14 @@
 #include "config.h"
 #include "utils.h"
 
+
 __thread struct BSA_buf_pool* bsa_buf_pool = NULL;
 __thread char BSA_dump_dir[4096];
+sem_t mutex;
+
 
 void BSA_init_buf_pool(){
+    
     if (bsa_buf_pool)
         return;
     
@@ -18,24 +22,39 @@ void BSA_init_buf_pool(){
     bsa_buf_pool->n_buf = 0;
 }
 
+void BSA_del_first(){
+    if(bsa_buf_pool->buf_head != NULL){
+        struct BSA_buf* tmp_buf = bsa_buf_pool->buf_head;
+        bsa_buf_pool->buf_head = bsa_buf_pool->buf_head->next;
+        free(tmp_buf->data);
+        free(tmp_buf);
+        bsa_buf_pool->n_buf -= 1;
+    }
+}
+
+
+
 struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
     
+    sem_wait(&mutex); 
     struct BSA_buf* buf;
     struct stat fd_stat;
     
     if (bsa_buf_pool == NULL){
         BSA_init_buf_pool();
-        BSA_log("init buf\n");
+        //BSA_log("init buf\n");
     }
-    if(bsa_buf_pool->n_buf > 50){
-        BSA_clear_buf();
-    }
+
 
     /* check if it's socket */
     fstat(fd, &fd_stat);
     if (!S_ISSOCK(fd_stat.st_mode)){
         return NULL;
     }
+
+
+
+
 
     buf = (struct BSA_buf*)calloc(sizeof(struct BSA_buf), 1);
 
@@ -49,8 +68,8 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
         return NULL;
     }
     
-    //BSA_log("return buf\n");
     buf->len = buf_size;
+    buf->_afl_edge = 0;
     
     if (bsa_buf_pool->buf_head == NULL){
         bsa_buf_pool->buf_head = buf;
@@ -61,6 +80,13 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
     bsa_buf_pool->buf_tail = buf;
     bsa_buf_pool->n_buf += 1;
 
+
+
+    if(bsa_buf_pool->n_buf > 100){
+        BSA_del_first();
+    }
+
+    sem_post(&mutex); 
     return buf;
 }
 
@@ -83,7 +109,7 @@ int BSA_dump_buf(){
     buf = bsa_buf_pool->buf_head;
     if (buf != NULL){
         while(buf){
-            asprintf(&path, "%s/testcase_%d", BSA_dump_dir, count++);
+            asprintf(&path, "%s/%d_%d", BSA_dump_dir, buf->_afl_edge, count++);
             out_fd = open(path, O_CREAT|O_RDWR, 0600);    
             BSA_log("creating testcase: %s\n", path);
             if (out_fd == -1){
@@ -118,4 +144,5 @@ void BSA_clear_buf(){
     bsa_buf_pool->buf_tail = NULL;
     bsa_buf_pool->n_buf = 0;
 }
+
 

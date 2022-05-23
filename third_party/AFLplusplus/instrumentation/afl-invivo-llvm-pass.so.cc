@@ -711,10 +711,10 @@ bool AFLCoverage::runOnModule(Module &M) {
       cur_loc = AFL_R(map_size);
 
       if(firstBB){
-        firstBB = 0;
-        if(strcmp(F.getName().str().c_str(), "readQueryFromClient") == 0 ){
-          firstBB = 1;
-        }
+        //firstBB = 0;
+        // if(strcmp(F.getName().str().c_str(), "readQueryFromClient") == 0 ){
+        //   firstBB = 1;
+        // }
         Value *val[3];
         val[0] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), cur_loc);
         val[1] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), firstBB);
