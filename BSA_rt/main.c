@@ -56,6 +56,7 @@ struct BSA_info bsa_info = {
     .afl_sts_fd = -1,
     .afl_ctl_fd = -1,
     .afl_shm_id = -1,
+    .afl_input_location_shm_id = -1,
     .afl_input_fd = -1,
     .afl_input_fp = NULL,
     .possibility_denominator = 100,
@@ -223,6 +224,8 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
                 return;
             }
             invivo_count ++;
+            
+
 
             pid = getpid();
  

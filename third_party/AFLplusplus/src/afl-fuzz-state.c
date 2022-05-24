@@ -85,7 +85,7 @@ void afl_state_init(afl_state_t *afl, uint32_t map_size) {
   afl->shm.shm_id = -1;
 
   // invivo relevant 
-  afl->Invivo_path_entry_id = -1;
+  afl->Invivo_socket_shm_id = -1;
   afl->Invivo_function_id = -1;
   afl->Invivo_count = 0;
   afl->fsrv.Invivo_master_pid = -1;

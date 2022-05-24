@@ -1742,7 +1742,7 @@ afl_fsrv_run_target(afl_forkserver_t *fsrv, u32 timeout,
   
   //ACTF("success");
   if (exec_ms > timeout) {
-    ACTF("exec_ms > timeou");
+    //ACTF("exec_ms > timeou");
     /* If there was no response from forkserver after timeout seconds,
     we kill the child. The forkserver should inform us afterwards */
 
@@ -1877,13 +1877,9 @@ afl_fsrv_run_target(afl_forkserver_t *fsrv, u32 timeout,
 }
 
 void afl_fsrv_killall() {
-
   LIST_FOREACH(&fsrv_list, afl_forkserver_t, {
-
     afl_fsrv_kill(el);
-
   });
-
 }
 
 void afl_fsrv_deinit(afl_forkserver_t *fsrv) {

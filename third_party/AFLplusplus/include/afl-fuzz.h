@@ -464,7 +464,7 @@ typedef struct afl_state {
   double period_pilot_tmp;
   s32    key_lv;
 
-  s32   Invivo_path_entry_id,     /* ID of fuzz entryblock            */
+  s32   Invivo_socket_shm_id,          /* afl_edge of first socket read     */
         Invivo_function_id,
         Invivo_count;
 

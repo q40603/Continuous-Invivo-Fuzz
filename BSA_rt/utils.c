@@ -264,6 +264,9 @@ void BSA_conn_IA(int id, int function_entry_id){
     
     bsa_info.master_pid = getppid();
     bsa_info.afl_shm_id = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0600);
+    bsa_info.afl_input_location_shm_id = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT|IPC_EXCL|0600);
+    
+
 
     memcpy(buf + 1, &(bsa_info.pid), 4);
     memcpy(buf + 5, &(bsa_info.master_pid), 4);
@@ -271,7 +274,7 @@ void BSA_conn_IA(int id, int function_entry_id){
     memcpy(buf + 13, &entry_id, 4);
     memcpy(buf + 17, &(bsa_info.afl_shm_id), 4);
     memcpy(buf + 21, &threshold, 4);
-    memcpy(buf + 25, &function_entry_id, 4);
+    memcpy(buf + 25, &(bsa_info.afl_input_location_shm_id), 4);
     memcpy(buf + 29, &invivo_count, 4);
     memcpy(buf + 33, &function_len, 4);
     memcpy(buf + 37, &program_len, 4);
@@ -287,6 +290,7 @@ void BSA_conn_IA(int id, int function_entry_id){
     write(ia_fd, buf, buf_sz);
 
     free(buf);
+    //free(afl_input_location_buf);
 }
 
 /*

@@ -1294,9 +1294,9 @@ int main(int argc, char **argv_orig, char **envp) {
         break;
 
 
-      case 'y': // path entry id
-        sscanf(optarg, "%d", &afl->Invivo_path_entry_id);
-        SAYF(cCYA "[Invivo_path_entry_id] %d\n", afl->Invivo_path_entry_id);
+      case 'y': // path entry id before socket
+        sscanf(optarg, "%d", &afl->Invivo_socket_shm_id);
+        SAYF(cCYA "[Invivo_path_socket_entry_id ] %d\n", afl->Invivo_socket_shm_id);
         break;
 
       case 'H':

@@ -36,6 +36,7 @@ extern PREV_LOC_T __afl_prev_caller[CTX_MAX_K];
 extern u32        __afl_prev_ctx;
 
 extern int _afl_edge;
+int *afl_input_location_id = NULL;
 
 u8* BSA_blocked_map = NULL;
 int BSA_blocked_shmid;
@@ -106,9 +107,13 @@ void _BSA_afl_initialize_forkserver(int shm_id){
     int pip[2];
     int pip2[2];
     
+    if((afl_input_location_id = (int *)shmat(bsa_info.afl_input_location_shm_id, NULL, 0)) == (void *)-1){
+        perror("afl_input_location_shm_id shmat failed");
+        exit(0);        
+    }
     
     if (( __afl_area_ptr = shmat(shm_id, NULL, 0) ) == (void *)-1){
-        perror("shmat failed");
+        perror("shm_id shmat failed");
         exit(0);
     }
     assert((BSA_blocked_shmid = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0600)) != -1);

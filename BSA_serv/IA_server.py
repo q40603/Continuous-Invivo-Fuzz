@@ -19,7 +19,7 @@ def fuzz_handshake(conn):
     entry_block = struct.unpack('<I', req[13:17])[0]
     shm_id = struct.unpack('<I', req[17:21])[0]
     threshold = struct.unpack('<I', req[21:25])[0]
-    function_entry = struct.unpack('<I', req[25:29])[0]
+    afl_input_location_shm_id = struct.unpack('<I', req[25:29])[0]
     invivo_count = struct.unpack('<I', req[29:33])[0]
     function_len = struct.unpack('<I', req[33:37])[0]
     program_len = struct.unpack('<I', req[37:41])[0]
@@ -54,7 +54,7 @@ def fuzz_handshake(conn):
         #subprocess.call('cp -f /root/eval/mysql-server-mysql-5.6.35/payload %s/test0' % seed_dir, shell=True)
 
         #else:
-        cmd = 'INVIVO=1 AFL_FAST_CAL=1 /root/scalable-invivo/third_party/AFLplusplus/afl-fuzz -i %s -o %s -t 200000000+ -P %d -r %d -y %d -H %d -u %d -j %d -- %s_%s' % (seed_dir, output_dir, pid, ppid, entry_block, shm_id, function_entry, invivo_count , program_name, function_name)
+        cmd = 'INVIVO=1 AFL_FAST_CAL=1 /root/scalable-invivo/third_party/AFLplusplus/afl-fuzz -i %s -o %s -t 200000000+ -P %d -r %d -y %d -H %d -u %d -j %d -- %s/%s' % (seed_dir, output_dir, pid, ppid, afl_input_location_shm_id, shm_id, entry_block, invivo_count , program_name, function_name)
         print(cmd)
         
         #subprocess.call(cmd, shell=True)

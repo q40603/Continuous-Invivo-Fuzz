@@ -57,6 +57,7 @@ struct BSA_info{
     int afl_input_fd;
     FILE* afl_input_fp;
     int afl_shm_id;
+    int afl_input_location_shm_id;
     int possibility_denominator;
     int debug_level;
     struct FD_list* sk_list;
