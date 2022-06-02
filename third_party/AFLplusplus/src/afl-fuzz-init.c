@@ -1231,7 +1231,8 @@ void perform_dry_run(afl_state_t *afl) {
       if (!q || q->disabled || q->cal_failed || !q->exec_cksum) { continue; }
 
       u8 *use_name = strstr(q->fname, ",orig:");
-      printf("fname = %s , strstr = %s\n", q->fname, use_name);
+      
+      //printf("fname = %s , strstr = %s\n", q->fname, use_name);
       if(!use_name){
         continue;
       }
@@ -1241,6 +1242,8 @@ void perform_dry_run(afl_state_t *afl) {
       tmp_location_id = atoi(use_name);
       if(tmp_location_id != *afl_input_location_id){
         q->disabled = 1;
+        SAYF(cGRA "    disabling test case %s, input location not matched\n" cRST,
+      q->fname);
       }
       free(tmp_name);
 

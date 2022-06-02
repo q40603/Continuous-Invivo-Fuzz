@@ -31,7 +31,7 @@ extern u8* BSA_blocked_map;
 
 pthread_t BSA_request_thread;
 int set_stdin = 0;
-int BSA_fuzz_req = -1;
+int *BSA_fuzz_req = NULL;
 // Global variables
 __thread u32 BSA_state = BSARun; 
 extern char container_id[20];
@@ -86,8 +86,9 @@ void* BSA_request_handler(void* arg){
         }
         if ( (read(comm_fd, &req, 4) == 4) && (req == 1) ){
             BSA_log("Get connection\n");
-            read(comm_fd, &req, 4);
-            BSA_fuzz_req = req;
+            *BSA_fuzz_req = req;
+            // read(comm_fd, &req, 4);
+            // BSA_fuzz_req = req;
         }
         else if( req == 2 ){
             int val, pid, id;
@@ -132,13 +133,18 @@ __attribute__((constructor(INVIVO_PRIO)))
 void BSA_initial(void){
     //srand(time(NULL));
     //bsa_info.master_pid = getpid();
-    int req_fd;
+    int req_fd, fuzz_req_shm_id;
     char req_sk[1024];
 
     //atexit(BSA_clean);
     
     if (BSA_state == BSARun){
-        sem_init(&mutex, 0, 1); 
+        //sem_init(&mutex, 0, 1); 
+        assert((fuzz_req_shm_id = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0600)) != -1);
+        if((BSA_fuzz_req = (int *)shmat(fuzz_req_shm_id, NULL, 0)) == (void *)-1){
+            perror("afl_input_location_shm_id shmat failed");
+            exit(0);        
+        }        
         set_container_id();
         create_output_top_dir();
         BSA_init_buf_pool();
@@ -161,7 +167,7 @@ void BSA_initial(void){
 
         memset(BSA_entry_value_map, 0, sizeof(u8)*0x10000);
 
-        pthread_atfork(NULL, NULL, BSA_initial);
+        //pthread_atfork(NULL, NULL, BSA_initial);
 
     }
 }
@@ -180,7 +186,7 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
     struct timeval now;
     int pid;
     char *dump_path;
-    int req_bbid, req_tid;
+    // int req_bbid, req_tid;
     _afl_edge = (_afl_edge >> 1) ^ id;
     function_entry_name = function_name;
     switch(BSA_state){
@@ -188,11 +194,11 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
     case BSADebugging:
     case BSARun:
         
-        req_bbid = BSA_fuzz_req >> 16;
-        req_tid = BSA_fuzz_req & 0xffff;
+        // req_bbid = BSA_fuzz_req >> 16;
+        // req_tid = BSA_fuzz_req & 0xffff;
         //fun_cnt ++;
         // if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_edge)) ){
-        if ( (req_bbid == 0 && *(BSA_entry_value_map+_afl_edge)) ){
+        if ( (*BSA_fuzz_req == 1 && *(BSA_entry_value_map+_afl_edge)) ){
             // if ( req_tid != syscall(__NR_gettid) ){
             //     return;
             // }
@@ -230,7 +236,7 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
             pid = getpid();
  
                 
-            BSA_fuzz_req = -1;
+            *BSA_fuzz_req = -1;
             /* setup dump dir */   
             bsa_info.pid = pid;
 
@@ -275,7 +281,7 @@ void BSA_checkpoint(int id, int is_entry, char *function_name){
     struct timeval now;
     int pid;
     char *dump_path;
-    int req_bbid, req_tid;
+    //int req_bbid, req_tid;
     _afl_edge = (_afl_edge >> 1) ^ id;
     //__afl_prev_loc[0] = (__afl_prev_loc[0]>>1) ^ id;
     //BSA_log("Yep %d %d\n", id, is_entry);
@@ -284,14 +290,14 @@ void BSA_checkpoint(int id, int is_entry, char *function_name){
     case BSADebugging:
     case BSARun:
         
-        req_bbid = BSA_fuzz_req >> 16;
-        req_tid = BSA_fuzz_req & 0xffff;
+        // req_bbid = BSA_fuzz_req >> 16;
+        // req_tid = BSA_fuzz_req & 0xffff;
         //fun_cnt ++;
         //if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_edge)) || (id == req_bbid && is_entry) ){
-        if ( (req_bbid == 0 && *(BSA_entry_value_map+_afl_edge)) ){
-            if ( req_tid != syscall(__NR_gettid) ){
-                return;
-            }
+        if ( (*BSA_fuzz_req == 1 && *(BSA_entry_value_map+_afl_edge)) ){
+            // if ( req_tid != syscall(__NR_gettid) ){
+            //     return;
+            // }
             /* Set flags */
             BSA_state = BSAPrep;
 
@@ -307,7 +313,7 @@ void BSA_checkpoint(int id, int is_entry, char *function_name){
  
             if (!pid){
                 
-                BSA_fuzz_req = -1;
+                *BSA_fuzz_req = -1;
                 /* setup dump dir */   
                 bsa_info.pid = getpid();
 
@@ -329,7 +335,7 @@ void BSA_checkpoint(int id, int is_entry, char *function_name){
                 _afl_maybe_log(id);
             }
             else if(pid > 0){
-                BSA_fuzz_req = -1;
+                *BSA_fuzz_req = -1;
                 BSA_state = BSARun;
                 BSA_log("Yep\n");
             }

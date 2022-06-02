@@ -17,8 +17,8 @@ int main(int argc, char** argv){
     if (type == 1){
         is_report = 0;
         pid = atoi(argv[2]);
-        tid = atoi(argv[3]);
-        bid = atoi(argv[4]);
+        // tid = atoi(argv[3]);
+        // bid = atoi(argv[4]);
         
     }else if (type == 2){
         is_report = 1;
@@ -41,10 +41,10 @@ int main(int argc, char** argv){
     }
 
     if (is_report == 0){
-        int quest[2];
+        int quest[1];
         quest[0] = 1;
-        quest[1] = tid ^ (bid<<16) ;
-        if (write(sockfd, quest, 8) != 8){
+        // quest[1] = tid ^ (bid<<16) ;
+        if (write(sockfd, quest, 4) != 4){
             perror("write failed");
         }
     }else{

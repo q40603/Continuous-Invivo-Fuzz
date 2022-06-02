@@ -6,7 +6,7 @@
 
 __thread struct BSA_buf_pool* bsa_buf_pool = NULL;
 __thread char BSA_dump_dir[4096];
-sem_t mutex;
+//sem_t mutex;
 
 
 void BSA_init_buf_pool(){
@@ -36,7 +36,7 @@ void BSA_del_first(){
 
 struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
     
-    sem_wait(&mutex); 
+    //sem_wait(&mutex); 
     struct BSA_buf* buf;
     struct stat fd_stat;
     
@@ -86,7 +86,7 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
         BSA_del_first();
     }
 
-    sem_post(&mutex); 
+    //sem_post(&mutex); 
     return buf;
 }
 

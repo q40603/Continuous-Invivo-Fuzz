@@ -24,10 +24,10 @@ def fuzz_handshake(conn):
     function_len = struct.unpack('<I', req[33:37])[0]
     program_len = struct.unpack('<I', req[37:41])[0]
     program_name = conn.recv(program_len)
-    program_name = program_name.decode('utf-8')
+    program_name = program_name.decode('utf-8').replace(" ", "_")
     print('program name: ', program_name)
     function_name = conn.recv(function_len)
-    function_name = function_name.decode('utf-8')
+    function_name = function_name.decode('utf-8').replace(" ", "_")
     print('function entry name:', function_name)
     seed_dir = conn.recv(seed_dir_len)
     print('seed_dir:', seed_dir)
