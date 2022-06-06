@@ -66,6 +66,10 @@ struct BSA_info{
 
 extern struct BSA_info bsa_info;
 
+#define AUTO_FUZZ 1
+#define FUNCTION_FUZZ 2
+#define REPORT_FUZZ 3
+
 
 #define INVIVO_PRIO 5
 

@@ -20,7 +20,7 @@ int main(int argc, char** argv){
         // tid = atoi(argv[3]);
         // bid = atoi(argv[4]);
         
-    }else if (type == 2){
+    }else if (type == 3){
         is_report = 1;
         pid = atoi(argv[2]);
         bid = atoi(argv[3]);

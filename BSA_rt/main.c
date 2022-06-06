@@ -73,6 +73,7 @@ static int BSA_req_fd = -1;
 
 void* BSA_request_handler(void* arg){
     int req = 0, comm_fd;
+    int val, pid, id;
     struct sockaddr_un client_addr;
     socklen_t socklen = sizeof(client_addr);
     //printf("container id = %s\n", container_id);
@@ -84,26 +85,62 @@ void* BSA_request_handler(void* arg){
             BSA_log("Accept incoming connection failed!\n");
             _exit(1);
         }
-        if ( (read(comm_fd, &req, 4) == 4) && (req == 1) ){
-            BSA_log("Get connection\n");
+        if(read(comm_fd, &req, 4) == 4){
             *BSA_fuzz_req = req;
-            // read(comm_fd, &req, 4);
-            // BSA_fuzz_req = req;
-        }
-        else if( req == 2 ){
-            int val, pid, id;
-            read(comm_fd, &pid, 4);
-            read(comm_fd, &id, 4);
-            read(comm_fd, &val, 4);
-            if (val < BSA_FUZZ_THRESHOLD){
-                *(u8*)(BSA_entry_value_map+id) = 0;
-            }else{
-                *(u8*)(BSA_entry_value_map+id) = 1;
+            BSA_log("Fuzz req = %d\n", req);
+            switch(req){
+                case AUTO_FUZZ:
+                    // select entry prior to socket read
+                    break;
+
+                case FUNCTION_FUZZ:
+                    // select certain function as entry
+                    break;
+
+
+                case REPORT_FUZZ:
+                    // report fuzzing entry
+                    
+                    read(comm_fd, &pid, 4);
+                    read(comm_fd, &id, 4);
+                    read(comm_fd, &val, 4);
+                    if (val < BSA_FUZZ_THRESHOLD){
+                        *(u8*)(BSA_entry_value_map+id) = 0;
+                    }else{
+                        *(u8*)(BSA_entry_value_map+id) = 1;
+                    }
+                    BSA_log("[BSA_request_handler] id: 0x%x, val: %d\n", id, val);                
+                    break;
+
+                default:
+                    break;    
+
             }
-            BSA_log("[BSA_request_handler] id: 0x%x, val: %d\n", id, val);
         }
-        //printf("%d\n", req);
         close(comm_fd);
+        // if ( (read(comm_fd, &req, 4) == 4) && (req == 1) ){
+        //     BSA_log("Get connection\n");
+        //     *BSA_fuzz_req = req;
+        //     // read(comm_fd, &req, 4);
+        //     // BSA_fuzz_req = req;
+        // }
+        // else if(req == 2){
+        //     *BSA_fuzz_req = req;
+        // }
+        // else if( req == 3 ){
+        //     int val, pid, id;
+        //     read(comm_fd, &pid, 4);
+        //     read(comm_fd, &id, 4);
+        //     read(comm_fd, &val, 4);
+        //     if (val < BSA_FUZZ_THRESHOLD){
+        //         *(u8*)(BSA_entry_value_map+id) = 0;
+        //     }else{
+        //         *(u8*)(BSA_entry_value_map+id) = 1;
+        //     }
+        //     BSA_log("[BSA_request_handler] id: 0x%x, val: %d\n", id, val);
+        // }
+        //printf("%d\n", req);
+        // close(comm_fd);
     }
 }
 

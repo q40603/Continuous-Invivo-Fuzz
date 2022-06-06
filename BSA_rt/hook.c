@@ -181,6 +181,7 @@ ssize_t BSA_hook_recvmsg(int sockfd, struct msghdr *msg, int flags){
 
 ssize_t BSA_hook_write(int fd, uint8_t* buf, size_t len){
     size_t ret = len;
+    BSA_log("write %s\n", buf);
     BSA_HOOK_FUNCTION_DENY(ret=write(fd,buf,len))
     return ret;
 }
@@ -196,12 +197,14 @@ ssize_t BSA_hook_writev(int fd, const struct iovec *iov, int iovcnt){
 
 ssize_t BSA_hook_send(int sockfd, const void *buf, size_t len, int flags){
     size_t ret = len;
+    BSA_log("send %s\n",(char*) buf);
     BSA_HOOK_FUNCTION_DENY(ret = send(sockfd, buf, len, flags))
     return ret;
 }
 
 ssize_t BSA_hook_sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen){
     size_t ret = len;
+    BSA_log("sendto %s\n", (char*)buf);
     BSA_HOOK_FUNCTION_DENY(ret = sendto(sockfd, buf, len, flags, dest_addr, addrlen))
     return ret;
 }
