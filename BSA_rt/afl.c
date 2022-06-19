@@ -46,8 +46,8 @@ static pthread_t input_thread;
 
 void BSA_alarm_handler(int sig){
     //BSA_log("Time out le \n");
-    //BSA_blocked_map[__afl_prev_loc[0]] = 1;  
-    BSA_blocked_map[_afl_edge] = 1;
+    BSA_blocked_map[__afl_prev_loc[0]] = 1;  
+    //BSA_blocked_map[_afl_edge] = 1;
     exit(0);
 }
 
@@ -111,6 +111,7 @@ void _BSA_afl_initialize_forkserver(int shm_id){
         perror("afl_input_location_shm_id shmat failed");
         exit(0);        
     }
+    *afl_input_location_id = 0;
     
     if (( __afl_area_ptr = shmat(shm_id, NULL, 0) ) == (void *)-1){
         perror("shm_id shmat failed");
@@ -309,11 +310,11 @@ void _afl_maybe_log(int id){
                         
                         //PrintTime(tv4);
 
-                        if (status != 0){
-                            BSA_log("Failed status 0x%x\n", status);
-                            if(WIFEXITED(status)) BSA_log("Exit status 0x%x\n", WEXITSTATUS(status));
-                            if(WIFSIGNALED(status)) BSA_log("Termination signal 0x%x\n", WTERMSIG(status));
-                        }
+                        // if (status != 0){
+                        //     BSA_log("Failed status 0x%x\n", status);
+                        //     if(WIFEXITED(status)) BSA_log("Exit status 0x%x\n", WEXITSTATUS(status));
+                        //     if(WIFSIGNALED(status)) BSA_log("Termination signal 0x%x\n", WTERMSIG(status));
+                        // }
                         write(STS_CHANNEL_FD, &status, 4);
                     }
                 }

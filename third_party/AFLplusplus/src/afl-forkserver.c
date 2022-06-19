@@ -438,7 +438,7 @@ void afl_invivo_fsrv_start(afl_forkserver_t *fsrv, char **argv,
     ACTF("Setup Invivo ctl channel...");    
     sprintf(sock_path, "/tmp/BSA_ctl_%d.sock", fsrv->fsrv_pid);
     fsrv->fsrv_ctl_fd = Invivo_connect_sock(sock_path);
-    ACTF("fd= %d", fsrv->fsrv_ctl_fd);
+    //ACTF("fd= %d", fsrv->fsrv_ctl_fd);
 
 
     it.it_value.tv_sec = ((fsrv->exec_tmout * FORK_WAIT_MULT) / 1000);

@@ -1218,6 +1218,7 @@ void perform_dry_run(afl_state_t *afl) {
 
   int *afl_input_location_id;
   int tmp_location_id;
+  int not_all_disabled = 0;
 
   if((afl_input_location_id = (int *)shmat(afl->Invivo_socket_shm_id, NULL, 0)) == (void *)-1){
       perror("afl_input_location_shm_id shmat failed");
@@ -1245,8 +1246,17 @@ void perform_dry_run(afl_state_t *afl) {
         SAYF(cGRA "    disabling test case %s, input location not matched\n" cRST,
       q->fname);
       }
+      else{
+        not_all_disabled = 1;
+      }
       free(tmp_name);
 
+    }
+    if(!not_all_disabled){
+      for (idx = 0; idx < afl->queued_items; idx++){
+        q = afl->queue_buf[idx];
+        q->disabled = 0;
+      }
     }
   }
   

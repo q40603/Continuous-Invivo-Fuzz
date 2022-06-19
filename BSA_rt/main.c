@@ -170,18 +170,22 @@ __attribute__((constructor(INVIVO_PRIO)))
 void BSA_initial(void){
     //srand(time(NULL));
     //bsa_info.master_pid = getpid();
-    int req_fd, fuzz_req_shm_id;
+    int req_fd, fuzz_req_shm_id=0;
     char req_sk[1024];
 
     //atexit(BSA_clean);
     
     if (BSA_state == BSARun){
         //sem_init(&mutex, 0, 1); 
-        assert((fuzz_req_shm_id = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0600)) != -1);
+        if(fuzz_req_shm_id)
+            shmdt(BSA_fuzz_req);
+        
+        assert((fuzz_req_shm_id = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0777)) != -1);
+        
         if((BSA_fuzz_req = (int *)shmat(fuzz_req_shm_id, NULL, 0)) == (void *)-1){
-            perror("afl_input_location_shm_id shmat failed");
+            perror("BSA_fuzz_req shmat failed");
             exit(0);        
-        }        
+        }
         set_container_id();
         create_output_top_dir();
         BSA_init_buf_pool();
@@ -244,11 +248,11 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
             BSA_state = BSAPrep;
             // function_entry_name = function_name;
 
-            struct sigaction act;
+            // struct sigaction act;
 
-            act.sa_handler =  pause_signal_handler;
-            sigaction(SIGCONT, &act, NULL);
-            pause();
+            // act.sa_handler =  pause_signal_handler;
+            // sigaction(SIGCONT, &act, NULL);
+            // pause();
             // if(container_match()){
             //     BSA_state = BSARun;
             //     return;
@@ -304,7 +308,8 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
         }
         break;
     case BSAFuzz:
-        if(BSA_blocked_map[_afl_edge]){
+        if(BSA_blocked_map[__afl_prev_loc[0]]){
+        //if(BSA_blocked_map[_afl_edge]){
             exit(0);
         }
         break;

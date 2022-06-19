@@ -9,7 +9,6 @@ extern u8 *BSA_entry_value_map;
 extern int* afl_input_location_id;
 extern int _afl_edge;
 
-int readc_count = 0;
 extern __thread char *function_entry_name;
 
 #define BSA_HOOK_FUNCTION_DENY(x) \
@@ -30,7 +29,7 @@ int BSA_hook_close(int fd){
     //if (S_ISSOCK(st.st_mode) && BSA_state == BSARun){
     if (S_ISSOCK(st.st_mode)){
         if(BSA_state == BSARun){
-            //BSA_log("session end\n");
+            BSA_log("session end\n");
         }
         else if(BSA_state == BSAFuzz){
             close(fd);
@@ -47,8 +46,8 @@ int BSA_hook_accept(
 ){
 
     int sock_fd = accept(socket, address, address_len);
-    // if(sock_fd > 0)
-    //     BSA_log("accept on fd %d\n", sock_fd);
+    if(sock_fd > 0)
+        BSA_log("accept on fd %d\n", sock_fd);
     return sock_fd;
 }
 
@@ -61,8 +60,8 @@ int BSA_hook_accept4(
 ){
 
     int sock_fd = accept4(socket, address, address_len, flags);
-    // if(sock_fd > 0)
-    //     BSA_log("accept on fd %d\n", sock_fd);
+    if(sock_fd > 0)
+        BSA_log("accept on fd %d\n", sock_fd);
     return sock_fd;
 }
 
@@ -87,9 +86,12 @@ ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len){
             memcpy(dest->data, buf, ret);
         }
     }
-    else if (BSA_state == BSAFuzz && ret > 0 && !(afl_input_location_id)){
-        *afl_input_location_id = _afl_edge;
-        BSA_log("afl_input_location_id %d\n", *afl_input_location_id);
+    else if (BSA_state == BSAFuzz && ret > 0){
+        if(!(*afl_input_location_id)){
+            *afl_input_location_id = _afl_edge;
+            BSA_log("afl_input_location_id %d\n", *afl_input_location_id);
+        }
+        //BSA_log("fuzzing afl_edge %d\n", _afl_edge);
     }
     // if(BSA_state == BSAFuzz){
     //     BSA_log("fuzz-  BSA_hook_read afl_prev_loc = %d, fd = %d, ret = %ld\n",__afl_prev_loc[0], fd, ret );
@@ -115,9 +117,12 @@ ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){
             memcpy(dest->data, buf, ret);
         }
     }
-    else if (BSA_state == BSAFuzz && ret > 0 && !(*afl_input_location_id)){
-        *afl_input_location_id = _afl_edge;
-        BSA_log("afl_input_location_id %d\n", *afl_input_location_id);
+    else if (BSA_state == BSAFuzz && ret > 0){
+        if(!(*afl_input_location_id)){
+            *afl_input_location_id = _afl_edge;
+            BSA_log("afl_input_location_id %d\n", *afl_input_location_id);
+        }
+        //BSA_log("fuzzing afl_edge %d\n", _afl_edge);
     }
     return ret;
 }
@@ -143,8 +148,11 @@ ssize_t BSA_hook_recvfrom(int sockfd, void *buf, size_t len, int flags, struct s
         }
         
     }
-    else if (BSA_state == BSAFuzz && ret > 0 && !(*afl_input_location_id)){
-        *afl_input_location_id = _afl_edge;
+    else if (BSA_state == BSAFuzz && ret > 0){
+        if(!(*afl_input_location_id)){
+            *afl_input_location_id = _afl_edge;
+            BSA_log("afl_input_location_id %d\n", *afl_input_location_id);
+        }
         //BSA_log("fuzzing afl_edge %d\n", _afl_edge);
     }
     return ret;
@@ -172,8 +180,11 @@ ssize_t BSA_hook_recvmsg(int sockfd, struct msghdr *msg, int flags){
             cnt -= len;
         }
     }
-    else if (BSA_state == BSAFuzz && ret > 0 && !(*afl_input_location_id)){
-        *afl_input_location_id = _afl_edge;
+    else if (BSA_state == BSAFuzz && ret > 0){
+        if(!(*afl_input_location_id)){
+            *afl_input_location_id = _afl_edge;
+            BSA_log("afl_input_location_id %d\n", *afl_input_location_id);
+        }
         //BSA_log("fuzzing afl_edge %d\n", _afl_edge);
     }
     return ret;
@@ -181,7 +192,7 @@ ssize_t BSA_hook_recvmsg(int sockfd, struct msghdr *msg, int flags){
 
 ssize_t BSA_hook_write(int fd, uint8_t* buf, size_t len){
     size_t ret = len;
-    BSA_log("write %s\n", buf);
+    //BSA_log("write %s\n", buf);
     BSA_HOOK_FUNCTION_DENY(ret=write(fd,buf,len))
     return ret;
 }
@@ -197,14 +208,14 @@ ssize_t BSA_hook_writev(int fd, const struct iovec *iov, int iovcnt){
 
 ssize_t BSA_hook_send(int sockfd, const void *buf, size_t len, int flags){
     size_t ret = len;
-    BSA_log("send %s\n",(char*) buf);
+    //BSA_log("send %s\n",(char*) buf);
     BSA_HOOK_FUNCTION_DENY(ret = send(sockfd, buf, len, flags))
     return ret;
 }
 
 ssize_t BSA_hook_sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen){
     size_t ret = len;
-    BSA_log("sendto %s\n", (char*)buf);
+    //BSA_log("sendto %s\n", (char*)buf);
     BSA_HOOK_FUNCTION_DENY(ret = sendto(sockfd, buf, len, flags, dest_addr, addrlen))
     return ret;
 }
