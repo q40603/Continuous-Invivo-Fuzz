@@ -42,11 +42,14 @@ int main(int argc, char** argv){
 
         case FUNCTION_FUZZ:
             int fun_len = strlen(argv[3]);
-            buf = calloc(13+fun_len,1);
-            memcpy(buf+1, &FUNCTION_FUZZ, 4);
-            memcpy(buf+5, &getpid(), 4);
-            memcpy(buf+9, &fun_len, 4);
-            memcpy(buf+13, argv[3], fun_len);
+            int quest[2];
+            quest[0] = FUNCTION_FUZZ;
+            quest[1] = fun_len;
+            write(sockfd, quest, 8);
+            
+            buf = calloc(fun_len,1);
+            memcpy(buf, argv[3], fun_len);
+            write(sockfd, buf, fun_len);
             break;
 
         case REPORT_FUZZ:
@@ -55,6 +58,7 @@ int main(int argc, char** argv){
             report[1] = getpid();
             report[2] = bid;
             report[3] = val;
+            write(sockfd, report, 16);
             break;
 
         default:

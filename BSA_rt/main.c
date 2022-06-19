@@ -43,6 +43,7 @@ u8 *BSA_entry_value_map;
 
 __thread int invivo_count = 0;
 __thread char *function_entry_name;
+__thread char *fuzz_function = NULL;
 
 
 
@@ -73,7 +74,7 @@ static int BSA_req_fd = -1;
 
 void* BSA_request_handler(void* arg){
     int req = 0, comm_fd;
-    int val, pid, id;
+    int val, pid, id, fun_len;
     struct sockaddr_un client_addr;
     socklen_t socklen = sizeof(client_addr);
     //printf("container id = %s\n", container_id);
@@ -94,6 +95,15 @@ void* BSA_request_handler(void* arg){
                     break;
 
                 case FUNCTION_FUZZ:
+                    if(fuzz_function){
+                        free(fuzz_function);
+                        fuzz_function = NULL;
+                    }
+                        
+                    
+                    read(comm_fd, &fun_len, 4);
+                    fuzz_function = calloc(fun_len, 1);
+                    read(comm_fd, &fuzz_function, fun_len);
                     // select certain function as entry
                     break;
 
@@ -239,7 +249,8 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
         // req_tid = BSA_fuzz_req & 0xffff;
         //fun_cnt ++;
         // if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_edge)) ){
-        if ( (*BSA_fuzz_req == 1 && *(BSA_entry_value_map+_afl_edge)) ){
+        if ( (*BSA_fuzz_req == AUTO_FUZZ && *(BSA_entry_value_map+_afl_edge)) || 
+        (*BSA_fuzz_req == FUNCTION_FUZZ && fuzz_function!=NULL && !strcmp(fuzz_function , function_name))){
             // if ( req_tid != syscall(__NR_gettid) ){
             //     return;
             // }
