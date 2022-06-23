@@ -15,9 +15,12 @@ int main(int argc, char** argv){
     struct sockaddr_un addr;
     int addr_len;
     int sockfd;
-    int is_report = 0, pid, tid, bid, val
+    int is_report = 0, tid, bid, val;
     int type = atoi(argv[1]), pid = atoi(argv[2]);
     char *buf;
+
+    int function_quest[2], auto_quest[1], report[4];
+    int fun_len;
 
 
     sockfd = socket(AF_LOCAL, SOCK_STREAM, 0);
@@ -33,19 +36,18 @@ int main(int argc, char** argv){
 
     switch(type){
         case AUTO_FUZZ:
-            int quest[1];
-            quest[0] = AUTO_FUZZ;
-            if (write(sockfd, quest, 4) != 4){
+            auto_quest[0] = AUTO_FUZZ;
+            if (write(sockfd, auto_quest, 4) != 4){
                 perror("write failed");
             }            
             break;
 
         case FUNCTION_FUZZ:
-            int fun_len = strlen(argv[3]);
-            int quest[2];
-            quest[0] = FUNCTION_FUZZ;
-            quest[1] = fun_len;
-            write(sockfd, quest, 8);
+            fun_len = strlen(argv[3]);
+            
+            function_quest[0] = FUNCTION_FUZZ;
+            function_quest[1] = fun_len;
+            write(sockfd, function_quest, 8);
             
             buf = calloc(fun_len,1);
             memcpy(buf, argv[3], fun_len);
@@ -53,7 +55,6 @@ int main(int argc, char** argv){
             break;
 
         case REPORT_FUZZ:
-            int report[4];
             report[0] = REPORT_FUZZ;
             report[1] = getpid();
             report[2] = bid;

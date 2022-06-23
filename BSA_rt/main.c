@@ -23,6 +23,9 @@ extern void BSA_init_buf_pool();
 extern void BSA_set_dump_dir(const char*);
 extern void BSA_clear_buf(int);
 extern void set_container_id();
+extern void set_mac_addr();
+extern int mac_the_same();
+extern int container_checkpoint(int);
 extern __thread char BSA_dump_dir[4096];
 extern struct BSA_buf_pool* bsa_buf_pool;
 
@@ -34,7 +37,7 @@ int set_stdin = 0;
 int *BSA_fuzz_req = NULL;
 // Global variables
 __thread u32 BSA_state = BSARun; 
-extern char container_id[20];
+extern char mac_addr[20];
 extern sem_t mutex; 
 
 // int fun_cnt = 0;
@@ -77,7 +80,6 @@ void* BSA_request_handler(void* arg){
     int val, pid, id, fun_len;
     struct sockaddr_un client_addr;
     socklen_t socklen = sizeof(client_addr);
-    //printf("container id = %s\n", container_id);
     memset(&client_addr, 0, sizeof(client_addr));
 
     while(1){
@@ -196,6 +198,7 @@ void BSA_initial(void){
             perror("BSA_fuzz_req shmat failed");
             exit(0);        
         }
+        set_mac_addr();
         set_container_id();
         create_output_top_dir();
         BSA_init_buf_pool();
@@ -249,25 +252,27 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
         // req_tid = BSA_fuzz_req & 0xffff;
         //fun_cnt ++;
         // if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_edge)) ){
-        if ( (*BSA_fuzz_req == AUTO_FUZZ && *(BSA_entry_value_map+_afl_edge)) || 
-        (*BSA_fuzz_req == FUNCTION_FUZZ && fuzz_function!=NULL && !strcmp(fuzz_function , function_name))){
-            // if ( req_tid != syscall(__NR_gettid) ){
-            //     return;
-            // }
+        if ( (*BSA_fuzz_req == AUTO_FUZZ && *(BSA_entry_value_map+_afl_edge)) ){
+        //|| (*BSA_fuzz_req == FUNCTION_FUZZ && fuzz_function!=NULL && !strcmp(fuzz_function , function_name))){
 
             /* Set flags */
-            BSA_state = BSAPrep;
-            // function_entry_name = function_name;
+            
+            
+            if(!container_checkpoint(invivo_count)){
+                BSA_log("Container Chekcpoint fails\n");
+                return;
+            }
 
+            BSA_state = BSAPrep;
             // struct sigaction act;
 
             // act.sa_handler =  pause_signal_handler;
             // sigaction(SIGCONT, &act, NULL);
             // pause();
-            // if(container_match()){
-            //     BSA_state = BSARun;
-            //     return;
-            // }
+            if(mac_the_same()){
+                BSA_state = BSARun;
+                return;
+            }
             // if (-1 == ret){
             //     BSA_err("Process exited\n");
             // }

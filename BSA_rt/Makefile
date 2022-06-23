@@ -4,8 +4,8 @@ SHELL:=/bin/bash
 
 INCLUDE_DIR = ./include
 #CFLAGS = -I./include -Wall -g -c -fPIC -pthread -lgcc_s -D_IV_DEBUG
-CFLAGS = -I./include -Wall -g -c -fPIC -pthread -lgcc_s -D_IV_DEBUG -DSECCOMP_DENY_epoll_wait 
-CSHARED_FLAG = -I./include -fPIC -shared
+CFLAGS = -I./include -Wall -g -c -fPIC -pthread  -lcurl -lgcc_s -D_IV_DEBUG -DSECCOMP_DENY_epoll_wait 
+CSHARED_FLAG = -I./include -fPIC -shared -lcurl
 OBJ_DIR = ./objs/
 
 CC = gcc

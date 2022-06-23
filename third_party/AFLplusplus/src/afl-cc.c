@@ -1185,8 +1185,11 @@ else{
 
     }
   
-  if(invivo_mode)
+  if(invivo_mode){
     cc_params[cc_par_cnt++] = "-pthread";
+    cc_params[cc_par_cnt++] = "-lcurl";
+  }
+    
 
   #if !defined(__APPLE__) && !defined(__sun)
     if (!shared_linking && !partial_linking)
