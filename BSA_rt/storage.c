@@ -4,31 +4,45 @@
 #include "utils.h"
 
 
-__thread struct BSA_buf_pool* bsa_buf_pool = NULL;
+
+__thread struct BSA_buf_pool* bsa_buf_pool[MAX_FD_NUM];
 __thread char BSA_dump_dir[4096];
 //sem_t mutex;
 
 
-void BSA_init_buf_pool(){
+void BSA_init_global_buf_pool(){
     
-    if (bsa_buf_pool)
-        return;
-    
-    bsa_buf_pool = (struct BSA_buf_pool*)calloc(sizeof(struct BSA_buf_pool), 1);
+    for(int i = 0 ; i < MAX_FD_NUM ; i++){
+        bsa_buf_pool[i] = (struct BSA_buf_pool*)calloc(sizeof(struct BSA_buf_pool), 1);
 
-    if (bsa_buf_pool == NULL){
-        BSA_err("Can not init buf pool\n");
+        if (bsa_buf_pool[i] == NULL){
+            BSA_err("Can not init buf pool\n");
+        }
+        bsa_buf_pool[i]->n_buf = 0;
     }
-    bsa_buf_pool->n_buf = 0;
+
 }
 
-void BSA_del_first(){
-    if(bsa_buf_pool->buf_head != NULL){
-        struct BSA_buf* tmp_buf = bsa_buf_pool->buf_head;
-        bsa_buf_pool->buf_head = bsa_buf_pool->buf_head->next;
+void BSA_init_buf_pool(int fd){
+    if (bsa_buf_pool[fd])
+        return;
+    
+    bsa_buf_pool[fd] = (struct BSA_buf_pool*)calloc(sizeof(struct BSA_buf_pool), 1);
+
+    if (bsa_buf_pool[fd] == NULL){
+        BSA_err("Can not init buf pool\n");
+    }
+    bsa_buf_pool[fd]->n_buf = 0;
+}
+
+
+void BSA_del_first(int fd){
+    if(bsa_buf_pool[fd]->buf_head != NULL){
+        struct BSA_buf* tmp_buf = bsa_buf_pool[fd]->buf_head;
+        bsa_buf_pool[fd]->buf_head = bsa_buf_pool[fd]->buf_head->next;
         free(tmp_buf->data);
         free(tmp_buf);
-        bsa_buf_pool->n_buf -= 1;
+        bsa_buf_pool[fd]->n_buf -= 1;
     }
 }
 
@@ -40,8 +54,8 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
     struct BSA_buf* buf;
     struct stat fd_stat;
     
-    if (bsa_buf_pool == NULL){
-        BSA_init_buf_pool();
+    if (bsa_buf_pool[fd] == NULL){
+        BSA_init_buf_pool(fd);
         //BSA_log("init buf\n");
     }
 
@@ -71,19 +85,19 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
     buf->len = buf_size;
     buf->_afl_edge = 0;
     
-    if (bsa_buf_pool->buf_head == NULL){
-        bsa_buf_pool->buf_head = buf;
+    if (bsa_buf_pool[fd]->buf_head == NULL){
+        bsa_buf_pool[fd]->buf_head = buf;
     }
     else{
-        bsa_buf_pool->buf_tail->next = buf;
+        bsa_buf_pool[fd]->buf_tail->next = buf;
     }
-    bsa_buf_pool->buf_tail = buf;
-    bsa_buf_pool->n_buf += 1;
+    bsa_buf_pool[fd]->buf_tail = buf;
+    bsa_buf_pool[fd]->n_buf += 1;
 
 
 
-    if(bsa_buf_pool->n_buf > 100){
-        BSA_del_first();
+    if(bsa_buf_pool[fd]->n_buf > 100){
+        BSA_del_first(fd);
     }
 
     //sem_post(&mutex); 
@@ -103,46 +117,53 @@ int BSA_dump_buf(){
     /*
      * dump previous inputed data as fuzzer's seed
      */
-    if (bsa_buf_pool == NULL)
-        return -1;
+    for(int i = 0 ; i < MAX_FD_NUM; i ++){
+        if (bsa_buf_pool[i] == NULL)
+            continue;
 
-    buf = bsa_buf_pool->buf_head;
-    if (buf != NULL){
-        while(buf){
-            asprintf(&path, "%s/%d_%d", BSA_dump_dir, buf->_afl_edge, count++);
-            out_fd = open(path, O_CREAT|O_RDWR, 0600);    
-            BSA_log("creating testcase: %s\n", path);
-            if (out_fd == -1){
-                BSA_err("Can not create testcase file")
+        buf = bsa_buf_pool[i]->buf_head;
+        if (buf != NULL){
+            while(buf){
+                asprintf(&path, "%s/%d_%d", BSA_dump_dir, buf->_afl_edge, count++);
+                out_fd = open(path, O_CREAT|O_RDWR, 0600);    
+                BSA_log("creating testcase: %s\n", path);
+                if (out_fd == -1){
+                    BSA_err("Can not create testcase file")
+                }
+                write(out_fd, buf->data, buf->len);
+                buf = buf->next;
+                close(out_fd);
             }
-            write(out_fd, buf->data, buf->len);
-            buf = buf->next;
-            close(out_fd);
-        }
-        BSA_clear_buf(); 
-        return 0;
+        }        
     }
-    // else{
-    //     return -1;
-        
-    // }
+
+    if(count == 0){
+        return -1;
+    }
+
+    BSA_clear_buf(); 
+
     return 0;
 }
 
 void BSA_clear_buf(){
-    
-    struct BSA_buf* buf = bsa_buf_pool->buf_head;
+    struct BSA_buf* buf;
     struct BSA_buf* tmp_buf;
+    for(int i = 0 ; i < MAX_FD_NUM ; i++){
+        if(bsa_buf_pool[i] == NULL)
+            continue;
 
-    while(buf){
-        tmp_buf = buf;
-        buf = buf->next;
-        free(tmp_buf->data);
-        free(tmp_buf);
+        buf = bsa_buf_pool[i]->buf_head;
+        while(buf){
+            tmp_buf = buf;
+            buf = buf->next;
+            free(tmp_buf->data);
+            free(tmp_buf);
+        }
+        bsa_buf_pool[i]->buf_head = NULL;
+        bsa_buf_pool[i]->buf_tail = NULL;
+        bsa_buf_pool[i]->n_buf = 0;
     }
-    bsa_buf_pool->buf_head = NULL;
-    bsa_buf_pool->buf_tail = NULL;
-    bsa_buf_pool->n_buf = 0;
 }
 
 

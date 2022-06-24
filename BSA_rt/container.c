@@ -52,15 +52,18 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
   return written;
 }
 
+
+
+// Checkpoint through podman service api, but checkpoint the podman conatiner itself may run into error
+// since it checkpoint the podman.sock whill interrupt the checkpoint
 int container_checkpoint(int invivo_count){
   
     char ck_api[] = "http://d/v4.1.0/libpod/containers/";
     char ck_para[] = "/checkpoint?export=true&leaveRunning=true&tcpEstablished=true&printStats=true&fileLocks=true";
     
 
-    char _container_id[20] = "1800d23d4f9f";
     char *url;
-    asprintf(&url, "%s%s%s", ck_api, _container_id, ck_para);
+    asprintf(&url, "%s%s%s", ck_api, container_id, ck_para);
     char *path;
     asprintf(&path, "/tmp/fuzz/%d.tar.gz", invivo_count);
     
@@ -75,7 +78,7 @@ int container_checkpoint(int invivo_count){
     if(!tar_file)
         return CK_FAIL;
 
-    //printf("hihi\n");
+    //printf("checkpoint %s\n", container_id);
     slist1 = NULL;
     slist1 = curl_slist_append(slist1, "Content-Type: application/tar");
     slist1 = curl_slist_append(slist1, "Transfer-Encoding:");
@@ -90,32 +93,13 @@ int container_checkpoint(int invivo_count){
     curl_easy_setopt(hnd, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
     curl_easy_setopt(hnd, CURLOPT_SSH_KNOWNHOSTS, "/root/.ssh/known_hosts");
     curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
-    curl_easy_setopt(hnd, CURLOPT_VERBOSE, 0L);
+    curl_easy_setopt(hnd, CURLOPT_VERBOSE, 1L);
     curl_easy_setopt(hnd, CURLOPT_FTP_SKIP_PASV_IP, 1L);
     curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
     curl_easy_setopt(hnd, CURLOPT_UNIX_SOCKET_PATH, "/run/podman/podman.sock");
 
     curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, write_data);
     curl_easy_setopt(hnd, CURLOPT_WRITEDATA, tar_file);
-    /* Here is a list of options the curl code used that cannot get generated
-        as source easily. You may select to either not use them or implement
-        them yourself.
-
-    CURLOPT_WRITEDATA set to a objectpointer
-    CURLOPT_INTERLEAVEDATA set to a objectpointer
-    CURLOPT_WRITEFUNCTION set to a functionpointer
-    CURLOPT_READDATA set to a objectpointer
-    CURLOPT_READFUNCTION set to a functionpointer
-    CURLOPT_SEEKDATA set to a objectpointer
-    CURLOPT_SEEKFUNCTION set to a functionpointer
-    CURLOPT_ERRORBUFFER set to a objectpointer
-    CURLOPT_STDERR set to a objectpointer
-    CURLOPT_DEBUGFUNCTION set to a functionpointer
-    CURLOPT_DEBUGDATA set to a objectpointer
-    CURLOPT_HEADERFUNCTION set to a functionpointer
-    CURLOPT_HEADERDATA set to a objectpointer
-
-    */
 
     ret = curl_easy_perform(hnd);
     fclose(tar_file);
@@ -132,7 +116,7 @@ int container_checkpoint(int invivo_count){
     if(ret != CURLE_OK)
         return CK_FAIL;
 
-
+    //printf("CK success\n");
     return CK_SUCCESS;
 }
 

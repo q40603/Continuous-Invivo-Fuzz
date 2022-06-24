@@ -71,7 +71,14 @@ extern struct BSA_info bsa_info;
 #define REPORT_FUZZ 3
 
 
+#define MULTI_PROCESS_MODE 1
+#define MULTI_CONTAINER_MODE 0
+
+
+
+
 #define INVIVO_PRIO 5
+#define MAX_FD_NUM 1024
 
 #define MAP_SIZE_POW2       16
 #define MAP_SIZE            (1 << MAP_SIZE_POW2)

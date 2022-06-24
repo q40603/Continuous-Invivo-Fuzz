@@ -19,7 +19,7 @@
 typedef uint32_t F_ID;
 
 extern void _afl_maybe_log();
-extern void BSA_init_buf_pool();
+extern void BSA_init_buf_pool(int);
 extern void BSA_set_dump_dir(const char*);
 extern void BSA_clear_buf(int);
 extern void set_container_id();
@@ -27,7 +27,7 @@ extern void set_mac_addr();
 extern int mac_the_same();
 extern int container_checkpoint(int);
 extern __thread char BSA_dump_dir[4096];
-extern struct BSA_buf_pool* bsa_buf_pool;
+extern struct BSA_buf_pool* bsa_buf_pool[MAX_FD_NUM];
 
 extern __thread PREV_LOC_T __afl_prev_loc[NGRAM_SIZE_MAX];
 extern u8* BSA_blocked_map;
@@ -156,18 +156,6 @@ void* BSA_request_handler(void* arg){
     }
 }
 
-
-
-// void BSA_clean(void){
-//     char req_sk[1024];
-//     if(BSA_state == BSARun){
-//         sprintf(req_sk, "/tmp/BSA_req_%d.sock", getpid());
-//         BSA_unlink_socket(req_sk);
-//         pthread_atfork(NULL, NULL, BSA_clean);
-//     }
-
-// }
-
 void create_output_top_dir(){
     struct stat st = {0};
     if (stat("/tmp/fuzz", &st) == -1) {
@@ -201,7 +189,7 @@ void BSA_initial(void){
         set_mac_addr();
         set_container_id();
         create_output_top_dir();
-        BSA_init_buf_pool();
+        BSA_init_global_buf_pool();
 
         sprintf(req_sk, "/tmp/BSA_req_%d.sock", getpid());
         req_fd = BSA_bind_socket(req_sk);
@@ -235,7 +223,7 @@ void pause_signal_handler(int signal)
 
 
 int _afl_edge = 0;
-void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
+void BSA_checkpoint_nofork(int id, char *function_name){
     
     struct timeval now;
     int pid;
@@ -248,35 +236,25 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
     case BSADebugging:
     case BSARun:
         
-        // req_bbid = BSA_fuzz_req >> 16;
-        // req_tid = BSA_fuzz_req & 0xffff;
-        //fun_cnt ++;
         // if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_edge)) ){
         if ( (*BSA_fuzz_req == AUTO_FUZZ && *(BSA_entry_value_map+_afl_edge)) ){
         //|| (*BSA_fuzz_req == FUNCTION_FUZZ && fuzz_function!=NULL && !strcmp(fuzz_function , function_name))){
-
-            /* Set flags */
             
-            
-            if(!container_checkpoint(invivo_count)){
-                BSA_log("Container Chekcpoint fails\n");
-                return;
-            }
-
+            // if(!container_checkpoint(invivo_count)){
+            //     BSA_log("Container Chekcpoint fails\n");
+            //     return;
+            // }
+            invivo_count ++;
             BSA_state = BSAPrep;
-            // struct sigaction act;
+            struct sigaction act;
 
-            // act.sa_handler =  pause_signal_handler;
-            // sigaction(SIGCONT, &act, NULL);
-            // pause();
+            act.sa_handler =  pause_signal_handler;
+            sigaction(SIGCONT, &act, NULL);
+            pause();
             if(mac_the_same()){
                 BSA_state = BSARun;
                 return;
-            }
-            // if (-1 == ret){
-            //     BSA_err("Process exited\n");
-            // }
-                
+            }                
 
             /* Set dump_path */
             gettimeofday(&now, NULL);
@@ -286,10 +264,7 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
                 BSA_state = BSARun;
                 return;
             }
-            invivo_count ++;
             
-
-
             pid = getpid();
  
                 
@@ -307,20 +282,14 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
             /* setup afl relative socket */
             BSA_accept_channel(&bsa_info.afl_ctl_fd, "afl_ctl_fd");
             BSA_accept_channel(&bsa_info.afl_sts_fd, "afl_sts_fd");
-            //copy_shm_pages();
-            //install_seccomp();
+
+
+            /* don't need Secuiruty Islolation
+            copy_shm_pages();
+            */
 
             BSA_state = BSAFuzz;
-            _afl_maybe_log(id);
-            // else if(pid > 0){
-            //     BSA_fuzz_req = -1;
-            //     BSA_state = BSARun;
-            //     BSA_log("Yep\n");
-            // }
-            // else{
-            //     BSA_log("Fork failed");
-            //     exit(0);
-            // }
+            _afl_maybe_log(id, MULTI_CONTAINER_MODE);
         }
         break;
     case BSAFuzz:
@@ -334,23 +303,18 @@ void BSA_checkpoint_nofork(int id, int is_entry, char *function_name){
     }
 }
 
-void BSA_checkpoint(int id, int is_entry, char *function_name){
+void BSA_checkpoint(int id, char *function_name){
     
     struct timeval now;
     int pid;
     char *dump_path;
-    //int req_bbid, req_tid;
     _afl_edge = (_afl_edge >> 1) ^ id;
-    //__afl_prev_loc[0] = (__afl_prev_loc[0]>>1) ^ id;
-    //BSA_log("Yep %d %d\n", id, is_entry);
+    function_entry_name = function_name;
     switch(BSA_state){
     
     case BSADebugging:
     case BSARun:
         
-        // req_bbid = BSA_fuzz_req >> 16;
-        // req_tid = BSA_fuzz_req & 0xffff;
-        //fun_cnt ++;
         //if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_edge)) || (id == req_bbid && is_entry) ){
         if ( (*BSA_fuzz_req == 1 && *(BSA_entry_value_map+_afl_edge)) ){
             // if ( req_tid != syscall(__NR_gettid) ){
@@ -387,10 +351,9 @@ void BSA_checkpoint(int id, int is_entry, char *function_name){
                 BSA_accept_channel(&bsa_info.afl_ctl_fd, "afl_ctl_fd");
                 BSA_accept_channel(&bsa_info.afl_sts_fd, "afl_sts_fd");
                 copy_shm_pages();
-                //install_seccomp();
 
                 BSA_state = BSAFuzz;
-                _afl_maybe_log(id);
+                _afl_maybe_log(id, MULTI_PROCESS_MODE);
             }
             else if(pid > 0){
                 *BSA_fuzz_req = -1;
@@ -407,8 +370,6 @@ void BSA_checkpoint(int id, int is_entry, char *function_name){
         if(BSA_blocked_map[_afl_edge]){
             exit(0);
         }
-        //BSA_log("bb = %d\n", id);
-        //_afl_maybe_log(id);
         break;
     default:
         break;

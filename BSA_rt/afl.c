@@ -16,10 +16,10 @@
 #include <sys/stat.h>
 
 
-#define PrintTime(x) \
-    gettimeofday(&x,NULL); \
-    unsigned long val = 1000000 * (x.tv_sec-tv1.tv_sec)+ (x.tv_usec-tv1.tv_usec); \
-    BSA_log("time" #x "child %ld\n", val);
+// #define PrintTime(x) \
+//     gettimeofday(&x,NULL); \
+//     unsigned long val = 1000000 * (x.tv_sec-tv1.tv_sec)+ (x.tv_usec-tv1.tv_usec); \
+//     BSA_log("time" #x "child %ld\n", val);
 
 
 
@@ -41,13 +41,12 @@ int *afl_input_location_id = NULL;
 u8* BSA_blocked_map = NULL;
 int BSA_blocked_shmid;
 
-static struct timeval tv1;//;, tv2, tv3, tv4;
+// static struct timeval tv1;
 static pthread_t input_thread;
 
 void BSA_alarm_handler(int sig){
-    //BSA_log("Time out le \n");
-    BSA_blocked_map[__afl_prev_loc[0]] = 1;  
-    //BSA_blocked_map[_afl_edge] = 1;
+    //BSA_blocked_map[__afl_prev_loc[0]] = 1;  
+    BSA_blocked_map[_afl_edge] = 1;
     exit(0);
 }
 
@@ -88,11 +87,9 @@ void BSA_afl_input_thread(void* data){
         }
 
         while( (len = read(file_fd, buf, 4096)) > 0){
-            //BSA_log("afl input read %d\n", len);
             if (write(listen_fd, buf, len) <= 0){
                 break;
             }
-            //BSA_log("-  afl write to interested socket %d with %s\n", len, buf);
         }
         close(file_fd);
         close(listen_fd);
@@ -164,10 +161,6 @@ void _BSA_afl_initialize_forkserver(int shm_id){
     if ( pthread_create(&input_thread, NULL, (void*)BSA_afl_input_thread, NULL) != 0){
         perror("Thread_create failed\n");
     }
-
-    /* false positive/negative may happend */
-    //install_seccomp();
-    signal(SIGCHLD, SIG_DFL);
 }
 
 void _BSA_afl_initialize_fuzz_target(){
@@ -226,95 +219,40 @@ void _BSA_afl_initialize_fuzz_target(){
 }
 
 
-
-// int tiny_afl_maybe_log(int id){
-//     if(BSA_state != BSAFuzz)
-//         return -1;
-    
-//     __afl_area_ptr[_afl_edge ^ id]++;
-//     _afl_edge = id >> 1;
-
-//     return 1;
-// }
-
-
-void _afl_maybe_log(int id){
-
-    // if(BSA_state != BSAFuzz)
-    //     return;
+void _afl_maybe_log(int id, int multi_process_mode){
 
     int shm_id, pid, status;
     
-    // check state value;
-    // if (__afl_area_ptr){
-// _afl_store:
-       
-        //__afl_prev_loc = (__afl_prev_loc>>1) ^ id;
-        // _afl_edge testing
-        // __afl_area_ptr[__afl_prev_loc[0] ^ id]++;
-        //_afl_edge = id >> 1;
-        
-
-        //_afl_area_ptr[__afl_prev_loc]++;
-        // if ( BSA_blocked_map[__afl_prev_loc[0]] ){
-        //     //PrintTime(tv3);
-        //     exit(0);
-        // }
-        //return;
-    // }
-
-    // else{
-    //     //BSA_log("_afl_area_ptr == NULL\n");
-    // }
-    
     if ( !_afl_setup_failure ){
         shm_id = bsa_info.afl_shm_id;
-        //BSA_err("shm_id = %d, shm_id != -1 %d\n", shm_id, (shm_id != -1));
-        //fflush(stderr);
         if( shm_id != -1 ){
-
-            // printf("_BSA_afl_initialize_forkserver .....\n");
-            // fflush(stdout);       
+  
             _BSA_afl_initialize_forkserver(shm_id);
-            // printf("success .....\n");
-            // fflush(stdout);
+
+            if(multi_process_mode){
+                /* false positive/negative may happend */
+                install_seccomp();
+                signal(SIGCHLD, SIG_DFL);
+            }
 
             if (write(STS_CHANNEL_FD, &status, 4) == 4){
-                //BSA_log("write STS_CHANNEL_FD success %d\n", status);
                 while(1){
                     if (read(CTL_CHANNEL_FD, &status, 4) != 4){
                         perror("read CTL_CHANNEL_FD failed");
                         exit(1);
                     }
-                    
-
-                    //PrintTime(tv3);
-                    gettimeofday(&tv1,NULL);
                     pid = fork();
                     
                     if (pid < 0){
                         BSA_err("Fork fuzzing target failed\n");
                     }
                     else if (!pid){
-                        // BSA_state = BSAFuzz;
-                        //BSA_log("_BSA_afl_initialize_fuzz_target\n");
                         _BSA_afl_initialize_fuzz_target();
-                        //__afl_area_ptr[__afl_prev_loc[0] ^ id]++;
                         return;
-                        //PrintTime(tv2);
-                        // goto _afl_store;
                     }
                     else{
                         write(STS_CHANNEL_FD, &pid, 4);
                         waitpid(pid,&status,0);
-                        
-                        //PrintTime(tv4);
-
-                        // if (status != 0){
-                        //     BSA_log("Failed status 0x%x\n", status);
-                        //     if(WIFEXITED(status)) BSA_log("Exit status 0x%x\n", WEXITSTATUS(status));
-                        //     if(WIFSIGNALED(status)) BSA_log("Termination signal 0x%x\n", WTERMSIG(status));
-                        // }
                         write(STS_CHANNEL_FD, &status, 4);
                     }
                 }

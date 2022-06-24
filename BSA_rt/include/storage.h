@@ -33,9 +33,10 @@ struct BSA_buf_pool{
 
 
 /* function */
-void BSA_init_buf_pool();
+void BSA_init_global_buf_pool();
+void BSA_init_buf_pool(int fd);
 void BSA_clear_buf();
-void BSA_del_first();
+void BSA_del_first(int fd);
 int BSA_dump_buf();
 struct BSA_buf* BSA_create_buf(int fd, size_t buf_size);
 

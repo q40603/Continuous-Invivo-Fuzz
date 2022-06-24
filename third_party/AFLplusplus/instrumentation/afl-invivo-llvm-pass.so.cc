@@ -537,7 +537,6 @@ bool AFLCoverage::runOnModule(Module &M) {
     "BSA_checkpoint",
     Type::getVoidTy(M.getContext()), 
     Type::getInt32Ty(M.getContext()),
-    Type::getInt32Ty(M.getContext()),
     Type::getInt8PtrTy(M.getContext())
     ).getCallee();
 
@@ -545,7 +544,6 @@ bool AFLCoverage::runOnModule(Module &M) {
       callee_checkpoint = M.getOrInsertFunction(
         "BSA_checkpoint_nofork",
         Type::getVoidTy(M.getContext()), 
-        Type::getInt32Ty(M.getContext()),
         Type::getInt32Ty(M.getContext()),
         Type::getInt8PtrTy(M.getContext())
         ).getCallee();
@@ -715,10 +713,10 @@ bool AFLCoverage::runOnModule(Module &M) {
         // if(strcmp(F.getName().str().c_str(), "readQueryFromClient") == 0 ){
         //   firstBB = 1;
         // }
-        Value *val[3];
+        Value *val[2];
         val[0] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), cur_loc);
-        val[1] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), firstBB);
-        val[2] = IRB.CreateGlobalStringPtr(F.getName().str().c_str());
+        // val[1] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), firstBB);
+        val[1] = IRB.CreateGlobalStringPtr(F.getName().str().c_str());
         IRB.CreateCall(Fun,val);
         if(firstBB)
           OKF("Inserting IV_checkpoint to %s (%zu)", F.getName().str().c_str(), F.size());
