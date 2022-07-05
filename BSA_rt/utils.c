@@ -228,7 +228,7 @@ int BSA_unlink_socket(const char* name){
  */
 void BSA_conn_IA(int id, int function_entry_id){
     char* dump_path;
-    struct sockaddr_in srv;
+    struct sockaddr_un srv;
     char* buf, *out_dir;
     int ia_fd, path_len, buf_sz, entry_id = id, threshold = BSA_FUZZ_THRESHOLD;
 
@@ -237,15 +237,16 @@ void BSA_conn_IA(int id, int function_entry_id){
     
     dump_path = BSA_dump_dir; 
 
-    if ( (ia_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
+    if ( (ia_fd = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1){
         BSA_err("Failed to open IA socket\n");
     }
 
     memset(&srv, 0, sizeof(srv));
 
-    srv.sin_family = AF_INET;
-    srv.sin_addr.s_addr = inet_addr(BSA_srv_addr);
-    srv.sin_port = htons(BSA_srv_port);
+    srv.sun_family = AF_LOCAL;//AF_INET;
+    sprintf(srv.sun_path, BSA_srv_addr);
+    // srv.sin_addr.s_addr = inet_addr(BSA_srv_addr);
+    // srv.sin_port = htons(BSA_srv_port);
 
     if (connect(ia_fd, (struct sockaddr*)&srv, sizeof(srv)) == -1){
         BSA_err("Failed to connet to IA");

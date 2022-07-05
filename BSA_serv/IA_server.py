@@ -4,10 +4,16 @@ import subprocess
 import struct
 import time
 import os
+import atexit
 
 Host = '127.0.0.1'
 Port = 8001
 
+IA_sock = "/tmp/IA.sock"
+
+
+def exit_handler():
+    os.remove(IA_sock)
 #null_fp = open('/dev/null', 'rw')
 def fuzz_handshake(conn):
     req = conn.recv(41)
@@ -67,10 +73,10 @@ def fuzz_handshake(conn):
 
 if __name__ == '__main__':
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind((Host, Port))
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    sock.bind(IA_sock)
     sock.listen(5)
-
+    atexit.register(exit_handler)
     print('Server started!')
     print('Waiting for connection')
 

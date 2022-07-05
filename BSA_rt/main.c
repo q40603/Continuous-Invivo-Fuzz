@@ -229,7 +229,7 @@ void BSA_checkpoint_nofork(int id, char *function_name){
     int pid;
     char *dump_path;
     // int req_bbid, req_tid;
-    _invivo_edge = (_invivo_edge >> 1) ^ id;
+    //_invivo_edge = (_invivo_edge >> 1) ^ id;
     function_entry_name = function_name;
     switch(BSA_state){
     

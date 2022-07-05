@@ -96,8 +96,8 @@ extern struct BSA_info bsa_info;
 #define BSA_FD_MAX              1024
 
 /* Immediate Agent Info */
-#define BSA_srv_addr            "127.0.0.1"
-#define BSA_srv_port            8001
+#define BSA_srv_addr            "/tmp/IA.sock"//"127.0.0.1"
+// #define BSA_srv_port            8001
 
 /* status of BSA_rt */
 #define BSADebugging            5
