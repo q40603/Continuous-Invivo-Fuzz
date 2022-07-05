@@ -20,9 +20,11 @@
 
 struct BSA_buf{
     struct BSA_buf* next;
+    struct BSA_buf *prev;
     uint8_t* data;
     size_t  len;
-    int _afl_edge;
+    int _invivo_edge;
+    char ip_port[40];
 };
 
 struct BSA_buf_pool{

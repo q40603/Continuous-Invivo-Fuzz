@@ -15,12 +15,12 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-
-// #define PrintTime(x) \
-//     gettimeofday(&x,NULL); \
-//     unsigned long val = 1000000 * (x.tv_sec-tv1.tv_sec)+ (x.tv_usec-tv1.tv_usec); \
-//     BSA_log("time" #x "child %ld\n", val);
-
+/*
+#define PrintTime(x) \
+    gettimeofday(&x,NULL); \
+    unsigned long val = 1000000 * (x.tv_sec-tv1.tv_sec)+ (x.tv_usec-tv1.tv_usec); \
+    BSA_log("time" #x "child %ld\n", val);
+*/
 
 
 extern __thread int BSA_state;
@@ -35,7 +35,7 @@ extern __thread PREV_LOC_T __afl_prev_loc[NGRAM_SIZE_MAX];
 extern PREV_LOC_T __afl_prev_caller[CTX_MAX_K];
 extern u32        __afl_prev_ctx;
 
-extern int _afl_edge;
+extern __thread int _invivo_edge;
 int *afl_input_location_id = NULL;
 
 u8* BSA_blocked_map = NULL;
@@ -46,7 +46,7 @@ static pthread_t input_thread;
 
 void BSA_alarm_handler(int sig){
     //BSA_blocked_map[__afl_prev_loc[0]] = 1;  
-    BSA_blocked_map[_afl_edge] = 1;
+    BSA_blocked_map[_invivo_edge] = 1;
     exit(0);
 }
 

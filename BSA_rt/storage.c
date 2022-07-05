@@ -83,13 +83,14 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
     }
     
     buf->len = buf_size;
-    buf->_afl_edge = 0;
+    buf->_invivo_edge = 0;
     
     if (bsa_buf_pool[fd]->buf_head == NULL){
         bsa_buf_pool[fd]->buf_head = buf;
     }
     else{
         bsa_buf_pool[fd]->buf_tail->next = buf;
+        buf->prev = bsa_buf_pool[fd]->buf_tail;
     }
     bsa_buf_pool[fd]->buf_tail = buf;
     bsa_buf_pool[fd]->n_buf += 1;
@@ -124,7 +125,7 @@ int BSA_dump_buf(){
         buf = bsa_buf_pool[i]->buf_head;
         if (buf != NULL){
             while(buf){
-                asprintf(&path, "%s/%d_%d", BSA_dump_dir, buf->_afl_edge, count++);
+                asprintf(&path, "%s/%d_%d", BSA_dump_dir, buf->_invivo_edge, count++);
                 out_fd = open(path, O_CREAT|O_RDWR, 0600);    
                 BSA_log("creating testcase: %s\n", path);
                 if (out_fd == -1){

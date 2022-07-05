@@ -7,7 +7,7 @@ extern __thread u32 BSA_state;
 extern __thread PREV_LOC_T __afl_prev_loc[NGRAM_SIZE_MAX];
 extern u8 *BSA_entry_value_map;
 extern int* afl_input_location_id;
-extern int _afl_edge;
+extern __thread int _invivo_edge;
 
 extern __thread char *function_entry_name;
 
@@ -21,6 +21,12 @@ extern __thread char *function_entry_name;
     }
 
 
+void set_src_ip(int newfd, struct BSA_buf* dest) {
+    struct sockaddr_in addr;
+    socklen_t addr_size = sizeof(struct sockaddr_in);
+    int res = getpeername(newfd, (struct sockaddr *)&addr, &addr_size);
+    sprintf(dest->ip_port, "%s_%u", inet_ntoa(addr.sin_addr), addr.sin_port);
+}
 
 
 int BSA_hook_close(int fd){
@@ -75,23 +81,23 @@ ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len){
     
     fstat(fd, &st);
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
-        *(u8*)(BSA_entry_value_map+_afl_edge) = 1;
-        BSA_log("setting afl_edge %d to 1 %s\n", _afl_edge, function_entry_name);
+        *(u8*)(BSA_entry_value_map+_invivo_edge) = 1;
+        BSA_log("setting invivo_edge %d to 1 %s\n", _invivo_edge, function_entry_name);
         //BSA_log("BSA_hook_read afl_prev_loc = %d, fd = %d\n",__afl_prev_loc[0], fd );
         //BSA_log("BSA_hook_read Tid: %ld\n", syscall(__NR_gettid));
         dest = BSA_create_buf(fd, ret);
         
         if(dest != NULL){
-            dest->_afl_edge = _afl_edge;
+            dest->_invivo_edge = _invivo_edge;
             memcpy(dest->data, buf, ret);
         }
     }
     else if (BSA_state == BSAFuzz && ret > 0){
         if(!(*afl_input_location_id)){
-            *afl_input_location_id = _afl_edge;
+            *afl_input_location_id = _invivo_edge;
             BSA_log("afl_input_location_id %d\n", *afl_input_location_id);
         }
-        //BSA_log("fuzzing afl_edge %d\n", _afl_edge);
+        //BSA_log("fuzzing invivo_edge %d\n", _invivo_edge);
     }
     // if(BSA_state == BSAFuzz){
     //     BSA_log("fuzz-  BSA_hook_read afl_prev_loc = %d, fd = %d, ret = %ld\n",__afl_prev_loc[0], fd, ret );
@@ -106,23 +112,23 @@ ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){
     
     ret = recv(sockfd, buf, len, flags);
     if (BSA_state == BSARun && ret > 0){
-        BSA_log("setting afl_edge %d to 1 %s\n", _afl_edge, function_entry_name);
-        *(u8*)(BSA_entry_value_map+_afl_edge) = 1;
+        BSA_log("setting invivo_edge %d to 1 %s\n", _invivo_edge, function_entry_name);
+        *(u8*)(BSA_entry_value_map+_invivo_edge) = 1;
         //BSA_log("BSA_hook_recv afl_prev_loc = %d\n",__afl_prev_loc[0] );
         //BSA_log("BSA_hook_recv Tid: %ld %d\n", syscall(__NR_gettid), ret);
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
             //BSA_log("%s\n", dest->data);
-            dest->_afl_edge = _afl_edge;
+            dest->_invivo_edge = _invivo_edge;
             memcpy(dest->data, buf, ret);
         }
     }
     else if (BSA_state == BSAFuzz && ret > 0){
         if(!(*afl_input_location_id)){
-            *afl_input_location_id = _afl_edge;
+            *afl_input_location_id = _invivo_edge;
             BSA_log("afl_input_location_id %d\n", *afl_input_location_id);
         }
-        //BSA_log("fuzzing afl_edge %d\n", _afl_edge);
+        //BSA_log("fuzzing invivo_edge %d\n", _invivo_edge);
     }
     return ret;
 }
@@ -133,13 +139,13 @@ ssize_t BSA_hook_recvfrom(int sockfd, void *buf, size_t len, int flags, struct s
 
     ret = recvfrom(sockfd, buf, len, flags, src_addr, addrlen);
     if (BSA_state == BSARun && ret > 0){
-        BSA_log("setting afl_edge %d to 1 %s\n", _afl_edge, function_entry_name);
-        *(u8*)(BSA_entry_value_map+_afl_edge) = 1;
+        BSA_log("setting invivo_edge %d to 1 %s\n", _invivo_edge, function_entry_name);
+        *(u8*)(BSA_entry_value_map+_invivo_edge) = 1;
         //BSA_log("BSA_hook_recvfrom Tid afl_prev_loc = %d\n", __afl_prev_loc[0] );
         //BSA_log("BSA_hook_recvfrom Tid: %ld\n", syscall(__NR_gettid));
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
-            dest->_afl_edge = _afl_edge;
+            dest->_invivo_edge = _invivo_edge;
             memcpy(dest->data, buf, ret);
             // BSA_log("%s\n", dest->data);
             // int out_fd = open("./tmp1", O_CREAT|O_RDWR, 0777); 
@@ -150,10 +156,10 @@ ssize_t BSA_hook_recvfrom(int sockfd, void *buf, size_t len, int flags, struct s
     }
     else if (BSA_state == BSAFuzz && ret > 0){
         if(!(*afl_input_location_id)){
-            *afl_input_location_id = _afl_edge;
+            *afl_input_location_id = _invivo_edge;
             BSA_log("afl_input_location_id %d\n", *afl_input_location_id);
         }
-        //BSA_log("fuzzing afl_edge %d\n", _afl_edge);
+        //BSA_log("fuzzing invivo_edge %d\n", _invivo_edge);
     }
     return ret;
 }
@@ -166,15 +172,15 @@ ssize_t BSA_hook_recvmsg(int sockfd, struct msghdr *msg, int flags){
     cnt = ret = recvmsg(sockfd, msg, flags);
     
     if (BSA_state == BSARun && ret > 0){
-        BSA_log("setting afl_edge %d to 1\n", _afl_edge);
-        *(u8*)(BSA_entry_value_map+_afl_edge) = 1;
+        BSA_log("setting invivo_edge %d to 1\n", _invivo_edge);
+        *(u8*)(BSA_entry_value_map+_invivo_edge) = 1;
         //BSA_log("BSA_hook_recvmsg Tid afl_prev_loc = %d\n", __afl_prev_loc[0] );
        //BSA_log("BSA_hook_recvfrom Tid: %ld\n", syscall(__NR_gettid))
         while(cnt > 0 && i < msg->msg_iovlen){
             ssize_t len = MIN(cnt, msg->msg_iov[i].iov_len);
             dest = BSA_create_buf(sockfd, len);
             if(dest != NULL){
-                dest->_afl_edge = _afl_edge;
+                dest->_invivo_edge = _invivo_edge;
                 memcpy(dest->data, msg->msg_iov[i].iov_base, len);
             }
             cnt -= len;
@@ -182,10 +188,10 @@ ssize_t BSA_hook_recvmsg(int sockfd, struct msghdr *msg, int flags){
     }
     else if (BSA_state == BSAFuzz && ret > 0){
         if(!(*afl_input_location_id)){
-            *afl_input_location_id = _afl_edge;
+            *afl_input_location_id = _invivo_edge;
             BSA_log("afl_input_location_id %d\n", *afl_input_location_id);
         }
-        //BSA_log("fuzzing afl_edge %d\n", _afl_edge);
+        //BSA_log("fuzzing invivo_edge %d\n", _invivo_edge);
     }
     return ret;
 }

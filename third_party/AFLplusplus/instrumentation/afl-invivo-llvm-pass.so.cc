@@ -175,13 +175,6 @@ uint64_t PowerOf2Ceil(unsigned in) {
 #endif
 
 
-/*-----------------------------  Invivo section -----------------------------------*/
-
-llvm::cl::opt<std::string> config_path("config", llvm::cl::desc("Specify the config file of entry"), llvm::cl::value_desc("config_file") );    
-map<string, int> entry_map;
-
-
-/*----------------------------------------------------------------------------------*/
 
 
 
@@ -425,6 +418,7 @@ bool AFLCoverage::runOnModule(Module &M) {
   GlobalVariable *AFLPrevLoc;
   GlobalVariable *AFLPrevCaller;
   GlobalVariable *AFLContext = NULL;
+  GlobalVariable *Invivo_edge;
 
   if (ctx_str || caller_str)
 #if defined(__ANDROID__) || defined(__HAIKU__)
@@ -459,6 +453,9 @@ bool AFLCoverage::runOnModule(Module &M) {
       M, Int32Ty, false, GlobalValue::ExternalLinkage, 0, "__afl_prev_loc", 0,
       GlobalVariable::GeneralDynamicTLSModel, 0, false);
 #endif
+
+Invivo_edge = new GlobalVariable(
+        M, Int32Ty, false, GlobalValue::ExternalLinkage, 0, "_invivo_edge", 0 , GlobalVariable::GeneralDynamicTLSModel);
 
 #ifdef AFL_HAVE_VECTOR_INTRINSICS
   if (ctx_k)
@@ -953,6 +950,18 @@ bool AFLCoverage::runOnModule(Module &M) {
         Store->setMetadata(M.getMDKindID("nosanitize"), MDNode::get(C, None));
 
       }
+
+
+
+      /* Update Invivo_edge*/
+      LoadInst *InvivoPrevEdge = IRB.CreateLoad(Invivo_edge);
+      InvivoPrevEdge->setMetadata(M.getMDKindID("nosanitize"), MDNode::get(C, None));
+      Value *PrevAFLedgeCasted = IRB.CreateZExt(InvivoPrevEdge, IRB.getInt32Ty());
+      Value *ShiftedPrevAFLedge = IRB.CreateLShr(PrevAFLedgeCasted, 1);
+      Value *NewInvivoPrevEdge = IRB.CreateXor(ShiftedPrevAFLedge, ConstantInt::get((llvm::Type*)IntegerType::getInt32Ty(C), cur_loc));
+      IRB.CreateStore(NewInvivoPrevEdge, Invivo_edge);
+
+
 
       // in CTX mode we have to restore the original context for the caller -
       // she might be calling other functions which need the correct CTX.

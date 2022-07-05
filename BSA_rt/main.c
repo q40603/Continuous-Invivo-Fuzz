@@ -222,22 +222,22 @@ void pause_signal_handler(int signal)
 }
 
 
-int _afl_edge = 0;
+__thread int _invivo_edge = 0;
 void BSA_checkpoint_nofork(int id, char *function_name){
     
     struct timeval now;
     int pid;
     char *dump_path;
     // int req_bbid, req_tid;
-    _afl_edge = (_afl_edge >> 1) ^ id;
+    _invivo_edge = (_invivo_edge >> 1) ^ id;
     function_entry_name = function_name;
     switch(BSA_state){
     
     case BSADebugging:
     case BSARun:
         
-        // if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_edge)) ){
-        if ( (*BSA_fuzz_req == AUTO_FUZZ && *(BSA_entry_value_map+_afl_edge)) ){
+        // if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_invivo_edge)) ){
+        if ( (*BSA_fuzz_req == AUTO_FUZZ && *(BSA_entry_value_map+_invivo_edge)) ){
         //|| (*BSA_fuzz_req == FUNCTION_FUZZ && fuzz_function!=NULL && !strcmp(fuzz_function , function_name))){
             
             // if(!container_checkpoint(invivo_count)){
@@ -277,7 +277,7 @@ void BSA_checkpoint_nofork(int id, char *function_name){
             BSA_forkserver_prep();
                 
             /* Dump previous input */
-            BSA_conn_IA(_afl_edge, id); 
+            BSA_conn_IA(_invivo_edge, id); 
                 
             /* setup afl relative socket */
             BSA_accept_channel(&bsa_info.afl_ctl_fd, "afl_ctl_fd");
@@ -294,7 +294,7 @@ void BSA_checkpoint_nofork(int id, char *function_name){
         break;
     case BSAFuzz:
         if(BSA_blocked_map[__afl_prev_loc[0]]){
-        //if(BSA_blocked_map[_afl_edge]){
+        //if(BSA_blocked_map[_invivo_edge]){
             exit(0);
         }
         break;
@@ -308,15 +308,15 @@ void BSA_checkpoint(int id, char *function_name){
     struct timeval now;
     int pid;
     char *dump_path;
-    _afl_edge = (_afl_edge >> 1) ^ id;
+    //_invivo_edge = (_invivo_edge >> 1) ^ id;
     function_entry_name = function_name;
     switch(BSA_state){
     
     case BSADebugging:
     case BSARun:
         
-        //if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_afl_edge)) || (id == req_bbid && is_entry) ){
-        if ( (*BSA_fuzz_req == 1 && *(BSA_entry_value_map+_afl_edge)) ){
+        //if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_invivo_edge)) || (id == req_bbid && is_entry) ){
+        if ( (*BSA_fuzz_req == 1 && *(BSA_entry_value_map+_invivo_edge)) ){
             // if ( req_tid != syscall(__NR_gettid) ){
             //     return;
             // }
@@ -345,7 +345,7 @@ void BSA_checkpoint(int id, char *function_name){
                 
                 /* Dump previous input */
                 //BSA_conn_IA(__afl_prev_loc[0], id); 
-                BSA_conn_IA(_afl_edge, id);
+                BSA_conn_IA(_invivo_edge, id);
                 
                 /* setup afl relative socket */
                 BSA_accept_channel(&bsa_info.afl_ctl_fd, "afl_ctl_fd");
@@ -367,7 +367,7 @@ void BSA_checkpoint(int id, char *function_name){
         }
         break;
     case BSAFuzz:
-        if(BSA_blocked_map[_afl_edge]){
+        if(BSA_blocked_map[_invivo_edge]){
             exit(0);
         }
         break;
