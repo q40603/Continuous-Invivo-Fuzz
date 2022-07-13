@@ -107,9 +107,14 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
 
 int BSA_dump_buf(){
     struct BSA_buf* buf; 
-    int out_fd;
+    int out_fd, in_fd;
     int count = 0;
-    char *path;
+    char *path, *prev_path, *merge_path, *session, *prev_session;
+    char ch;
+    struct stat stat_buf;
+    ssize_t sent;
+    FILE *fold1, *fold2, *fnew;
+    //off_t off = 0;
 
     if (access(BSA_dump_dir, F_OK) !=0 && (mkdir(BSA_dump_dir, 0700) != 0)){
         BSA_err("Can not create dump directory");
@@ -122,18 +127,90 @@ int BSA_dump_buf(){
         if (bsa_buf_pool[i] == NULL)
             continue;
 
-        buf = bsa_buf_pool[i]->buf_head;
+        buf = bsa_buf_pool[i]->buf_tail;
+        prev_session = buf->ip_port;
+        prev_path = NULL;
         if (buf != NULL){
             while(buf){
                 asprintf(&path, "%s/%d_%d", BSA_dump_dir, buf->_invivo_edge, count++);
-                out_fd = open(path, O_CREAT|O_RDWR, 0600);    
+                out_fd = open(path, O_CREAT|O_RDWR, 0666);  
+
                 BSA_log("creating testcase: %s\n", path);
                 if (out_fd == -1){
                     BSA_err("Can not create testcase file")
                 }
                 write(out_fd, buf->data, buf->len);
-                buf = buf->next;
                 close(out_fd);
+
+                session = buf->ip_port;  
+                
+                
+                
+                
+                
+                if( prev_path && (strcmp(session, prev_session) == 0)){
+                    asprintf(&merge_path, "%s/%d_%d", BSA_dump_dir, buf->_invivo_edge, count++);
+                    fold1=fopen(path, "r");
+                    fold2=fopen(prev_path, "r");
+                    if(fold1==NULL || fold2==NULL)
+                    {
+                //		perror("Error Message ");
+                        printf(" File does not exist or error in opening...!!\n");
+                        exit(EXIT_FAILURE);
+                    }
+                    fnew=fopen(merge_path, "w");
+                    if(fnew==NULL)
+                    {
+                //		perror("Error Message ");
+                        printf(" File does not exist or error in opening...!!\n");
+                        exit(EXIT_FAILURE);
+                    }
+                    while((ch=fgetc(fold1))!=EOF)
+                    {
+                        fputc(ch, fnew);
+                    }
+                    while((ch=fgetc(fold2))!=EOF)
+                    {
+                        fputc(ch, fnew);
+                    }
+                    //printf(" The two files merged into %s file successfully..!!\n\n", merge_path);
+                    fclose(fold1);
+                    fclose(fold2);
+                    fclose(fnew);
+                    free(prev_path);
+                    prev_path = merge_path;
+                }
+                else{
+                    prev_path = path;
+                }
+                prev_session = session;
+                //BSA_log("prev_path = %s\n prev_session = %s\n", prev_path, prev_session);
+                buf = buf->prev;
+                // if( prev_path && (strcmp(session, prev_session) == 0)){
+                //     close(out_fd);
+                //     out_fd = open(path, O_APPEND|O_RDWR, 0666); 
+
+                //     in_fd = open(prev_path, O_RDONLY);
+                //     fstat (in_fd, &stat_buf);
+                //     sent = sendfile(out_fd, in_fd, 0, stat_buf.st_size);
+
+                //     if (sent <= 0)
+                //     {
+                //         // Error or end of file
+                //         if (sent != 0)
+                //             perror("sendfile");  // Was an error, report it
+                //         // break;
+                //     }
+                    
+                //     BSA_log("copying data from %s to %s size=%ld\n", prev_path, path, stat_buf.st_size);
+                //     close(in_fd);
+                //     // close(out_fd);
+                //     // out_fd = open(path, O_APPEND|O_RDWR, 0666); 
+                // }
+
+
+
+
             }
         }        
     }
@@ -155,6 +232,7 @@ void BSA_clear_buf(){
             continue;
 
         buf = bsa_buf_pool[i]->buf_head;
+
         while(buf){
             tmp_buf = buf;
             buf = buf->next;

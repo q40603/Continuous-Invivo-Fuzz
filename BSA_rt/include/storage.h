@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <semaphore.h>
+#include <sys/sendfile.h>
 
 /*
  * storing user input as afl seed
