@@ -5,7 +5,7 @@ SHELL:=/bin/bash
 INCLUDE_DIR = ./include
 #CFLAGS = -I./include -Wall -g -c -fPIC -pthread -lgcc_s -D_IV_DEBUG
 CFLAGS = -I./include -Wall -g -c -fPIC -pthread  -lcurl -lgcc_s -D_IV_DEBUG -DSECCOMP_DENY_epoll_wait 
-CSHARED_FLAG = -I./include -fPIC -shared -lcurl
+CSHARED_FLAG = -I./include -fPIC -shared -lcurl -ldl
 OBJ_DIR = ./objs/
 
 CC = gcc
@@ -17,23 +17,24 @@ MAKE = make
 all: 
 	mkdir -p $(OBJ_DIR)
 	$(MAKE) BSA
+	$(MAKE) SEED_COLLECT
 
-BSA: $(OBJ_DIR)main.o $(OBJ_DIR)hook.o $(OBJ_DIR)storage.o $(OBJ_DIR)afl.o $(OBJ_DIR)utils.o $(OBJ_DIR)container.o
+BSA: $(OBJ_DIR)main.o $(OBJ_DIR)storage.o $(OBJ_DIR)afl.o $(OBJ_DIR)utils.o $(OBJ_DIR)container.o $(OBJ_DIR)hook.o
 	$(LD) -o $@.o $(LDFLAGS) $^
 
 
-lib: $(OBJ_DIR)main.o $(OBJ_DIR)hook.o $(OBJ_DIR)storage.o $(OBJ_DIR)afl.o $(OBJ_DIR)utils.o $(OBJ_DIR)container.o
-#criu.o 
-	$(CC) -o libBSA.so $(CSHARED_FLAG) $^ 
-	sudo cp -f ./libBSA.so /usr/lib/
-	sudo cp -f $(INCLUDE_DIR)/* /usr/include/BSA/
 
+lib: $(OBJ_DIR)main.o $(OBJ_DIR)hook.o $(OBJ_DIR)storage.o $(OBJ_DIR)afl.o $(OBJ_DIR)utils.o $(OBJ_DIR)container.o
+	$(CC) -o libBSA.so $(CSHARED_FLAG) $^ 
+
+SEED_COLLECT: $(OBJ_DIR)pre_load.o $(OBJ_DIR)main.o $(OBJ_DIR)storage.o $(OBJ_DIR)afl.o $(OBJ_DIR)utils.o $(OBJ_DIR)container.o
+	$(CC) -o $@.so $(CSHARED_FLAG) $^ 
 
 $(OBJ_DIR)%.o: %.c
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -rf BSA.o libBSA.so $(OBJ_DIR)
+	rm -rf BSA.o SEED_COLLECT.so $(OBJ_DIR)
 
 
 .PHONY: clean

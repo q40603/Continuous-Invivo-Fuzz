@@ -7,9 +7,10 @@
 #include <string.h>
 #include <limits.h>
 #include <sys/uio.h>
+#include <dlfcn.h>
 
-ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len);
-ssize_t BSA_hook_write(int fd, uint8_t* buf, size_t len);
-ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags);
-int BSA_hook_close(int fd);
+// ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len);
+// ssize_t BSA_hook_write(int fd, uint8_t* buf, size_t len);
+// ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags);
+// int BSA_hook_close(int fd);
 #endif

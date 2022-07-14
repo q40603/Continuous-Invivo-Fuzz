@@ -36,7 +36,7 @@ extern PREV_LOC_T __afl_prev_caller[CTX_MAX_K];
 extern u32        __afl_prev_ctx;
 
 extern __thread int _invivo_edge;
-int *afl_input_location_id = NULL;
+extern int *afl_input_location_id;
 
 u8* BSA_blocked_map = NULL;
 int BSA_blocked_shmid;

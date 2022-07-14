@@ -8,15 +8,11 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <unistd.h>
-// #include <uninstd.h>
 #include "utils.h"
 #include "config.h"
 #include "storage.h"
 #include "hook.h"
 #include "container.h"
-
-
-typedef uint32_t F_ID;
 
 extern void _afl_maybe_log();
 extern void BSA_init_buf_pool(int);
@@ -29,7 +25,6 @@ extern int container_checkpoint(int);
 extern __thread char BSA_dump_dir[4096];
 extern struct BSA_buf_pool* bsa_buf_pool[MAX_FD_NUM];
 
-extern __thread PREV_LOC_T __afl_prev_loc[NGRAM_SIZE_MAX];
 extern u8* BSA_blocked_map;
 
 pthread_t BSA_request_thread;
@@ -40,13 +35,13 @@ __thread u32 BSA_state = BSARun;
 extern char mac_addr[20];
 extern sem_t mutex; 
 
-// int fun_cnt = 0;
 int BSA_entry_value_shmid;
 u8 *BSA_entry_value_map;
 
 __thread int invivo_count = 0;
 __thread char *function_entry_name;
 __thread char *fuzz_function = NULL;
+int* afl_input_location_id = NULL;
 
 
 
@@ -224,13 +219,15 @@ void pause_signal_handler(int signal)
 
 __thread int _invivo_edge = 0;
 __thread int _function_edge = 0;
+extern __thread int exec_path[50];
+extern __thread int exec_count;
 void BSA_checkpoint_nofork(int id, char *function_name){
     
     struct timeval now;
     int pid;
     char *dump_path;
-    // int req_bbid, req_tid;
     //_invivo_edge = (_invivo_edge >> 1) ^ id;
+    exec_path[(exec_count++)%50] = id;
     _function_edge = _invivo_edge;
     function_entry_name = function_name;
     switch(BSA_state){
@@ -295,8 +292,7 @@ void BSA_checkpoint_nofork(int id, char *function_name){
         }
         break;
     case BSAFuzz:
-        if(BSA_blocked_map[__afl_prev_loc[0]]){
-        //if(BSA_blocked_map[_invivo_edge]){
+        if(BSA_blocked_map[_invivo_edge]){
             exit(0);
         }
         break;
@@ -311,6 +307,7 @@ void BSA_checkpoint(int id, char *function_name){
     int pid;
     char *dump_path;
     //_invivo_edge = (_invivo_edge >> 1) ^ id;
+    exec_path[(exec_count++)%50] = id;
     function_entry_name = function_name;
     _function_edge = _invivo_edge;
     switch(BSA_state){
@@ -347,7 +344,6 @@ void BSA_checkpoint(int id, char *function_name){
                 BSA_forkserver_prep();
                 
                 /* Dump previous input */
-                //BSA_conn_IA(__afl_prev_loc[0], id); 
                 BSA_conn_IA(_invivo_edge, id);
                 
                 /* setup afl relative socket */

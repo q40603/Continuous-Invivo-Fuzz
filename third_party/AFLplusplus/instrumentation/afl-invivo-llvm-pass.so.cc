@@ -529,6 +529,41 @@ Invivo_edge = new GlobalVariable(
   string close_function = string("close");
   string accept_function = string("accept");
   string accept4_function = string("accept4");
+  string free_function = string("free");
+  string calloc_function = string("calloc");
+  string malloc_function = string("malloc");
+  string realloc_function = string("realloc");
+  string reallocarray_function = string("reallocarray");
+  string memcpy_function = string("memcpy");
+  string memmove_function = string("memmove");
+  string memchr_function = string("memchr");
+  string memrchr_function = string("memrchr");
+  string rawmemchr_function = string("rawmemchr");
+  string memset_function = string("memset");
+  string memcmp_function = string("memcmp");
+  string strcpy_function = string("strcpy");
+  string strncpy_function = string("strncpy");
+  string strlen_function = string("strlen");
+  string strcat_function = string("strcat");
+  string strncat_function = string("strncat");
+  string strncmp_function = string("strncmp");
+  string strcmp_function = string("strcmp");
+  string strcasecmp_function = string("strcasecmp");
+  string strncasecmp_function = string("strncasecmp");
+
+  string strspn_function = string("strspn");
+  string strcspn_function = string("strcspn");
+  string strcoll_function = string("strcoll");
+
+  string strxfrm_function = string("strxfrm");
+  string strstr_function = string("strstr");
+  string strcasestr_function = string("strcasestr");
+  string strchr_function = string("strchr");
+  string strrchr_function = string("strrchr");
+
+  string strpbrk_function = string("strpbrk");
+  string strtok_function = string("strtok");
+  string strtok_r_function = string("strtok_r");
 
   auto callee_checkpoint = M.getOrInsertFunction(
     "BSA_checkpoint",
@@ -556,6 +591,15 @@ Invivo_edge = new GlobalVariable(
   Value *   PrevCtx = NULL;     // CTX sensitive coverage
   LoadInst *PrevCaller = NULL;  // K-CTX coverage
 
+
+  int hook_mode= 0;
+  if(getenv("HOOK")){
+    hook_mode = 1;
+  }
+  int fuzz_entry_mode = 0;
+  if(getenv("ENTRY")){
+    fuzz_entry_mode = 1;
+  }
   /* Instrument all the things! */
 
   int inst_blocks = 0;
@@ -565,7 +609,7 @@ Invivo_edge = new GlobalVariable(
 
     int has_calls = 0;
     if(F.isIntrinsic()) continue;
-    if(F.isDeclaration()){
+    if(F.isDeclaration() && hook_mode){
         std::string func_name = F.getName().str();
         if (func_name == read_function ) F.setName("BSA_hook_read"); 
         else if(func_name == write_function) F.setName("BSA_hook_write"); 
@@ -579,6 +623,38 @@ Invivo_edge = new GlobalVariable(
         else if(func_name == close_function) F.setName("BSA_hook_close");
         else if(func_name == accept_function) F.setName("BSA_hook_accept");
         else if(func_name == accept4_function) F.setName("BSA_hook_accept4");
+        else if(func_name == free_function) F.setName("BSA_hook_free");
+        else if(func_name == calloc_function) F.setName("BSA_hook_calloc");
+        else if(func_name == malloc_function) F.setName("BSA_hook_malloc");
+        else if(func_name == realloc_function) F.setName("BSA_hook_realloc");
+        else if(func_name == reallocarray_function) F.setName("BSA_hook_reallocarray");
+        else if(func_name == memcpy_function) F.setName("BSA_hook_memcpy");
+        else if(func_name == memmove_function) F.setName("BSA_hook_memmove");
+        else if(func_name == memchr_function) F.setName("BSA_hook_memchr");
+        else if(func_name == memrchr_function) F.setName("BSA_hook_memrchr");
+        else if(func_name == rawmemchr_function) F.setName("BSA_hook_rawmemchr");
+        else if(func_name == memset_function) F.setName("BSA_hook_memset");
+        else if(func_name == memcmp_function) F.setName("BSA_hook_memcmp");
+        else if(func_name == strcpy_function) F.setName("BSA_hook_strcpy");
+        else if(func_name == strncpy_function) F.setName("BSA_hook_strncpy");
+        else if(func_name == strlen_function) F.setName("BSA_hook_strlen");
+        else if(func_name == strcat_function) F.setName("BSA_hook_strcat");
+        else if(func_name == strncat_function) F.setName("BSA_hook_strncat");
+        else if(func_name == strncmp_function) F.setName("BSA_hook_strncmp");
+        else if(func_name == strcmp_function) F.setName("BSA_hook_strcmp");
+        else if(func_name == strcasecmp_function) F.setName("BSA_hook_strcasecmp");
+        else if(func_name == strncasecmp_function) F.setName("BSA_hook_strncasecmp");
+        else if(func_name == strspn_function) F.setName("BSA_hook_strspn");
+        else if(func_name == strcspn_function) F.setName("BSA_hook_strcspn");
+        else if(func_name == strcoll_function) F.setName("BSA_hook_strcoll");
+        else if(func_name == strxfrm_function) F.setName("BSA_hook_strxfrm");
+        else if(func_name == strstr_function) F.setName("BSA_hook_strstr");
+        else if(func_name == strcasestr_function) F.setName("BSA_hook_strcasestr");
+        else if(func_name == strchr_function) F.setName("BSA_hook_strchr");
+        else if(func_name == strrchr_function) F.setName("BSA_hook_strrchr");
+        else if(func_name == strpbrk_function) F.setName("BSA_hook_strpbrk");
+        else if(func_name == strtok_function) F.setName("BSA_hook_strtok");
+        else if(func_name == strtok_r_function) F.setName("BSA_hook_strtok_r");
         // else{
         //   fprintf(stderr, "bypass FUNCTION: %s (%zu)\n", F.getName().str().c_str(),
         //           F.size());          
@@ -705,7 +781,7 @@ Invivo_edge = new GlobalVariable(
       // cur_loc++;
       cur_loc = AFL_R(map_size);
 
-      if(firstBB){
+      if(firstBB && fuzz_entry_mode){
         //firstBB = 0;
         // if(strcmp(F.getName().str().c_str(), "readQueryFromClient") == 0 ){
         //   firstBB = 1;

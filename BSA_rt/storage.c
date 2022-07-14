@@ -107,12 +107,10 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
 
 int BSA_dump_buf(){
     struct BSA_buf* buf; 
-    int out_fd, in_fd;
+    int out_fd;
     int count = 0;
     char *path, *prev_path, *merge_path, *session, *prev_session;
     char ch;
-    struct stat stat_buf;
-    ssize_t sent;
     FILE *fold1, *fold2, *fnew;
     //off_t off = 0;
 
@@ -184,7 +182,7 @@ int BSA_dump_buf(){
                     prev_path = path;
                 }
                 prev_session = session;
-                //BSA_log("prev_path = %s\n prev_session = %s\n", prev_path, prev_session);
+                BSA_log("prev_path = %s\n prev_session = %s\n", prev_path, prev_session);
                 buf = buf->prev;
                 // if( prev_path && (strcmp(session, prev_session) == 0)){
                 //     close(out_fd);
