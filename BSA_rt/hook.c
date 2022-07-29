@@ -11,6 +11,7 @@ extern __thread int _function_edge;
 extern __thread char *function_entry_name;
 
 extern struct BSA_seed_map Invivo_entry_seed_map[MAP_SIZE];
+extern struct BSA_buf_pool* bsa_buf_pool[MAX_FD_NUM];
 
 __thread PREV_LOC_T Invivo_exec_path[NGRAM];
 __thread PREV_LOC_T Invivo_exec_path_idx = 0;
@@ -26,8 +27,56 @@ __thread int cur_fd = -1;
     }
 
 
-void update_seed_map(){
+void update_seed_map(int fd){
+    struct BSA_buf* buf; 
+    struct BSA_seed_list *seed_info_node;
+    char *session, *prev_session;
+    int in_seed_map = 0;
+    if (bsa_buf_pool[fd] == NULL)
+        return;
+    
+    buf = bsa_buf_pool[fd]->buf_tail;
+    if (buf == NULL)
+        return;
 
+    prev_session = buf->ip_port;
+    while(buf){
+        session = buf->ip_port;
+        if(strcmp(prev_session, session) != 0)
+            break;
+        seed_info_node = Invivo_entry_seed_map[buf->_invivo_edge].seed_head;
+        in_seed_map = 0;
+        while(seed_info_node){
+            if(seed_info_node->exec_trace_path == buf->exec_trace_path){
+                seed_info_node->mem_allocation = ((float)buf->mem_allocation + seed_info_node->mem_allocation) / 2;
+                seed_info_node->mem_operation = ((float)buf->mem_operation + seed_info_node->mem_operation) / 2;
+                seed_info_node->str_operation = ((float)buf->str_operation + seed_info_node->str_operation) / 2;
+                in_seed_map = 1;
+            }
+            seed_info_node = seed_info_node->next;
+        }
+        if(!in_seed_map){
+            BSA_log("not in seed map\n");
+            struct BSA_seed_list * tmp_seed_node;
+            tmp_seed_node = (struct BSA_seed_list*)calloc(sizeof(struct BSA_seed_list), 1);
+            tmp_seed_node->exec_trace_path = buf->exec_trace_path;
+            tmp_seed_node->mem_allocation = (float)buf->mem_allocation;
+            tmp_seed_node->mem_operation = (float)buf->mem_allocation;
+            tmp_seed_node->str_operation = (float)buf->mem_allocation;
+            tmp_seed_node->code_coverage = 0;
+            tmp_seed_node->unique_crash = 0;
+            if(Invivo_entry_seed_map[buf->_invivo_edge].seed_head == NULL){
+                Invivo_entry_seed_map[buf->_invivo_edge].seed_head = tmp_seed_node;
+            }
+            else{
+                Invivo_entry_seed_map[buf->_invivo_edge].seed_tail->next = tmp_seed_node;
+            }
+            Invivo_entry_seed_map[buf->_invivo_edge].seed_tail = tmp_seed_node;
+            Invivo_entry_seed_map[buf->_invivo_edge].seed_count ++;
+        }
+        buf = buf->next;
+
+    }
 }
 
 void append_bbid_to_exec(int bbid){
@@ -56,14 +105,12 @@ void incr_mem_oper(){
 void incr_str_oper(){
     struct BSA_buf* dest;
     if(cur_fd >= 0){
-        //BSA_log("str: %s\n", function_entry_name);
         dest = BSA_get_tail_buf(cur_fd);
         if(dest != NULL){
             dest->str_operation ++;
         }
     }   
 }
-
 
 // void update_entry_seed_map(){
 
@@ -325,6 +372,7 @@ int BSA_hook_close(int fd){
     if (S_ISSOCK(st.st_mode)){
         if(BSA_state == BSARun){
             BSA_log("session end\n");
+            update_seed_map(fd);
         }
         else if(BSA_state == BSAFuzz){
             close(fd);

@@ -38,6 +38,8 @@ struct BSA_seed_list{
     float mem_operation;
     float str_operation;
     int code_coverage;
+    int unique_crash;
+    struct BSA_seed_list* next;
 };
 
 struct BSA_seed_map{

@@ -142,9 +142,9 @@ int BSA_dump_buf(){
             continue;
 
         buf = bsa_buf_pool[i]->buf_tail;
-        prev_session = buf->ip_port;
-        prev_path = NULL;
         if (buf != NULL){
+            prev_session = buf->ip_port;
+            prev_path = NULL;
             while(buf){
                 asprintf(&path, "%s/%d_%d", BSA_dump_dir, buf->_invivo_edge, count++);
                 out_fd = open(path, O_CREAT|O_RDWR, 0666);  
