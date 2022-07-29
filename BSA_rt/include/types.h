@@ -30,6 +30,7 @@
 typedef uint8_t  u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
+typedef uint64_t    u64;
 #ifdef WORD_SIZE_64
 typedef unsigned __int128 uint128_t;
 typedef uint128_t         u128;

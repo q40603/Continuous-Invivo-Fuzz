@@ -63,7 +63,7 @@ def fuzz_handshake(conn):
         cmd = 'INVIVO=1 AFL_FAST_CAL=1 /root/scalable-invivo/third_party/AFLplusplus/afl-fuzz -i %s -o %s -t 200000000+ -P %d -r %d -y %d -H %d -u %d -j %d -- %s/%s' % (seed_dir, output_dir, pid, ppid, afl_input_location_shm_id, shm_id, entry_block, invivo_count , program_name, function_name)
         print(cmd)
         
-        subprocess.call(cmd, shell=True)
+        #subprocess.call(cmd, shell=True)
 
 
     else:

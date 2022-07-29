@@ -78,11 +78,14 @@ extern struct BSA_info bsa_info;
 
 
 #define INVIVO_PRIO 5
-#define MAX_FD_NUM 1024
+#define MAX_FD_NUM 4096
+#define MAX_BB 64
 
 #define MAP_SIZE_POW2       16
 #define MAP_SIZE            (1 << MAP_SIZE_POW2)
+#define MAP_SIZE_BIG        (1 << (MAP_SIZE_POW2*2))
 
+#define NGRAM 64
 
 #define AFL_BIND_PORT           5198
 
@@ -142,11 +145,6 @@ extern struct BSA_info bsa_info;
 #define MIN(x,y) ((x) < (y) ? (x) : (y)) 
 #define MAX(x,y) ((x) > (y) ? (x) : (y)) 
 
-
-/* Type Definition */
-typedef uint8_t     u8;
-typedef uint32_t    u32;
-typedef uint64_t    u64;
 
 
 #ifndef AFL_NGRAM_CONFIG_H

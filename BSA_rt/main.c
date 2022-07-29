@@ -38,11 +38,17 @@ extern sem_t mutex;
 int BSA_entry_value_shmid;
 u8 *BSA_entry_value_map;
 
+// int BSA_seed_map_shmid;
+struct BSA_seed_map Invivo_entry_seed_map[MAP_SIZE];
+
 __thread int invivo_count = 0;
 __thread char *function_entry_name;
 __thread char *fuzz_function = NULL;
 int* afl_input_location_id = NULL;
 
+// extern __thread PREV_LOC_T Invivo_exec_path[NGRAM];
+// extern __thread PREV_LOC_T Invivo_exec_path_idx;
+// extern __thread PREV_LOC_T *Invivo_exec_path_ptr;
 
 
 
@@ -197,12 +203,25 @@ void BSA_initial(void){
         if (BSA_entry_value_shmid)
             shmdt(BSA_entry_value_map);
 
-        BSA_entry_value_shmid = shmget(IPC_PRIVATE, sizeof(u8)*0x10000, IPC_CREAT|IPC_EXCL|0777);
+        BSA_entry_value_shmid = shmget(IPC_PRIVATE, sizeof(u8)*MAP_SIZE, IPC_CREAT|IPC_EXCL|0777);
         BSA_entry_value_map = (u8*)shmat(BSA_entry_value_shmid, NULL, 0);
 
+        // if (BSA_seed_map_shmid)
+        //     shmdt(bsa_seed_map);
 
+        //BSA_seed_map_shmid = shmget(IPC_PRIVATE, sizeof(u8)*MAP_SIZE_BIG, IPC_CREAT|IPC_EXCL|0777);
+        //bsa_seed_map = (u8*)shmat(BSA_seed_map_shmid, NULL, 0);
 
-        memset(BSA_entry_value_map, 0, sizeof(u8)*0x10000);
+        //memset(BSA_entry_value_map, 0, sizeof(u8)*MAP_SIZE);
+        
+        for(int i = 0 ; i< MAP_SIZE ; i++){
+            Invivo_entry_seed_map[i].is_show = 0;
+            Invivo_entry_seed_map[i].seed_count = 0;
+            Invivo_entry_seed_map[i].seed_head = NULL;
+            Invivo_entry_seed_map[i].seed_tail = NULL;
+        }
+        // Invivo_exec_path_ptr = Invivo_exec_path;
+        //memset(&bsa_seed_map, 0, sizeof(struct BSA_seed_map));
 
         //pthread_atfork(NULL, NULL, BSA_initial);
 
@@ -219,15 +238,14 @@ void pause_signal_handler(int signal)
 
 __thread int _invivo_edge = 0;
 __thread int _function_edge = 0;
-extern __thread int exec_path[50];
-extern __thread int exec_count;
+
 void BSA_checkpoint_nofork(int id, char *function_name){
     
     struct timeval now;
     int pid;
     char *dump_path;
     //_invivo_edge = (_invivo_edge >> 1) ^ id;
-    exec_path[(exec_count++)%50] = id;
+    //exec_path[(exec_count++)%MAX_BB] = id;
     _function_edge = _invivo_edge;
     function_entry_name = function_name;
     switch(BSA_state){
@@ -282,13 +300,8 @@ void BSA_checkpoint_nofork(int id, char *function_name){
             BSA_accept_channel(&bsa_info.afl_ctl_fd, "afl_ctl_fd");
             BSA_accept_channel(&bsa_info.afl_sts_fd, "afl_sts_fd");
 
-
-            /* don't need Secuiruty Islolation
-            copy_shm_pages();
-            */
-
             BSA_state = BSAFuzz;
-            _afl_maybe_log(id, MULTI_CONTAINER_MODE);
+            _afl_maybe_log(MULTI_CONTAINER_MODE);
         }
         break;
     case BSAFuzz:
@@ -306,8 +319,7 @@ void BSA_checkpoint(int id, char *function_name){
     struct timeval now;
     int pid;
     char *dump_path;
-    //_invivo_edge = (_invivo_edge >> 1) ^ id;
-    exec_path[(exec_count++)%50] = id;
+
     function_entry_name = function_name;
     _function_edge = _invivo_edge;
     switch(BSA_state){
@@ -349,10 +361,10 @@ void BSA_checkpoint(int id, char *function_name){
                 /* setup afl relative socket */
                 BSA_accept_channel(&bsa_info.afl_ctl_fd, "afl_ctl_fd");
                 BSA_accept_channel(&bsa_info.afl_sts_fd, "afl_sts_fd");
-                copy_shm_pages();
+                
 
                 BSA_state = BSAFuzz;
-                _afl_maybe_log(id, MULTI_PROCESS_MODE);
+                _afl_maybe_log(MULTI_PROCESS_MODE);
             }
             else if(pid > 0){
                 *BSA_fuzz_req = -1;

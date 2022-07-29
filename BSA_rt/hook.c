@@ -9,8 +9,13 @@ extern int* afl_input_location_id;
 extern __thread int _invivo_edge;
 extern __thread int _function_edge;
 extern __thread char *function_entry_name;
-__thread int exec_path[50];
-__thread int exec_count = 0;
+
+extern struct BSA_seed_map Invivo_entry_seed_map[MAP_SIZE];
+
+__thread PREV_LOC_T Invivo_exec_path[NGRAM];
+__thread PREV_LOC_T Invivo_exec_path_idx = 0;
+// __thread int *Invivo_exec_path_ptr = NULL;
+__thread int cur_fd = -1;
 
 #define BSA_HOOK_FUNCTION_DENY(x) \
     switch(BSA_state){  \
@@ -22,11 +27,135 @@ __thread int exec_count = 0;
     }
 
 
+// int BSA_pthread_create(pthread_t *restrict thread,
+//                           const pthread_attr_t *restrict attr,
+//                           void *(*start_routine)(void *),
+//                           void *restrict arg){
+    
+//     Invivo_exec_path_ptr = Invivo_exec_path;
+//     BSA_log("exec id = %d, val = %d", Invivo_exec_path_idx, *(Invivo_exec_path_ptr+Invivo_exec_path_idx));
+//     memset(Invivo_exec_path, 0 , sizeof(Invivo_exec_path));
+//     for(int i = 0 ; i< MAP_SIZE ; i++){
+//         Invivo_entry_seed_map[i].is_show = 0;
+//         Invivo_entry_seed_map[i].seed_count = 0;
+//         Invivo_entry_seed_map[i].seed_head = NULL;
+//         Invivo_entry_seed_map[i].seed_tail = NULL;
+//     }
+    
+
+//     return pthread_create(thread, attr, start_routine, arg);                       
+// }
+
+
+void append_bbid_to_exec(int bbid){
+    Invivo_exec_path[(Invivo_exec_path_idx++)%NGRAM] = bbid;
+}
+
+void incr_mem_alloc(){
+    struct BSA_buf* dest;
+    if(cur_fd >= 0 ){
+        dest = BSA_get_tail_buf(cur_fd);
+        if(dest != NULL){
+            dest->mem_allocation ++;
+        }
+    }
+}
+void incr_mem_oper(){
+    struct BSA_buf* dest;
+    if(cur_fd >= 0 ){
+        dest = BSA_get_tail_buf(cur_fd);
+        if(dest != NULL){
+            dest->mem_operation ++;
+        }
+    }
+}
+
+void incr_str_oper(){
+    struct BSA_buf* dest;
+    if(cur_fd >= 0){
+        //BSA_log("str: %s\n", function_entry_name);
+        dest = BSA_get_tail_buf(cur_fd);
+        if(dest != NULL){
+            dest->str_operation ++;
+        }
+    }   
+}
+
+
+// void update_entry_seed_map(){
+
+// }
+
+// void BSA_extract_dict(int id, char * s2){
+//     BSA_log("s2 = %s\n",s2);
+// }
+// int same_session(int fd){
+//     if(fd != cur_fd)
+//         return 0;
+
+        
+// }
+
+
+void update_prev_exec_trace(int fd){
+    if(cur_fd != fd)
+        return;
+
+    char cur_ip_port[40];
+    struct sockaddr_in addr;
+    socklen_t addr_size = sizeof(struct sockaddr_in);
+    int res = getpeername(fd, (struct sockaddr *)&addr, &addr_size);
+    if(res == 0){
+        sprintf(cur_ip_port, "%s_%u", inet_ntoa(addr.sin_addr), addr.sin_port);
+    }
+    struct BSA_buf* dest;
+    dest = BSA_get_tail_buf(cur_fd);
+    if(dest != NULL){
+        if(strcmp(dest->ip_port, cur_ip_port) != 0){
+            return;
+        }
+        int exec_xor_path = 0 ;
+        for(int i = 0 ; i < NGRAM ; i++)
+            exec_xor_path ^= Invivo_exec_path[i];
+        dest->exec_trace_path = exec_xor_path;
+    }
+
+        BSA_log("  ip_port = %s\n", dest->ip_port);
+        BSA_log("  _invivo_edge = %d\n", dest->_invivo_edge);
+        BSA_log("  exec_trace_path = %d\n", dest->exec_trace_path);
+        BSA_log("  mem_alloc = %d\n", dest->mem_allocation);
+        BSA_log("  mem_oper = %d\n", dest->mem_operation);
+        BSA_log("  str_oper = %d\n", dest->str_operation);
+}
+
+void log_exec_trace(){
+    struct BSA_buf* dest;
+    if(cur_fd >= 0){
+        dest = BSA_get_tail_buf(cur_fd);
+        if(dest != NULL){
+            int exec_xor_path = 0 ;
+            for(int i = 0 ; i < NGRAM ; i++)
+                exec_xor_path ^= Invivo_exec_path[i];
+            dest->exec_trace_path = exec_xor_path;
+        }
+        BSA_log("  ip_port = %s\n", dest->ip_port);
+        BSA_log("  _invivo_edge = %d\n", dest->_invivo_edge);
+        BSA_log("  exec_trace_path = %d\n", dest->exec_trace_path);
+        BSA_log("  mem_alloc = %d\n", dest->mem_allocation);
+        BSA_log("  mem_oper = %d\n", dest->mem_operation);
+        BSA_log("  str_oper = %d\n", dest->str_operation);
+        //cur_fd = -1;
+    }     
+}
+
 void set_src_ip(int newfd, struct BSA_buf* dest) {
     struct sockaddr_in addr;
     socklen_t addr_size = sizeof(struct sockaddr_in);
     int res = getpeername(newfd, (struct sockaddr *)&addr, &addr_size);
-    sprintf(dest->ip_port, "%s_%u", inet_ntoa(addr.sin_addr), addr.sin_port);
+    if(res == 0){
+        sprintf(dest->ip_port, "%s_%u", inet_ntoa(addr.sin_addr), addr.sin_port);
+    }
+    
 }
 
 
@@ -40,9 +169,11 @@ ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len){
     
     fstat(fd, &st);
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
+        update_prev_exec_trace(fd);
+        cur_fd = fd;
         *(u8*)(BSA_entry_value_map+_function_edge) = 1;
-        memset(exec_path, 0 , sizeof(exec_path));
-        exec_count = 0;
+        memset(Invivo_exec_path, 0 , sizeof(Invivo_exec_path));
+        Invivo_exec_path_idx = 0;
         BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
         dest = BSA_create_buf(fd, ret);
         if(dest != NULL){
@@ -63,13 +194,19 @@ ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){
     
     ssize_t ret;
     struct BSA_buf* dest;
+    struct stat st;
+    fstat(sockfd, &st);
     
     ret = recv(sockfd, buf, len, flags);
-    if (BSA_state == BSARun && ret > 0){
+
+    
+    if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
+        update_prev_exec_trace(sockfd);
+        cur_fd = sockfd;
         BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
         *(u8*)(BSA_entry_value_map+_function_edge) = 1;
-        memset(exec_path, 0 , sizeof(exec_path));
-        exec_count = 0;
+        memset(Invivo_exec_path, 0 , sizeof(Invivo_exec_path));
+        Invivo_exec_path_idx = 0;
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
             dest->_invivo_edge = _function_edge;
@@ -88,13 +225,18 @@ ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){
 ssize_t BSA_hook_recvfrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *src_addr, socklen_t *addrlen){
     ssize_t ret;
     struct BSA_buf* dest;
+    struct stat st;
+    fstat(sockfd, &st);
+
 
     ret = recvfrom(sockfd, buf, len, flags, src_addr, addrlen);
-    if (BSA_state == BSARun && ret > 0){
+    if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
+        update_prev_exec_trace(sockfd);
+        cur_fd = sockfd;
         BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
         *(u8*)(BSA_entry_value_map+_function_edge) = 1;
-        memset(exec_path, 0 , sizeof(exec_path));
-        exec_count = 0;
+        memset(Invivo_exec_path, 0 , sizeof(Invivo_exec_path));
+        Invivo_exec_path_idx = 0;
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
             dest->_invivo_edge = _function_edge;
@@ -115,14 +257,18 @@ ssize_t BSA_hook_recvmsg(int sockfd, struct msghdr *msg, int flags){
     ssize_t ret, cnt;
     struct BSA_buf* dest;
     int i = 0;
-    
+
+    struct stat st;
+    fstat(sockfd, &st);
     cnt = ret = recvmsg(sockfd, msg, flags);
     
-    if (BSA_state == BSARun && ret > 0){
+    if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
+        update_prev_exec_trace(sockfd);
+        cur_fd = sockfd;
         BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
         *(u8*)(BSA_entry_value_map+_function_edge) = 1;
-        memset(exec_path, 0 , sizeof(exec_path));
-        exec_count = 0;
+        memset(Invivo_exec_path, 0 , sizeof(Invivo_exec_path));
+        Invivo_exec_path_idx = 0;
         while(cnt > 0 && i < msg->msg_iovlen){
             ssize_t len = MIN(cnt, msg->msg_iov[i].iov_len);
             dest = BSA_create_buf(sockfd, len);
@@ -144,20 +290,23 @@ ssize_t BSA_hook_recvmsg(int sockfd, struct msghdr *msg, int flags){
 
 ssize_t BSA_hook_write(int fd, const void * buf, size_t len){
     size_t ret = len;
-    int exe_xor_path = 0 ;
-    for(int i = 0 ; i < 50 ; i++)
-        exe_xor_path ^= exec_path[i];
-    BSA_log("write %d\n", exe_xor_path);
+    struct stat st;
+    fstat(fd, &st);
+    if S_ISSOCK(st.st_mode){
+        log_exec_trace();
+    }
+    
     BSA_HOOK_FUNCTION_DENY(ret=write(fd,buf,len))
     return ret;
 }
 
 ssize_t BSA_hook_writev(int fd, const struct iovec *iov, int iovcnt){
     size_t ret = 0;
-    int exe_xor_path = 0 ;
-    for(int i = 0 ; i < 50 ; i++)
-        exe_xor_path ^= exec_path[i];
-    BSA_log("writev %d\n", exe_xor_path);
+    struct stat st;
+    fstat(fd, &st);
+    if S_ISSOCK(st.st_mode){
+        log_exec_trace();
+    }
     for(int i = 0; i < iovcnt; i++){
         ret += iov[i].iov_len;
     }
@@ -167,33 +316,36 @@ ssize_t BSA_hook_writev(int fd, const struct iovec *iov, int iovcnt){
 
 ssize_t BSA_hook_send(int sockfd, const void *buf, size_t len, int flags){
     size_t ret = len;
-    int exe_xor_path = 0 ;
-    for(int i = 0 ; i < 50 ; i++)
-        exe_xor_path ^= exec_path[i];
-    BSA_log("send %d\n", exe_xor_path);
+    struct stat st;
+    fstat(sockfd, &st);
+    if S_ISSOCK(st.st_mode){
+        log_exec_trace();
+    }
     BSA_HOOK_FUNCTION_DENY(ret = send(sockfd, buf, len, flags))
     return ret;
 }
 
 ssize_t BSA_hook_sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen){
     size_t ret = len;
-    int exe_xor_path = 0 ;
-    for(int i = 0 ; i < 50 ; i++)
-        exe_xor_path ^= exec_path[i];
-    BSA_log("sendto %d\n", exe_xor_path);
+    struct stat st;
+    fstat(sockfd, &st);
+    if S_ISSOCK(st.st_mode){
+        log_exec_trace();
+    }
     BSA_HOOK_FUNCTION_DENY(ret = sendto(sockfd, buf, len, flags, dest_addr, addrlen))
     return ret;
 }
 
 ssize_t BSA_hook_sendmsg(int sockfd, const struct msghdr *msg, int flags){
     size_t ret = 0;
-    int exe_xor_path = 0 ;
-    for(int i = 0 ; i < 50 ; i++)
-        exe_xor_path ^= exec_path[i];
+    struct stat st;
+    fstat(sockfd, &st);
+    if S_ISSOCK(st.st_mode){
+        log_exec_trace();
+    }
     for(int i = 0; i < msg->msg_iovlen; i++){
         ret += msg->msg_iov[i].iov_len;
     }
-    BSA_log("sendmsg %d\n", exe_xor_path);
     BSA_HOOK_FUNCTION_DENY(ret = sendmsg(sockfd, msg, flags))
     return ret;
 }
@@ -212,6 +364,7 @@ int BSA_hook_close(int fd){
             exit(0);
         }
     }
+    cur_fd = -1;
     return close(fd);
 }
 
@@ -242,137 +395,171 @@ int BSA_hook_accept4(
 }
 
 
-void BSA_hook_free(void *ptr){
-    //BSA_log("free tid = %ld func = %s\n",syscall(__NR_gettid), function_entry_name);
-    free(ptr);
-}
+// void BSA_hook_free(void *ptr){
+//     //BSA_log("free tid = %ld func = %s\n",syscall(__NR_gettid), function_entry_name);
+//     incr_mem_alloc();
+//     free(ptr);
+// }
 
-void * BSA_hook_calloc (size_t nelem, size_t elsize){
-    //BSA_log("calloc %ld tid = %ld\n", nelem, syscall(__NR_gettid));
-    return calloc(nelem, elsize);
-}
+// void * BSA_hook_calloc (size_t nelem, size_t elsize){
+//     //BSA_log("calloc %ld tid = %ld\n", nelem, syscall(__NR_gettid));
+//     incr_mem_alloc();
+//     return calloc(nelem, elsize);
+// }
 
-void *BSA_hook_malloc(size_t n){
-    //BSA_log("malloc %ld tid = %ld fun = %s\n", n, syscall(__NR_gettid), function_entry_name);
-    return malloc(n);
-}
-void *BSA_hook_realloc(void *ptr, size_t size){
-    //BSA_log("realloc %ld tid = %ld\n", size, syscall(__NR_gettid));
-    return realloc(ptr, size);
-}
+// void *BSA_hook_malloc(size_t n){
+//     //BSA_log("malloc %ld tid = %ld fun = %s\n", n, syscall(__NR_gettid), function_entry_name);
+//     incr_mem_alloc();
+//     return malloc(n);
+// }
+// void *BSA_hook_realloc(void *ptr, size_t size){
+//     //BSA_log("realloc %ld tid = %ld\n", size, syscall(__NR_gettid));
+//     incr_mem_alloc();
+//     return realloc(ptr, size);
+// }
 
-void *BSA_hook_reallocarray(void *ptr, size_t nmemb, size_t size){
-    //BSA_log("reallocarray\n");
-    return reallocarray(ptr, nmemb, size);
-}
+// void *BSA_hook_reallocarray(void *ptr, size_t nmemb, size_t size){
+//     //BSA_log("reallocarray\n");
+//     incr_mem_alloc();
+//     return reallocarray(ptr, nmemb, size);
+// }
 
-void *BSA_hook_memcpy (void *dest, const void *src, size_t len){
-    //BSA_log("memcpy\n");
-    return memcpy(dest, src, len);
-}
+// void *BSA_hook_memcpy (void *dest, const void *src, size_t len){
+//     //BSA_log("memcpy\n");
+//     incr_mem_oper();
+//     return memcpy(dest, src, len);
+// }
 
-void *BSA_hook_memmove(void *dest, const void *src, size_t n){
-    //BSA_log("memmove\n");
-    return memmove(dest, src, n);
-}
-
-
-void *BSA_hook_memchr(const void *s, int c, size_t n){
-    //BSA_log("memchr\n");
-    return memchr(s, c, n);
-}
-
-void *BSA_hook_memrchr(const void *s, int c, size_t n){
-    //BSA_log("memrchr\n");
-    return memrchr(s, c, n);
-}
-
-void *BSA_hook_rawmemchr(const void *s, int c){
-    return rawmemchr(s, c);
-}
-
-void *BSA_hook_memset(void *s, int c, size_t n){
-    return memset(s, c, n);
-}
+// void *BSA_hook_memmove(void *dest, const void *src, size_t n){
+//     //BSA_log("memmove\n");
+//     incr_mem_oper();
+//     return memmove(dest, src, n);
+// }
 
 
-int BSA_hook_memcmp(const void *s1, const void *s2, size_t n){
-    return memcmp(s1, s2, n);
-}
+// void *BSA_hook_memchr(const void *s, int c, size_t n){
+//     //BSA_log("memchr\n");
+//     incr_mem_oper();
+//     return memchr(s, c, n);
+// }
 
-char *BSA_hook_strcpy(char *restrict dest, const char *src){
-    return strcpy(dest, src);
-}
-char *BSA_hook_strncpy(char *restrict dest, const char *restrict src, size_t n){
-    return strncpy(dest, src, n);
-}
+// void *BSA_hook_memrchr(const void *s, int c, size_t n){
+//     //BSA_log("memrchr\n");
+//     incr_mem_oper();
+//     return memrchr(s, c, n);
+// }
+
+// void *BSA_hook_rawmemchr(const void *s, int c){
+//     incr_mem_oper();
+//     return rawmemchr(s, c);
+// }
+
+// void *BSA_hook_memset(void *s, int c, size_t n){
+//     incr_mem_oper();
+//     return memset(s, c, n);
+// }
 
 
-size_t BSA_hook_strlen(const char *s){
-    return strlen(s);
-}
+// int BSA_hook_memcmp(const void *s1, const void *s2, size_t n){
+//     incr_mem_oper();
+//     return memcmp(s1, s2, n);
+// }
+
+// char *BSA_hook_strcpy(char *restrict dest, const char *src){
+//     incr_str_oper();
+//     return strcpy(dest, src);
+// }
+// char *BSA_hook_strncpy(char *restrict dest, const char *restrict src, size_t n){
+//     incr_str_oper();
+//     return strncpy(dest, src, n);
+// }
 
 
-char *BSA_hook_strcat(char *restrict dest, const char *restrict src){
-    return strcat(dest, src);
-}
-char *BSA_hook_strncat(char *restrict dest, const char *restrict src, size_t n){
-    return strncat(dest, src, n);
-}
+// size_t BSA_hook_strlen(const char *s){
+
+//     incr_str_oper();
+//     return strlen(s);
+// }
+
+
+// char *BSA_hook_strcat(char *restrict dest, const char *restrict src){
+//     incr_str_oper();
+//     return strcat(dest, src);
+// }
+// char *BSA_hook_strncat(char *restrict dest, const char *restrict src, size_t n){
+//     incr_str_oper();
+//     return strncat(dest, src, n);
+// }
 
 int BSA_hook_strncmp(const char *s1, const char *s2, size_t n){
+    if(cur_fd >= 0) BSA_log("cmp %s\n", s2);
     return strncmp(s1, s2, n);
 }
 int BSA_hook_strcmp(const char *s1, const char *s2){
+    if(cur_fd >= 0) BSA_log("cmp %s\n", s2);
     return strcmp(s1, s2);
 }
 
 int BSA_hook_strcasecmp(const char *s1, const char *s2){
+    if(cur_fd >= 0) BSA_log("strcasecmp %s\n", s2);
     return strcasecmp(s1, s2);
 }
 int BSA_hook_strncasecmp(const char *s1, const char *s2, size_t n){
+    if(cur_fd >= 0) BSA_log("strncasecmp %s\n", s2);
     return strncasecmp(s1, s2, n);
 }
 
 size_t BSA_hook_strspn(const char *s, const char *accept){
+    if(cur_fd >= 0) BSA_log("strspn %s\n", accept);
     return strspn(s, accept);
 }
 size_t BSA_hook_strcspn(const char *s, const char *reject){
+    if(cur_fd >= 0) BSA_log("strcspn %s\n", reject);
     return strcspn(s, reject);
 }
 
 
 int BSA_hook_strcoll(const char *s1, const char *s2){
+    if(cur_fd >= 0) BSA_log("strcoll %s\n", s2);
     return strcoll(s1, s2);
 }
 
 size_t BSA_hook_strxfrm(char *restrict dest, const char *restrict src, size_t n){
+    if(cur_fd >= 0) BSA_log("strxfrm %s\n", src);
     return strxfrm(dest, src, n);
 }
 
 char *BSA_hook_strstr(const char *haystack, const char *needle){
+    if(cur_fd >= 0) BSA_log("strstr %s\n", needle);
     return strstr(haystack, needle);
 }
 
 char *BSA_hook_strcasestr(const char *haystack, const char *needle){
+    if(cur_fd >= 0) BSA_log("strcasestr %s\n", needle);
     return strcasestr(haystack, needle);
 }
 
-char *BSA_hook_strchr(const char *s, int c){
-    return strchr(s, c);
-}
-char *BSA_hook_strrchr(const char *s, int c){
-    return strrchr(s, c);
-}
-char *BSA_hook_strpbrk(const char *s, const char *accept){
-    return strpbrk(s, accept);
-}
+// char *BSA_hook_strchr(const char *s, int c){
+//     incr_str_oper();
+//     if(cur_fd >= 0) BSA_log("strchr %c\n", c);
+//     return strchr(s, c);
+// }
+// char *BSA_hook_strrchr(const char *s, int c){
+//     incr_str_oper();
+//     return strrchr(s, c);
+// }
+// char *BSA_hook_strpbrk(const char *s, const char *accept){
+//     incr_str_oper();
+//     return strpbrk(s, accept);
+// }
 
-char *BSA_hook_strtok(char *restrict str, const char *restrict delim){
-    return strtok(str, delim);
-}
-char *BSA_hook_strtok_r(char *restrict str, const char *restrict delim,
-                      char **restrict saveptr){
-    return strtok_r(str, delim,saveptr);
-}
+// char *BSA_hook_strtok(char *restrict str, const char *restrict delim){
+//     incr_str_oper();
+//     return strtok(str, delim);
+// }
+// char *BSA_hook_strtok_r(char *restrict str, const char *restrict delim,
+//                       char **restrict saveptr){
+//     incr_str_oper();
+//     return strtok_r(str, delim,saveptr);
+// }
 

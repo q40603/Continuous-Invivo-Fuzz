@@ -31,9 +31,9 @@ extern struct BSA_info bsa_info;
 u32 _afl_setup_failure = 0;
 
 extern u8 * __afl_area_ptr;
-extern __thread PREV_LOC_T __afl_prev_loc[NGRAM_SIZE_MAX];
-extern PREV_LOC_T __afl_prev_caller[CTX_MAX_K];
-extern u32        __afl_prev_ctx;
+// extern __thread PREV_LOC_T __afl_prev_loc[NGRAM_SIZE_MAX];
+// extern PREV_LOC_T __afl_prev_caller[CTX_MAX_K];
+// extern u32        __afl_prev_ctx;
 
 extern __thread int _invivo_edge;
 extern int *afl_input_location_id;
@@ -219,7 +219,7 @@ void _BSA_afl_initialize_fuzz_target(){
 }
 
 
-void _afl_maybe_log(int id, int multi_process_mode){
+void _afl_maybe_log(int multi_process_mode){
 
     int shm_id, pid, status;
     
@@ -231,6 +231,7 @@ void _afl_maybe_log(int id, int multi_process_mode){
 
             if(multi_process_mode){
                 /* false positive/negative may happend */
+                copy_shm_pages();
                 install_seccomp();
                 signal(SIGCHLD, SIG_DFL);
             }

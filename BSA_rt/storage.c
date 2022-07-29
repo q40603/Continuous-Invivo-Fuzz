@@ -5,7 +5,7 @@
 
 
 
-__thread struct BSA_buf_pool* bsa_buf_pool[MAX_FD_NUM];
+struct BSA_buf_pool* bsa_buf_pool[MAX_FD_NUM];
 __thread char BSA_dump_dir[4096];
 //sem_t mutex;
 
@@ -46,6 +46,16 @@ void BSA_del_first(int fd){
     }
 }
 
+struct BSA_buf* BSA_get_tail_buf(int fd){
+    if(fd>=0){
+        return bsa_buf_pool[fd]->buf_tail;
+    }
+    else{
+        return NULL;
+    }   
+        
+}
+
 
 
 struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
@@ -83,7 +93,13 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
     }
     
     buf->len = buf_size;
-    buf->_invivo_edge = 0;
+    buf->_invivo_edge = -1;
+    buf->mem_allocation = 0;
+    buf->mem_operation = 0;
+    buf->str_operation = 0;
+    buf->exec_trace_path = -1;
+    memset(buf->ip_port, '\0', sizeof(buf->ip_port));
+
     
     if (bsa_buf_pool[fd]->buf_head == NULL){
         bsa_buf_pool[fd]->buf_head = buf;

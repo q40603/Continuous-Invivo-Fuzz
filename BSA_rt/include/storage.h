@@ -25,8 +25,30 @@ struct BSA_buf{
     uint8_t* data;
     size_t  len;
     int _invivo_edge;
+    int mem_allocation;
+    int mem_operation;
+    int str_operation;
+    int exec_trace_path;
     char ip_port[40];
 };
+
+struct BSA_seed_list{
+    int exec_trace_path;
+    float mem_allocation;
+    float mem_operation;
+    float str_operation;
+    int code_coverage;
+};
+
+struct BSA_seed_map{
+    int is_show;
+    ssize_t seed_count;
+    struct BSA_seed_list* seed_head;
+    struct BSA_seed_list* seed_tail;
+};
+
+
+
 
 struct BSA_buf_pool{
     struct BSA_buf* buf_head;
@@ -42,5 +64,6 @@ void BSA_clear_buf();
 void BSA_del_first(int fd);
 int BSA_dump_buf();
 struct BSA_buf* BSA_create_buf(int fd, size_t buf_size);
+struct BSA_buf* BSA_get_tail_buf(int fd);
 
 #endif

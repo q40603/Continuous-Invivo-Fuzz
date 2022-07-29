@@ -285,7 +285,7 @@ void BSA_conn_IA(int id, int function_entry_id){
 
     
 
-    printf("function entry id = %d \n function entry name = %s\n program name = %s\n", function_entry_id, function_entry_name, program_invocation_short_name);
+    //printf("function entry id = %d \n function entry name = %s\n program name = %s\n", function_entry_id, function_entry_name, program_invocation_short_name);
     sprintf(bsa_info.afl_dir, "%s_output", dump_path);
 
     write(ia_fd, buf, buf_sz);
