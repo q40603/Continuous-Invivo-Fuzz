@@ -14,7 +14,6 @@ extern struct BSA_seed_map Invivo_entry_seed_map[MAP_SIZE];
 
 __thread PREV_LOC_T Invivo_exec_path[NGRAM];
 __thread PREV_LOC_T Invivo_exec_path_idx = 0;
-// __thread int *Invivo_exec_path_ptr = NULL;
 __thread int cur_fd = -1;
 
 #define BSA_HOOK_FUNCTION_DENY(x) \
@@ -27,25 +26,9 @@ __thread int cur_fd = -1;
     }
 
 
-// int BSA_pthread_create(pthread_t *restrict thread,
-//                           const pthread_attr_t *restrict attr,
-//                           void *(*start_routine)(void *),
-//                           void *restrict arg){
-    
-//     Invivo_exec_path_ptr = Invivo_exec_path;
-//     BSA_log("exec id = %d, val = %d", Invivo_exec_path_idx, *(Invivo_exec_path_ptr+Invivo_exec_path_idx));
-//     memset(Invivo_exec_path, 0 , sizeof(Invivo_exec_path));
-//     for(int i = 0 ; i< MAP_SIZE ; i++){
-//         Invivo_entry_seed_map[i].is_show = 0;
-//         Invivo_entry_seed_map[i].seed_count = 0;
-//         Invivo_entry_seed_map[i].seed_head = NULL;
-//         Invivo_entry_seed_map[i].seed_tail = NULL;
-//     }
-    
+void update_seed_map(){
 
-//     return pthread_create(thread, attr, start_routine, arg);                       
-// }
-
+}
 
 void append_bbid_to_exec(int bbid){
     Invivo_exec_path[(Invivo_exec_path_idx++)%NGRAM] = bbid;
@@ -89,13 +72,12 @@ void incr_str_oper(){
 // void BSA_extract_dict(int id, char * s2){
 //     BSA_log("s2 = %s\n",s2);
 // }
-// int same_session(int fd){
-//     if(fd != cur_fd)
-//         return 0;
 
-        
-// }
-
+void reset_exec_trace(int fd){
+    cur_fd = fd;
+    memset(Invivo_exec_path, 0 , sizeof(Invivo_exec_path));
+    Invivo_exec_path_idx = 0;
+}
 
 void update_prev_exec_trace(int fd){
     if(cur_fd != fd)
@@ -119,13 +101,12 @@ void update_prev_exec_trace(int fd){
             exec_xor_path ^= Invivo_exec_path[i];
         dest->exec_trace_path = exec_xor_path;
     }
-
-        BSA_log("  ip_port = %s\n", dest->ip_port);
-        BSA_log("  _invivo_edge = %d\n", dest->_invivo_edge);
-        BSA_log("  exec_trace_path = %d\n", dest->exec_trace_path);
-        BSA_log("  mem_alloc = %d\n", dest->mem_allocation);
-        BSA_log("  mem_oper = %d\n", dest->mem_operation);
-        BSA_log("  str_oper = %d\n", dest->str_operation);
+    BSA_log("  ip_port = %s\n", dest->ip_port);
+    BSA_log("  _invivo_edge = %d\n", dest->_invivo_edge);
+    BSA_log("  exec_trace_path = %d\n", dest->exec_trace_path);
+    BSA_log("  mem_alloc = %d\n", dest->mem_allocation);
+    BSA_log("  mem_oper = %d\n", dest->mem_operation);
+    BSA_log("  str_oper = %d\n", dest->str_operation);
 }
 
 void log_exec_trace(){
@@ -144,7 +125,6 @@ void log_exec_trace(){
         BSA_log("  mem_alloc = %d\n", dest->mem_allocation);
         BSA_log("  mem_oper = %d\n", dest->mem_operation);
         BSA_log("  str_oper = %d\n", dest->str_operation);
-        //cur_fd = -1;
     }     
 }
 
@@ -155,7 +135,6 @@ void set_src_ip(int newfd, struct BSA_buf* dest) {
     if(res == 0){
         sprintf(dest->ip_port, "%s_%u", inet_ntoa(addr.sin_addr), addr.sin_port);
     }
-    
 }
 
 
@@ -169,12 +148,10 @@ ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len){
     
     fstat(fd, &st);
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
-        update_prev_exec_trace(fd);
-        cur_fd = fd;
         *(u8*)(BSA_entry_value_map+_function_edge) = 1;
-        memset(Invivo_exec_path, 0 , sizeof(Invivo_exec_path));
-        Invivo_exec_path_idx = 0;
         BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
+        update_prev_exec_trace(fd);
+        reset_exec_trace(fd);
         dest = BSA_create_buf(fd, ret);
         if(dest != NULL){
             dest->_invivo_edge = _function_edge;
@@ -201,12 +178,10 @@ ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){
 
     
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
-        update_prev_exec_trace(sockfd);
-        cur_fd = sockfd;
-        BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
         *(u8*)(BSA_entry_value_map+_function_edge) = 1;
-        memset(Invivo_exec_path, 0 , sizeof(Invivo_exec_path));
-        Invivo_exec_path_idx = 0;
+        BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
+        update_prev_exec_trace(sockfd);
+        reset_exec_trace(sockfd);
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
             dest->_invivo_edge = _function_edge;
@@ -227,23 +202,18 @@ ssize_t BSA_hook_recvfrom(int sockfd, void *buf, size_t len, int flags, struct s
     struct BSA_buf* dest;
     struct stat st;
     fstat(sockfd, &st);
-
-
     ret = recvfrom(sockfd, buf, len, flags, src_addr, addrlen);
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
-        update_prev_exec_trace(sockfd);
-        cur_fd = sockfd;
-        BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
         *(u8*)(BSA_entry_value_map+_function_edge) = 1;
-        memset(Invivo_exec_path, 0 , sizeof(Invivo_exec_path));
-        Invivo_exec_path_idx = 0;
+        BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
+        update_prev_exec_trace(sockfd);
+        reset_exec_trace(sockfd);
         dest = BSA_create_buf(sockfd, ret);
         if(dest != NULL){
             dest->_invivo_edge = _function_edge;
             memcpy(dest->data, buf, ret);
             set_src_ip(sockfd, dest);
         }
-        
     }
     else if (BSA_state == BSAFuzz && ret > 0){
         if(!(*afl_input_location_id)){
@@ -263,12 +233,10 @@ ssize_t BSA_hook_recvmsg(int sockfd, struct msghdr *msg, int flags){
     cnt = ret = recvmsg(sockfd, msg, flags);
     
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
-        update_prev_exec_trace(sockfd);
-        cur_fd = sockfd;
-        BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
         *(u8*)(BSA_entry_value_map+_function_edge) = 1;
-        memset(Invivo_exec_path, 0 , sizeof(Invivo_exec_path));
-        Invivo_exec_path_idx = 0;
+        BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
+        update_prev_exec_trace(sockfd);
+        reset_exec_trace(sockfd);
         while(cnt > 0 && i < msg->msg_iovlen){
             ssize_t len = MIN(cnt, msg->msg_iov[i].iov_len);
             dest = BSA_create_buf(sockfd, len);
@@ -354,7 +322,6 @@ ssize_t BSA_hook_sendmsg(int sockfd, const struct msghdr *msg, int flags){
 int BSA_hook_close(int fd){
     struct stat st;
     fstat(fd, &st);
-    //if (S_ISSOCK(st.st_mode) && BSA_state == BSARun){
     if (S_ISSOCK(st.st_mode)){
         if(BSA_state == BSARun){
             BSA_log("session end\n");
