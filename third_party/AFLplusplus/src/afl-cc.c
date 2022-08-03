@@ -1187,7 +1187,7 @@ else{
   
   if(invivo_mode){
     cc_params[cc_par_cnt++] = "-pthread";
-    cc_params[cc_par_cnt++] = "-lcurl";
+    //cc_params[cc_par_cnt++] = "-lcurl";
   }
     
 

@@ -640,6 +640,11 @@ Invivo_edge = new GlobalVariable(
         Type::getVoidTy(M.getContext()), 
         Type::getInt32Ty(M.getContext())
         ).getCallee();
+
+  auto callee_check_exit = M.getOrInsertFunction(
+        "BSA_check_exit",
+        Type::getVoidTy(M.getContext())
+        ).getCallee();
   // auto callee_extract_dict = M.getOrInsertFunction(
   //   "BSA_extract_dict",
   //   Type::getVoidTy(M.getContext()),
@@ -653,6 +658,7 @@ Invivo_edge = new GlobalVariable(
   Function *Fun_trace_mem_op = cast<Function>(callee_incr_mem_op);
   Function *Fun_trace_str_op = cast<Function>(callee_incr_str);
   Function *Fun_append_bbid = cast<Function>(callee_append_bbid);
+  Function *Fun_check_exit = cast<Function>(callee_check_exit);
   //Function *Fun_extract_dict = cast<Function>(callee_extract_dict);
   //auto Fun = dyn_cast<Constant>(callee_checkpoint.getCallee());
 
@@ -673,6 +679,29 @@ Invivo_edge = new GlobalVariable(
   if(getenv("ENTRY")){
     fuzz_entry_mode = 1;
   }
+
+  int sec_fun_mode = 0;
+  if(getenv("SEC")){
+    sec_fun_mode = 1;
+  }
+
+  int exec_trace_mode = 0;
+  if(getenv("EXEC")){
+    exec_trace_mode = 1;
+  }
+
+  int extract_dict_mode = 0;
+  if(getenv("DICT")){
+    extract_dict_mode = 1;
+  }    
+
+  if(getenv("ALL")){
+    hook_mode = 1;
+    fuzz_entry_mode = 1;
+    sec_fun_mode = 1;
+    exec_trace_mode = 1;
+    extract_dict_mode = 1;
+  }
   /* Instrument all the things! */
 
   int inst_blocks = 0;
@@ -682,22 +711,25 @@ Invivo_edge = new GlobalVariable(
 
     int has_calls = 0;
     if(F.isIntrinsic()) continue;
-    if(F.isDeclaration() && hook_mode){
+    if(F.isDeclaration()){
         func_name = F.getName().str();
-        
+        // OKF("f = %s\n", func_name.c_str());
         //if (func_name == pthread_create_function) F.setName("BSA_pthread_create");
-        if (func_name == read_function ) F.setName("BSA_hook_read"); 
-        else if(func_name == write_function) F.setName("BSA_hook_write"); 
-        else if(func_name == writev_function) F.setName("BSA_hook_writev");
-        else if(func_name == recvmsg_function) F.setName("BSA_hook_recvmsg");
-        else if(func_name == recvfrom_function) F.setName("BSA_hook_recvfrom");
-        else if(func_name == recv_function)  F.setName("BSA_hook_recv");
-        else if(func_name == send_function)  F.setName("BSA_hook_send");
-        else if(func_name == sendto_function)  F.setName("BSA_hook_sendto");
-        else if(func_name == sendmsg_function)  F.setName("BSA_hook_sendmsg");
-        else if(func_name == close_function) F.setName("BSA_hook_close");
-        else if(func_name == accept_function) F.setName("BSA_hook_accept");
-        else if(func_name == accept4_function) F.setName("BSA_hook_accept4");
+        if(hook_mode){
+          if (func_name == read_function ) F.setName("BSA_hook_read"); 
+          else if(func_name == write_function) F.setName("BSA_hook_write"); 
+          else if(func_name == writev_function) F.setName("BSA_hook_writev");
+          else if(func_name == recvmsg_function) F.setName("BSA_hook_recvmsg");
+          else if(func_name == recvfrom_function) F.setName("BSA_hook_recvfrom");
+          else if(func_name == recv_function)  F.setName("BSA_hook_recv");
+          else if(func_name == send_function)  F.setName("BSA_hook_send");
+          else if(func_name == sendto_function)  F.setName("BSA_hook_sendto");
+          else if(func_name == sendmsg_function)  F.setName("BSA_hook_sendmsg");
+          else if(func_name == close_function) F.setName("BSA_hook_close");
+          else if(func_name == accept_function) F.setName("BSA_hook_accept");
+          else if(func_name == accept4_function) F.setName("BSA_hook_accept4");
+        }
+
         // else if(func_name == free_function) F.setName("BSA_hook_free");
         // else if(func_name == calloc_function) F.setName("BSA_hook_calloc");
         // else if(func_name == malloc_function) F.setName("BSA_hook_malloc");
@@ -715,21 +747,24 @@ Invivo_edge = new GlobalVariable(
         // else if(func_name == strlen_function) F.setName("BSA_hook_strlen");
         // else if(func_name == strcat_function) F.setName("BSA_hook_strcat");
         // else if(func_name == strncat_function) F.setName("BSA_hook_strncat");
-        else if(func_name == strncmp_function) F.setName("BSA_hook_strncmp");
-        else if(func_name == strcmp_function) F.setName("BSA_hook_strcmp");
-        else if(func_name == strcasecmp_function) F.setName("BSA_hook_strcasecmp");
-        else if(func_name == strncasecmp_function) F.setName("BSA_hook_strncasecmp");
-        else if(func_name == strspn_function) F.setName("BSA_hook_strspn");
-        else if(func_name == strcspn_function) F.setName("BSA_hook_strcspn");
-        else if(func_name == strcoll_function) F.setName("BSA_hook_strcoll");
-        else if(func_name == strxfrm_function) F.setName("BSA_hook_strxfrm");
-        else if(func_name == strstr_function) F.setName("BSA_hook_strstr");
-        else if(func_name == strcasestr_function) F.setName("BSA_hook_strcasestr");
+        if(extract_dict_mode){
+          if(func_name == strncmp_function) F.setName("BSA_hook_strncmp");
+          else if(func_name == strcmp_function) F.setName("BSA_hook_strcmp");
+          else if(func_name == strcasecmp_function) F.setName("BSA_hook_strcasecmp");
+          else if(func_name == strncasecmp_function) F.setName("BSA_hook_strncasecmp");
+          else if(func_name == strspn_function) F.setName("BSA_hook_strspn");
+          else if(func_name == strcspn_function) F.setName("BSA_hook_strcspn");
+          else if(func_name == strcoll_function) F.setName("BSA_hook_strcoll");
+          else if(func_name == strxfrm_function) F.setName("BSA_hook_strxfrm");
+          else if(func_name == strstr_function) F.setName("BSA_hook_strstr");
+          else if(func_name == strcasestr_function) F.setName("BSA_hook_strcasestr");
+          else if(func_name == strpbrk_function) F.setName("BSA_hook_strpbrk");
+          else if(func_name == strtok_function) F.setName("BSA_hook_strtok");
+          else if(func_name == strtok_r_function) F.setName("BSA_hook_strtok_r");
+        }
+
         // else if(func_name == strchr_function) F.setName("BSA_hook_strchr");
         // else if(func_name == strrchr_function) F.setName("BSA_hook_strrchr");
-        // else if(func_name == strpbrk_function) F.setName("BSA_hook_strpbrk");
-        // else if(func_name == strtok_function) F.setName("BSA_hook_strtok");
-        // else if(func_name == strtok_r_function) F.setName("BSA_hook_strtok_r");
         // // else{
         //   fprintf(stderr, "bypass FUNCTION: %s (%zu)\n", F.getName().str().c_str(),
         //           F.size());          
@@ -897,38 +932,48 @@ Invivo_edge = new GlobalVariable(
       //}
 
 
-      if(fuzz_entry_mode && has_network_io){
-        Value *val[2];
-        val[0] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), cur_loc);
-        val[1] = IRB.CreateGlobalStringPtr(F.getName().str().c_str());
-        IRB.CreateCall(Fun,val);
-        OKF("Inserting IV_Fuzz_Entry to %s (%zu)", F.getName().str().c_str(), F.size());
+      if(fuzz_entry_mode){
+        IRB.CreateCall(Fun_check_exit);
+        if(has_network_io){
+          Value *val[2];
+          val[0] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), cur_loc);
+          val[1] = IRB.CreateGlobalStringPtr(F.getName().str().c_str());
+          IRB.CreateCall(Fun,val);
+          OKF("Inserting IV_Fuzz_Entry to %s (%zu)", F.getName().str().c_str(), F.size());
+        }
       }
 
+      
+
       if(firstBB){
-        Value *vall[1];
-        vall[0] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), cur_loc);
-        IRB.CreateCall(Fun_append_bbid,vall);
-        if(strstr(F.getName().str().c_str(), "alloc") || strstr(F.getName().str().c_str(), "free")){
-          IRB.CreateCall(Fun_trace_alloc);
+        if(exec_trace_mode){
+          Value *vall[1];
+          vall[0] = llvm::ConstantInt::get(llvm::Type::getInt32Ty(M.getContext()), cur_loc);
+          IRB.CreateCall(Fun_append_bbid,vall);
         }
-        if(strstr(F.getName().str().c_str(), "mem")){
-          IRB.CreateCall(Fun_trace_mem_op);
-        }
-        if(strstr(F.getName().str().c_str(), "str")){
-          
-          int char_cnt = 0;
-          for(auto arg = F.arg_begin(); arg != F.arg_end(); ++arg) {
-              if(char_arr_type == (*arg).getType()){
-                char_cnt ++;
-                errs()<<F.getName().str().c_str()<<" "<< (*arg) << "\n";
-              }
-                
+        if(sec_fun_mode){
+          if(strstr(F.getName().str().c_str(), "alloc") || strstr(F.getName().str().c_str(), "free")){
+            IRB.CreateCall(Fun_trace_alloc);
           }
-          if(char_cnt >0){
-            IRB.CreateCall(Fun_trace_str_op);
+          if(strstr(F.getName().str().c_str(), "mem")){
+            IRB.CreateCall(Fun_trace_mem_op);
+          }
+          if(strstr(F.getName().str().c_str(), "str")){
+            
+            int char_cnt = 0;
+            for(auto arg = F.arg_begin(); arg != F.arg_end(); ++arg) {
+                if(char_arr_type == (*arg).getType()){
+                  char_cnt ++;
+                  errs()<<F.getName().str().c_str()<<" "<< (*arg) << "\n";
+                }
+                  
+            }
+            if(char_cnt >0){
+              IRB.CreateCall(Fun_trace_str_op);
+            }
           }
         }
+
 
         // if(char_cnt == 2 && (strstr(F.getName().str().c_str(), "cmp"))){
         //   auto * voidTy = Type::getVoidTy(M.getContext());

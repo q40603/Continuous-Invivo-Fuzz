@@ -12,16 +12,16 @@
 #include "config.h"
 #include "storage.h"
 #include "hook.h"
-#include "container.h"
+//#include "container.h"
 
 extern void _afl_maybe_log();
 extern void BSA_init_buf_pool(int);
 extern void BSA_set_dump_dir(const char*);
 extern void BSA_clear_buf(int);
-extern void set_container_id();
-extern void set_mac_addr();
-extern int mac_the_same();
-extern int container_checkpoint(int);
+// extern void set_container_id();
+// extern void set_mac_addr();
+// extern int mac_the_same();
+//extern int container_checkpoint(int);
 extern __thread char BSA_dump_dir[4096];
 extern struct BSA_buf_pool* bsa_buf_pool[MAX_FD_NUM];
 
@@ -40,6 +40,7 @@ u8 *BSA_entry_value_map;
 
 // int BSA_seed_map_shmid;
 struct BSA_seed_map Invivo_entry_seed_map[MAP_SIZE];
+struct BSA_seed_dict Invivo_seed_dict[SEED_DICT_SIZE];
 
 __thread int invivo_count = 0;
 __thread char *function_entry_name;
@@ -187,8 +188,8 @@ void BSA_initial(void){
             perror("BSA_fuzz_req shmat failed");
             exit(0);        
         }
-        set_mac_addr();
-        set_container_id();
+        // set_mac_addr();
+        // set_container_id();
         create_output_top_dir();
         BSA_init_global_buf_pool();
 
@@ -215,10 +216,13 @@ void BSA_initial(void){
         //memset(BSA_entry_value_map, 0, sizeof(u8)*MAP_SIZE);
         
         for(int i = 0 ; i< MAP_SIZE ; i++){
-            Invivo_entry_seed_map[i].is_show = 0;
             Invivo_entry_seed_map[i].seed_count = 0;
             Invivo_entry_seed_map[i].seed_head = NULL;
             Invivo_entry_seed_map[i].seed_tail = NULL;
+        }
+        for(int i = 0 ; i < SEED_DICT_SIZE; i ++){
+            Invivo_seed_dict[i].exist = 0;
+            Invivo_seed_dict[i].token = NULL;
         }
         // Invivo_exec_path_ptr = Invivo_exec_path;
         //memset(&bsa_seed_map, 0, sizeof(struct BSA_seed_map));
@@ -265,9 +269,9 @@ void BSA_checkpoint_nofork(int id, char *function_name){
             BSA_state = BSAPrep;
             struct sigaction act;
 
-            act.sa_handler =  pause_signal_handler;
-            sigaction(SIGCONT, &act, NULL);
-            pause();
+            // act.sa_handler =  pause_signal_handler;
+            // sigaction(SIGCONT, &act, NULL);
+            // pause();
             // if(mac_the_same()){
             //     BSA_state = BSARun;
             //     return;
@@ -305,9 +309,9 @@ void BSA_checkpoint_nofork(int id, char *function_name){
         }
         break;
     case BSAFuzz:
-        if(BSA_blocked_map[_invivo_edge]){
-            exit(0);
-        }
+        // if(BSA_blocked_map[_invivo_edge]){
+        //     exit(0);
+        // }
         break;
     default:
         break;
@@ -378,9 +382,9 @@ void BSA_checkpoint(int id, char *function_name){
         }
         break;
     case BSAFuzz:
-        if(BSA_blocked_map[_invivo_edge]){
-            exit(0);
-        }
+        // if(BSA_blocked_map[_invivo_edge]){
+        //     exit(0);
+        // }
         break;
     default:
         break;

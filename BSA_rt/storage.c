@@ -258,5 +258,3 @@ void BSA_clear_buf(){
         bsa_buf_pool[i]->n_buf = 0;
     }
 }
-
-

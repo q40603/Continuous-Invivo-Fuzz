@@ -78,7 +78,7 @@ extern struct BSA_info bsa_info;
 
 
 #define INVIVO_PRIO 5
-#define MAX_FD_NUM 4096
+#define MAX_FD_NUM 131072
 #define MAX_BB 64
 
 #define MAP_SIZE_POW2       16
@@ -86,6 +86,7 @@ extern struct BSA_info bsa_info;
 #define MAP_SIZE_BIG        (1 << (MAP_SIZE_POW2*2))
 
 #define NGRAM 64
+#define SEED_DICT_SIZE 65537
 
 #define AFL_BIND_PORT           5198
 

@@ -259,29 +259,29 @@ void BSA_conn_IA(int id, int function_entry_id){
     function_len = strlen(function_entry_name);
     path_len = strlen(dump_path);
     program_len = strlen(program_invocation_short_name);
-    buf_sz = 41 + function_len + path_len + program_len;
+    buf_sz = 33 + function_len + path_len + program_len;
     
     buf = calloc(buf_sz ,1);
     
     bsa_info.master_pid = getppid();
     bsa_info.afl_shm_id = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0600);
-    bsa_info.afl_input_location_shm_id = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT|IPC_EXCL|0600);
+    //bsa_info.afl_input_location_shm_id = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT|IPC_EXCL|0600);
     
 
 
     memcpy(buf + 1, &(bsa_info.pid), 4);
     memcpy(buf + 5, &(bsa_info.master_pid), 4);
     memcpy(buf + 9, &path_len, 4);
-    memcpy(buf + 13, &entry_id, 4);
-    memcpy(buf + 17, &(bsa_info.afl_shm_id), 4);
-    memcpy(buf + 21, &threshold, 4);
-    memcpy(buf + 25, &(bsa_info.afl_input_location_shm_id), 4);
-    memcpy(buf + 29, &invivo_count, 4);
-    memcpy(buf + 33, &function_len, 4);
-    memcpy(buf + 37, &program_len, 4);
-    memcpy(buf + 41, program_invocation_short_name, program_len);
-    memcpy(buf + 41 + program_len, function_entry_name, function_len);
-    memcpy(buf + 41 + program_len + function_len, dump_path, path_len);
+    //memcpy(buf + 13, &entry_id, 4);
+    memcpy(buf + 13, &(bsa_info.afl_shm_id), 4);
+    memcpy(buf + 17, &threshold, 4);
+    //memcpy(buf + 21, &(bsa_info.afl_input_location_shm_id), 4);
+    memcpy(buf + 17, &invivo_count, 4);
+    memcpy(buf + 25, &function_len, 4);
+    memcpy(buf + 29, &program_len, 4);
+    memcpy(buf + 33, program_invocation_short_name, program_len);
+    memcpy(buf + 33 + program_len, function_entry_name, function_len);
+    memcpy(buf + 33 + program_len + function_len, dump_path, path_len);
 
     
 

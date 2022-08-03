@@ -50,6 +50,14 @@ void BSA_alarm_handler(int sig){
     exit(0);
 }
 
+void BSA_check_exit(){
+    // BSA_FUZZ = 1, avoid one more comparison
+    if(BSA_state && BSA_blocked_map[_invivo_edge]){
+        exit(0);
+    }
+}
+
+
 void BSA_afl_input_thread(void* data){
     
     int listen_fd, file_fd, len;
@@ -104,11 +112,11 @@ void _BSA_afl_initialize_forkserver(int shm_id){
     int pip[2];
     int pip2[2];
     
-    if((afl_input_location_id = (int *)shmat(bsa_info.afl_input_location_shm_id, NULL, 0)) == (void *)-1){
-        perror("afl_input_location_shm_id shmat failed");
-        exit(0);        
-    }
-    *afl_input_location_id = 0;
+    // if((afl_input_location_id = (int *)shmat(bsa_info.afl_input_location_shm_id, NULL, 0)) == (void *)-1){
+    //     perror("afl_input_location_shm_id shmat failed");
+    //     exit(0);        
+    // }
+    // *afl_input_location_id = 0;
     
     if (( __afl_area_ptr = shmat(shm_id, NULL, 0) ) == (void *)-1){
         perror("shm_id shmat failed");

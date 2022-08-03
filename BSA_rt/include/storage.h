@@ -43,10 +43,16 @@ struct BSA_seed_list{
 };
 
 struct BSA_seed_map{
-    int is_show;
     ssize_t seed_count;
     struct BSA_seed_list* seed_head;
     struct BSA_seed_list* seed_tail;
+};
+
+
+
+struct BSA_seed_dict{
+    int exist;
+    char *token;
 };
 
 

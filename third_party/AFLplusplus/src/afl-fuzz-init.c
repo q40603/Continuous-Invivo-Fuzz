@@ -1220,45 +1220,45 @@ void perform_dry_run(afl_state_t *afl) {
   int tmp_location_id;
   int not_all_disabled = 0;
 
-  if((afl_input_location_id = (int *)shmat(afl->Invivo_socket_shm_id, NULL, 0)) == (void *)-1){
-      perror("afl_input_location_shm_id shmat failed");
-      exit(0);        
-  }
+  // if((afl_input_location_id = (int *)shmat(afl->Invivo_socket_shm_id, NULL, 0)) == (void *)-1){
+  //     perror("afl_input_location_shm_id shmat failed");
+  //     exit(0);        
+  // }
 
   // remove all entries with mismatched afl input location id from the queue
-  if(afl->fsrv.is_Invivo){
-    for (idx = 0; idx < afl->queued_items; idx++){
-      q = afl->queue_buf[idx];
-      if (!q || q->disabled || q->cal_failed || !q->exec_cksum) { continue; }
+  // if(afl->fsrv.is_Invivo){
+  //   for (idx = 0; idx < afl->queued_items; idx++){
+  //     q = afl->queue_buf[idx];
+  //     if (!q || q->disabled || q->cal_failed || !q->exec_cksum) { continue; }
 
-      u8 *use_name = strstr(q->fname, ",orig:");
+  //     u8 *use_name = strstr(q->fname, ",orig:");
       
-      //printf("fname = %s , strstr = %s\n", q->fname, use_name);
-      if(!use_name){
-        continue;
-      }
-      use_name += 6;
-      u8 *tmp_name = strdup(use_name);
-      use_name = strtok(tmp_name, "_");
-      tmp_location_id = atoi(use_name);
-      if(tmp_location_id != *afl_input_location_id){
-        q->disabled = 1;
-        SAYF(cGRA "    disabling test case %s, input location not matched\n" cRST,
-      q->fname);
-      }
-      else{
-        not_all_disabled = 1;
-      }
-      free(tmp_name);
+  //     //printf("fname = %s , strstr = %s\n", q->fname, use_name);
+  //     if(!use_name){
+  //       continue;
+  //     }
+  //     use_name += 6;
+  //     u8 *tmp_name = strdup(use_name);
+  //     use_name = strtok(tmp_name, "_");
+  //     tmp_location_id = atoi(use_name);
+  //     if(tmp_location_id != *afl_input_location_id){
+  //       q->disabled = 1;
+  //       SAYF(cGRA "    disabling test case %s, input location not matched\n" cRST,
+  //     q->fname);
+  //     }
+  //     else{
+  //       not_all_disabled = 1;
+  //     }
+  //     free(tmp_name);
 
-    }
-    if(!not_all_disabled){
-      for (idx = 0; idx < afl->queued_items; idx++){
-        q = afl->queue_buf[idx];
-        q->disabled = 0;
-      }
-    }
-  }
+  //   }
+  //   if(!not_all_disabled){
+  //     for (idx = 0; idx < afl->queued_items; idx++){
+  //       q = afl->queue_buf[idx];
+  //       q->disabled = 0;
+  //     }
+  //   }
+  // }
   
 
 
