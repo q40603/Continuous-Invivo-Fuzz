@@ -199,7 +199,8 @@ void BSA_initial(void){
             shmdt(BSA_fuzz_req);
         
         assert((fuzz_req_shm_id = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0777)) != -1);
-        
+	assert((target_path_shm_id = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0777)) != -1);
+	assert((target_seed_shm_id = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0777)) != -1);	
         if((BSA_fuzz_req = (int *)shmat(fuzz_req_shm_id, NULL, 0)) == (void *)-1){
             perror("BSA_fuzz_req shmat failed");
             exit(0);        
