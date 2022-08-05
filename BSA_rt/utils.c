@@ -263,7 +263,7 @@ void BSA_conn_IA(int id, int function_entry_id){
     
     buf = calloc(buf_sz ,1);
     
-    bsa_info.master_pid = getppid();
+    //bsa_info.master_pid = getppid();
     bsa_info.afl_shm_id = shmget(IPC_PRIVATE, 0x10000, IPC_CREAT|IPC_EXCL|0600);
     //bsa_info.afl_input_location_shm_id = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT|IPC_EXCL|0600);
     

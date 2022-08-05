@@ -69,6 +69,7 @@ extern struct BSA_info bsa_info;
 #define AUTO_FUZZ 1
 #define FUNCTION_FUZZ 2
 #define REPORT_FUZZ 3
+#define MANUAL_FUZZ 4
 
 
 #define MULTI_PROCESS_MODE 1

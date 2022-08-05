@@ -18,6 +18,7 @@ void incr_mem_alloc();
 void incr_mem_oper();
 void incr_str_oper();
 void append_bbid_to_exec(int bbid);
+void update_reward(int path, int exec_trace, int val);
 // void log_exec_trace(int sock_fd);
 // void set_src_ip(int newfd, struct BSA_buf* dest);
 // ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len);

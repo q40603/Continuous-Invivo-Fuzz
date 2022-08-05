@@ -9,7 +9,7 @@
 #define AUTO_FUZZ 1
 #define FUNCTION_FUZZ 2
 #define REPORT_FUZZ 3
-
+#define MANUAL_FUZZ 4
 
 int main(int argc, char** argv){
     struct sockaddr_un addr;
@@ -19,7 +19,7 @@ int main(int argc, char** argv){
     int type = atoi(argv[1]), pid = atoi(argv[2]);
     char *buf;
 
-    int function_quest[2], auto_quest[1], report[4];
+    int function_quest[2], auto_quest[1], report[1], manual[2];
     int fun_len;
 
 
@@ -56,12 +56,19 @@ int main(int argc, char** argv){
 
         case REPORT_FUZZ:
             report[0] = REPORT_FUZZ;
-            report[1] = getpid();
-            report[2] = bid;
-            report[3] = val;
-            write(sockfd, report, 16);
+            // report[1] = getpid();
+            // report[2] = bid;
+            // report[3] = val;
+            write(sockfd, report, 4);
             break;
-
+        
+        case MANUAL_FUZZ:
+            printf("haha\n");
+            manual[0] = MANUAL_FUZZ;
+            manual[1] = atoi(argv[3]);
+            // manual[2] = atoi(argv[4]);
+            write(sockfd, manual, 8);
+            break;
         default:
             printf("No such request\n");
             exit(0);

@@ -7,6 +7,7 @@
 
 struct BSA_buf_pool* bsa_buf_pool[MAX_FD_NUM];
 __thread char BSA_dump_dir[4096];
+extern int *BSA_target_seed;
 //sem_t mutex;
 
 
@@ -94,10 +95,9 @@ struct BSA_buf* BSA_create_buf(int fd, size_t buf_size){
     
     buf->len = buf_size;
     buf->_invivo_edge = -1;
-    buf->mem_allocation = 0;
-    buf->mem_operation = 0;
-    buf->str_operation = 0;
+    buf->sensitive_count = 0;
     buf->exec_trace_path = -1;
+    buf->finish_trace = 0;
     memset(buf->ip_port, '\0', sizeof(buf->ip_port));
 
     
@@ -146,7 +146,7 @@ int BSA_dump_buf(){
             prev_session = buf->ip_port;
             prev_path = NULL;
             while(buf){
-                asprintf(&path, "%s/%d_%d", BSA_dump_dir, buf->_invivo_edge, count++);
+                asprintf(&path, "%s/%d_%d", BSA_dump_dir, buf->exec_trace_path, count++);
                 out_fd = open(path, O_CREAT|O_RDWR, 0666);  
 
                 BSA_log("creating testcase: %s\n", path);
@@ -163,7 +163,7 @@ int BSA_dump_buf(){
                 
                 
                 if( prev_path && (strcmp(session, prev_session) == 0)){
-                    asprintf(&merge_path, "%s/%d_%d", BSA_dump_dir, buf->_invivo_edge, count++);
+                    asprintf(&merge_path, "%s/%d_%d", BSA_dump_dir, buf->exec_trace_path, count++);
                     fold1=fopen(path, "r");
                     fold2=fopen(prev_path, "r");
                     if(fold1==NULL || fold2==NULL)
@@ -233,7 +233,7 @@ int BSA_dump_buf(){
         return -1;
     }
 
-    BSA_clear_buf(); 
+    //BSA_clear_buf(); 
 
     return 0;
 }

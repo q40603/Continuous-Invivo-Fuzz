@@ -620,20 +620,20 @@ Invivo_edge = new GlobalVariable(
         ).getCallee();
   }
 
-  auto callee_incr_alloc = M.getOrInsertFunction(
-    "incr_mem_alloc",
+  auto callee_incr_sense = M.getOrInsertFunction(
+    "incr_sensitive_count",
     Type::getVoidTy(M.getContext())
     ).getCallee();
 
-  auto callee_incr_mem_op = M.getOrInsertFunction(
-    "incr_mem_oper",
-    Type::getVoidTy(M.getContext())
-    ).getCallee();
+  // auto callee_incr_mem_op = M.getOrInsertFunction(
+  //   "incr_mem_oper",
+  //   Type::getVoidTy(M.getContext())
+  //   ).getCallee();
 
-  auto callee_incr_str = M.getOrInsertFunction(
-    "incr_str_oper",
-    Type::getVoidTy(M.getContext())
-    ).getCallee();
+  // auto callee_incr_str = M.getOrInsertFunction(
+  //   "incr_str_oper",
+  //   Type::getVoidTy(M.getContext())
+  //   ).getCallee();
 
   auto callee_append_bbid = M.getOrInsertFunction(
         "append_bbid_to_exec",
@@ -654,9 +654,9 @@ Invivo_edge = new GlobalVariable(
   
   //Function *open = cast<Function>(callee_checkpoint);
   Function *Fun = cast<Function>(callee_checkpoint);
-  Function *Fun_trace_alloc = cast<Function>(callee_incr_alloc);
-  Function *Fun_trace_mem_op = cast<Function>(callee_incr_mem_op);
-  Function *Fun_trace_str_op = cast<Function>(callee_incr_str);
+  Function *Fun_trace_sense = cast<Function>(callee_incr_sense);
+  // Function *Fun_trace_mem_op = cast<Function>(callee_incr_mem_op);
+  // Function *Fun_trace_str_op = cast<Function>(callee_incr_str);
   Function *Fun_append_bbid = cast<Function>(callee_append_bbid);
   Function *Fun_check_exit = cast<Function>(callee_check_exit);
   //Function *Fun_extract_dict = cast<Function>(callee_extract_dict);
@@ -700,7 +700,7 @@ Invivo_edge = new GlobalVariable(
     fuzz_entry_mode = 1;
     sec_fun_mode = 1;
     exec_trace_mode = 1;
-    extract_dict_mode = 1;
+    //extract_dict_mode = 1;
   }
   /* Instrument all the things! */
 
@@ -953,10 +953,10 @@ Invivo_edge = new GlobalVariable(
         }
         if(sec_fun_mode){
           if(strstr(F.getName().str().c_str(), "alloc") || strstr(F.getName().str().c_str(), "free")){
-            IRB.CreateCall(Fun_trace_alloc);
+            IRB.CreateCall(Fun_trace_sense);
           }
           if(strstr(F.getName().str().c_str(), "mem")){
-            IRB.CreateCall(Fun_trace_mem_op);
+            IRB.CreateCall(Fun_trace_sense);
           }
           if(strstr(F.getName().str().c_str(), "str")){
             
@@ -969,7 +969,7 @@ Invivo_edge = new GlobalVariable(
                   
             }
             if(char_cnt >0){
-              IRB.CreateCall(Fun_trace_str_op);
+              IRB.CreateCall(Fun_trace_sense);
             }
           }
         }

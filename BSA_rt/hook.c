@@ -27,19 +27,105 @@ __thread int cur_fd = -1;
         break;  \
     }
 
+void select_entry(){
+    int target_path = -1;
+    int target_seed = -1;
+
+    int min_entry_fuzz_count = 10000;
+    int min_entry_seed_count = 10000;
+    
+
+    for(int i = 0 ; i < MAP_SIZE ; i++){
+        if(Invivo_entry_seed_map[i].fuzz_count <= min_entry_fuzz_count) 
+        {
+            target_path = i;
+            min_entry_fuzz_count = Invivo_entry_seed_map[i].fuzz_count;
+            min_entry_seed_count = Invivo_entry_seed_map[i].seed_count;
+        }
+    }   
+    for(int i = 0 ; i < MAP_SIZE ; i++){
+        if(
+            (Invivo_entry_seed_map[i].fuzz_count <= min_entry_fuzz_count) &&
+            (Invivo_entry_seed_map[i].seed_count <= min_entry_seed_count))
+        {
+            target_path = i;
+            min_entry_fuzz_count = Invivo_entry_seed_map[i].fuzz_count;
+            min_entry_seed_count = Invivo_entry_seed_map[i].seed_count;
+        }
+    }
+
+    if(target_path == -1){
+        BSA_log("something went wrong, no entries found");
+    }
+
+
+    int min_seed_fuzz_count = 10000;
+    int max_seed_sensitive_count = 0;
+    int max_seed_fuzz_coverage = 0;
+    int max_seed_fuzz_crash = 0;
+    struct BSA_seed_list *seed_info_node;
+    seed_info_node = Invivo_entry_seed_map[target_path].seed_head;
+    while(seed_info_node){
+        if( (seed_info_node->fuzz_count <= min_seed_fuzz_count) &&
+            (seed_info_node->sensitive_count >= max_seed_sensitive_count) && 
+            (seed_info_node->unique_crash >= max_seed_fuzz_crash) && 
+            (seed_info_node->code_coverage >= max_seed_fuzz_coverage))
+        {
+            target_seed = seed_info_node->exec_trace_path;
+        }
+        seed_info_node = seed_info_node->next;
+    }
+    if(target_seed == -1){
+        BSA_log("something went wrong, no seeds found in path %d\n", target_path);
+    }
+}
+
+
+void update_reward(int path, int exec_trace, int val){
+    struct BSA_seed_list *seed_info_node;
+    int in_seed_map = 0;
+    if(Invivo_entry_seed_map[path].seed_count == 0){
+        BSA_log("reward : path not exists, please check;\n");
+        return;
+    }
+    seed_info_node = Invivo_entry_seed_map[path].seed_head;
+    while(seed_info_node){
+        if(seed_info_node->exec_trace_path == exec_trace){
+            in_seed_map = 1;
+            break;
+        }
+        seed_info_node = seed_info_node->next;
+    }    
+    if(!in_seed_map){
+        BSA_log("reward : exec_trace not exists, please check;\n");
+        return;
+    }
+    seed_info_node->code_coverage = MAX(seed_info_node->code_coverage, val);
+    seed_info_node->unique_crash = MAX(seed_info_node->unique_crash, val);
+    Invivo_entry_seed_map[path].fuzz_count++;
+}
 
 void update_seed_map(int fd){
+    if(fd == -1){
+        return;
+    }
+    
     struct BSA_buf* buf; 
     struct BSA_seed_list *seed_info_node;
     char *session, *prev_session;
     int in_seed_map = 0;
     int cur_exec_trace = 0;
-    if (bsa_buf_pool[fd] == NULL)
+    if (bsa_buf_pool[fd] == NULL){
+        
         return;
+    }
+        
     
     buf = bsa_buf_pool[fd]->buf_tail;
-    if (buf == NULL)
+    if (buf == NULL){
         return;
+    }
+        
 
     prev_session = buf->ip_port;
 
@@ -47,30 +133,34 @@ void update_seed_map(int fd){
         session = buf->ip_port;
         if(strcmp(prev_session, session) != 0)
             break;
-        cur_exec_trace = cur_exec_trace ^ buf->exec_trace_path;
-        buf->exec_trace_path = cur_exec_trace;
+        // cur_exec_trace = cur_exec_trace ^ buf->exec_trace_path;
+        // buf->exec_trace_path = cur_exec_trace;
         seed_info_node = Invivo_entry_seed_map[buf->_invivo_edge].seed_head;
         in_seed_map = 0;
         while(seed_info_node){
             if(seed_info_node->exec_trace_path == buf->exec_trace_path){
-                seed_info_node->mem_allocation = ((float)buf->mem_allocation + seed_info_node->mem_allocation) / 2;
-                seed_info_node->mem_operation = ((float)buf->mem_operation + seed_info_node->mem_operation) / 2;
-                seed_info_node->str_operation = ((float)buf->str_operation + seed_info_node->str_operation) / 2;
+                seed_info_node->sensitive_count = ((float)buf->sensitive_count + seed_info_node->sensitive_count) / 2;
                 in_seed_map = 1;
+
+                // BSA_log("  path = %d\n", buf->_invivo_edge);
+                // BSA_log("  seed = %d\n", buf->exec_trace_path);
+                // BSA_log("  sense = %f\n\n", seed_info_node->sensitive_count);
+
                 break;
             }
             seed_info_node = seed_info_node->next;
         }
         if(!in_seed_map){
-            //BSA_log("not in seed map\n");
+            // BSA_log("  path = %d\n", buf->_invivo_edge);
+            // BSA_log("  seed = %d\n", buf->exec_trace_path);
+            // BSA_log("  sense = %d\n\n", buf->sensitive_count);
             struct BSA_seed_list * tmp_seed_node;
             tmp_seed_node = (struct BSA_seed_list*)calloc(sizeof(struct BSA_seed_list), 1);
             tmp_seed_node->exec_trace_path = buf->exec_trace_path;
-            tmp_seed_node->mem_allocation = (float)buf->mem_allocation;
-            tmp_seed_node->mem_operation = (float)buf->mem_allocation;
-            tmp_seed_node->str_operation = (float)buf->mem_allocation;
+            tmp_seed_node->sensitive_count = (float)buf->sensitive_count;
             tmp_seed_node->code_coverage = 0;
             tmp_seed_node->unique_crash = 0;
+            tmp_seed_node->fuzz_count = 0;
             if(Invivo_entry_seed_map[buf->_invivo_edge].seed_head == NULL){
                 Invivo_entry_seed_map[buf->_invivo_edge].seed_head = tmp_seed_node;
             }
@@ -88,34 +178,34 @@ void append_bbid_to_exec(int bbid){
     Invivo_exec_path[(Invivo_exec_path_idx++)%NGRAM] = bbid;
 }
 
-void incr_mem_alloc(){
+void incr_sensitive_count(){
     struct BSA_buf* dest;
     if(cur_fd >= 0 ){
         dest = BSA_get_tail_buf(cur_fd);
         if(dest != NULL){
-            dest->mem_allocation ++;
+            dest->sensitive_count ++;
         }
     }
 }
-void incr_mem_oper(){
-    struct BSA_buf* dest;
-    if(cur_fd >= 0 ){
-        dest = BSA_get_tail_buf(cur_fd);
-        if(dest != NULL){
-            dest->mem_operation ++;
-        }
-    }
-}
+// void incr_mem_oper(){
+//     struct BSA_buf* dest;
+//     if(cur_fd >= 0 ){
+//         dest = BSA_get_tail_buf(cur_fd);
+//         if(dest != NULL){
+//             dest->mem_operation ++;
+//         }
+//     }
+// }
 
-void incr_str_oper(){
-    struct BSA_buf* dest;
-    if(cur_fd >= 0){
-        dest = BSA_get_tail_buf(cur_fd);
-        if(dest != NULL){
-            dest->str_operation ++;
-        }
-    }   
-}
+// void incr_str_oper(){
+//     struct BSA_buf* dest;
+//     if(cur_fd >= 0){
+//         dest = BSA_get_tail_buf(cur_fd);
+//         if(dest != NULL){
+//             dest->str_operation ++;
+//         }
+//     }   
+// }
 
 int rolling_hash(const char *s, int n){
     const int p = 53, m = SEED_DICT_SIZE;
@@ -164,29 +254,42 @@ void update_prev_exec_trace(int fd){
         if(strcmp(dest->ip_port, cur_ip_port) != 0){
             return;
         }
+        if(dest->finish_trace) return;
         int exec_xor_path = 0 ;
         for(int i = 0 ; i < NGRAM ; i++)
             exec_xor_path ^= Invivo_exec_path[i];
         dest->exec_trace_path = exec_xor_path;
+        dest->finish_trace = 1;
+
+        BSA_log("  path = %d\n", dest->_invivo_edge);
+        BSA_log("  seed = %d\n", dest->exec_trace_path);
+        BSA_log("  sense = %d\n\n", dest->sensitive_count);
+
     }
-    // BSA_log("  ip_port = %s\n", dest->ip_port);
-    // BSA_log("  _invivo_edge = %d\n", dest->_invivo_edge);
-    // BSA_log("  exec_trace_path = %d\n", dest->exec_trace_path);
+
+    //BSA_log("  ip_port = %s\n", dest->ip_port);
+    // BSA_log("  path = %d\n", dest->_invivo_edge);
+    // BSA_log("  seed = %d\n", dest->exec_trace_path);
+    // BSA_log("  sense = %d\n", dest->sensitive_count);
     // BSA_log("  mem_alloc = %d\n", dest->mem_allocation);
     // BSA_log("  mem_oper = %d\n", dest->mem_operation);
     // BSA_log("  str_oper = %d\n", dest->str_operation);
 }
 
 void log_exec_trace(){
-    if(BSA_state != BSARun) return;
     struct BSA_buf* dest;
     if(cur_fd >= 0){
         dest = BSA_get_tail_buf(cur_fd);
         if(dest != NULL){
+            if(dest->finish_trace) return;
             int exec_xor_path = 0 ;
             for(int i = 0 ; i < NGRAM ; i++)
                 exec_xor_path ^= Invivo_exec_path[i];
             dest->exec_trace_path = exec_xor_path;
+            dest->finish_trace = 1;
+            BSA_log("  path = %d\n", dest->_invivo_edge);
+            BSA_log("  seed = %d\n", dest->exec_trace_path);
+            BSA_log("  sense = %d\n\n", dest->sensitive_count);            
         }
         // BSA_log("  ip_port = %s\n", dest->ip_port);
         // BSA_log("  _invivo_edge = %d\n", dest->_invivo_edge);
@@ -202,7 +305,9 @@ void set_src_ip(int newfd, struct BSA_buf* dest) {
     socklen_t addr_size = sizeof(struct sockaddr_in);
     int res = getpeername(newfd, (struct sockaddr *)&addr, &addr_size);
     if(res == 0){
+        
         sprintf(dest->ip_port, "%s_%u", inet_ntoa(addr.sin_addr), addr.sin_port);
+        //BSA_log("ip_port = %s\n", dest->ip_port);
     }
 }
 
@@ -218,7 +323,8 @@ ssize_t BSA_hook_read(int fd, uint8_t* buf, size_t len){
     fstat(fd, &st);
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
         *(u8*)(BSA_entry_value_map+_function_edge) = 1;
-        BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
+        BSA_log("fd = %d cur_fd = %d setting _function_edge %d to 1 %s\n", fd, cur_fd, _function_edge, function_entry_name);
+        // if(fd != cur_fd) update_seed_map(cur_fd);
         update_prev_exec_trace(fd);
         reset_exec_trace(fd);
         dest = BSA_create_buf(fd, ret);
@@ -248,7 +354,8 @@ ssize_t BSA_hook_recv(int sockfd, void* buf, size_t len, int flags){
     
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
         *(u8*)(BSA_entry_value_map+_function_edge) = 1;
-        BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
+        BSA_log("fd = %d cur_fd = %d setting _function_edge %d to 1 %s\n", sockfd, cur_fd, _function_edge, function_entry_name);
+        //if(sockfd != cur_fd) update_seed_map(cur_fd);
         update_prev_exec_trace(sockfd);
         reset_exec_trace(sockfd);
         dest = BSA_create_buf(sockfd, ret);
@@ -274,7 +381,8 @@ ssize_t BSA_hook_recvfrom(int sockfd, void *buf, size_t len, int flags, struct s
     ret = recvfrom(sockfd, buf, len, flags, src_addr, addrlen);
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
         *(u8*)(BSA_entry_value_map+_function_edge) = 1;
-        BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
+        BSA_log("fd = %d cur_fd = %d setting _function_edge %d to 1 %s\n", sockfd, cur_fd, _function_edge, function_entry_name);
+        //if(sockfd != cur_fd) update_seed_map(cur_fd);
         update_prev_exec_trace(sockfd);
         reset_exec_trace(sockfd);
         dest = BSA_create_buf(sockfd, ret);
@@ -303,7 +411,8 @@ ssize_t BSA_hook_recvmsg(int sockfd, struct msghdr *msg, int flags){
     
     if (S_ISSOCK(st.st_mode) && BSA_state == BSARun && ret > 0){
         *(u8*)(BSA_entry_value_map+_function_edge) = 1;
-        BSA_log("setting _function_edge %d to 1 %s\n", _function_edge, function_entry_name);
+        BSA_log("fd = %d cur_fd = %d setting _function_edge %d to 1 %s\n", sockfd, cur_fd, _function_edge, function_entry_name);
+        //if(sockfd != cur_fd) update_seed_map(cur_fd);
         update_prev_exec_trace(sockfd);
         reset_exec_trace(sockfd);
         while(cnt > 0 && i < msg->msg_iovlen){
@@ -330,8 +439,10 @@ ssize_t BSA_hook_write(int fd, const void * buf, size_t len){
     struct stat st;
     fstat(fd, &st);
     if S_ISSOCK(st.st_mode){
-        if(BSA_state == BSARun){
+        if(BSA_state == BSARun && ret > 0){
             log_exec_trace();
+            if(fd != cur_fd) update_seed_map(cur_fd);
+            
         }
         else{
             exit(0);
@@ -346,17 +457,22 @@ ssize_t BSA_hook_writev(int fd, const struct iovec *iov, int iovcnt){
     size_t ret = 0;
     struct stat st;
     fstat(fd, &st);
+
+    for(int i = 0; i < iovcnt; i++){
+        ret += iov[i].iov_len;
+    }
+
     if S_ISSOCK(st.st_mode){
-        if(BSA_state == BSARun){
+        if(BSA_state == BSARun && ret > 0){
             log_exec_trace();
+            if(fd != cur_fd) update_seed_map(cur_fd);
+            
         }
         else{
             exit(0);
         }
     }
-    for(int i = 0; i < iovcnt; i++){
-        ret += iov[i].iov_len;
-    }
+
     BSA_HOOK_FUNCTION_DENY(ret = writev(fd, iov, iovcnt))
     return ret;
 }
@@ -366,8 +482,10 @@ ssize_t BSA_hook_send(int sockfd, const void *buf, size_t len, int flags){
     struct stat st;
     fstat(sockfd, &st);
     if S_ISSOCK(st.st_mode){
-        if(BSA_state == BSARun){
+        if(BSA_state == BSARun && ret > 0){
             log_exec_trace();
+            if(sockfd != cur_fd) update_seed_map(cur_fd);
+            
         }
         else{
             exit(0);
@@ -382,8 +500,10 @@ ssize_t BSA_hook_sendto(int sockfd, const void *buf, size_t len, int flags, cons
     struct stat st;
     fstat(sockfd, &st);
     if S_ISSOCK(st.st_mode){
-        if(BSA_state == BSARun){
+        if(BSA_state == BSARun && ret > 0){
             log_exec_trace();
+            if(sockfd != cur_fd) update_seed_map(cur_fd);
+            
         }
         else{
             exit(0);
@@ -397,17 +517,22 @@ ssize_t BSA_hook_sendmsg(int sockfd, const struct msghdr *msg, int flags){
     size_t ret = 0;
     struct stat st;
     fstat(sockfd, &st);
+
+    for(int i = 0; i < msg->msg_iovlen; i++){
+        ret += msg->msg_iov[i].iov_len;
+    }
+
+
     if S_ISSOCK(st.st_mode){
-        if(BSA_state == BSARun){
+        if(BSA_state == BSARun && ret > 0){
             log_exec_trace();
+            if(sockfd != cur_fd) update_seed_map(cur_fd);
         }
         else{
             exit(0);
         }
     }
-    for(int i = 0; i < msg->msg_iovlen; i++){
-        ret += msg->msg_iov[i].iov_len;
-    }
+
     BSA_HOOK_FUNCTION_DENY(ret = sendmsg(sockfd, msg, flags))
     return ret;
 }
@@ -419,6 +544,7 @@ int BSA_hook_close(int fd){
     if (S_ISSOCK(st.st_mode)){
         if(BSA_state == BSARun){
             //BSA_log("session end\n");
+            log_exec_trace();
             update_seed_map(fd);
             cur_fd = -1;
         }

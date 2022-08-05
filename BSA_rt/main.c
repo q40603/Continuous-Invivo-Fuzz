@@ -14,10 +14,10 @@
 #include "hook.h"
 //#include "container.h"
 
-extern void _afl_maybe_log();
+extern void _afl_maybe_log(int);
 extern void BSA_init_buf_pool(int);
 extern void BSA_set_dump_dir(const char*);
-extern void BSA_clear_buf(int);
+extern void update_reward(int path, int exec_trace, int val);
 // extern void set_container_id();
 // extern void set_mac_addr();
 // extern int mac_the_same();
@@ -30,6 +30,8 @@ extern u8* BSA_blocked_map;
 pthread_t BSA_request_thread;
 int set_stdin = 0;
 int *BSA_fuzz_req = NULL;
+int *BSA_target_path = NULL;
+int *BSA_target_seed = NULL;
 // Global variables
 __thread u32 BSA_state = BSARun; 
 extern char mac_addr[20];
@@ -77,9 +79,12 @@ struct BSA_info bsa_info = {
 
 static int BSA_req_fd = -1;
 
+
+
 void* BSA_request_handler(void* arg){
+    char *dump_path;
     int req = 0, comm_fd;
-    int val, pid, id, fun_len;
+    int val, pid, id, fun_len, fuzzed_path, fuzzed_exec_trace;
     struct sockaddr_un client_addr;
     socklen_t socklen = sizeof(client_addr);
     memset(&client_addr, 0, sizeof(client_addr));
@@ -98,34 +103,45 @@ void* BSA_request_handler(void* arg){
                     // select entry prior to socket read
                     break;
 
-                case FUNCTION_FUZZ:
-                    if(fuzz_function){
-                        free(fuzz_function);
-                        fuzz_function = NULL;
-                    }
+                // case FUNCTION_FUZZ:
+                //     if(fuzz_function){
+                //         free(fuzz_function);
+                //         fuzz_function = NULL;
+                //     }
                         
                     
-                    read(comm_fd, &fun_len, 4);
-                    fuzz_function = calloc(fun_len, 1);
-                    read(comm_fd, &fuzz_function, fun_len);
-                    // select certain function as entry
-                    break;
+                //     read(comm_fd, &fun_len, 4);
+                //     fuzz_function = calloc(fun_len, 1);
+                //     read(comm_fd, &fuzz_function, fun_len);
+                //     // select certain function as entry
+                //     break;
 
 
                 case REPORT_FUZZ:
-                    // report fuzzing entry
-                    
-                    read(comm_fd, &pid, 4);
-                    read(comm_fd, &id, 4);
-                    read(comm_fd, &val, 4);
-                    if (val < BSA_FUZZ_THRESHOLD){
-                        *(u8*)(BSA_entry_value_map+id) = 0;
-                    }else{
-                        *(u8*)(BSA_entry_value_map+id) = 1;
-                    }
-                    BSA_log("[BSA_request_handler] id: 0x%x, val: %d\n", id, val);                
+                    // report fuzzing entry seed reward
+                    dump_path = BSA_dump_dir;
+                    sprintf(dump_path, "/tmp/check");
+                    BSA_dump_buf();
+                    // read(comm_fd, &fuzzed_path, 4);
+                    // read(comm_fd, &fuzzed_exec_trace, 4);
+                    // read(comm_fd, &val, 4);
+                    // update_reward(fuzzed_path, fuzzed_exec_trace, val);
+                    // if (val < BSA_FUZZ_THRESHOLD){
+                    //     *(u8*)(BSA_entry_value_map+id) = 0;
+                    // }else{
+                    //     *(u8*)(BSA_entry_value_map+id) = 1;
+                    // }
+                    //BSA_log("[BSA_request_handler] id: 0x%x, val: %d\n", id, val);                
                     break;
 
+                case MANUAL_FUZZ:
+                    read(comm_fd, &fuzzed_path, 4);
+                    //read(comm_fd, &fuzzed_exec_trace, 4);
+                    *BSA_target_path = fuzzed_path; 
+                    //*BSA_target_seed = fuzzed_exec_trace;    
+                    fuzzed_path = 0;
+                    //fuzzed_exec_trace = 0; 
+                    BSA_log("target path = %d\n", *BSA_target_path);          
                 default:
                     break;    
 
@@ -171,8 +187,8 @@ void create_output_top_dir(){
 __attribute__((constructor(INVIVO_PRIO)))
 void BSA_initial(void){
     //srand(time(NULL));
-    //bsa_info.master_pid = getpid();
-    int req_fd, fuzz_req_shm_id=0;
+    bsa_info.master_pid = getpid();
+    int req_fd, fuzz_req_shm_id=0, target_path_shm_id=0, target_seed_shm_id=0;
     char req_sk[1024];
 
     //atexit(BSA_clean);
@@ -188,6 +204,17 @@ void BSA_initial(void){
             perror("BSA_fuzz_req shmat failed");
             exit(0);        
         }
+        if((BSA_target_path = (int *)shmat(target_path_shm_id, NULL, 0)) == (void *)-1){
+            perror("BSA_target_path shmat failed");
+            exit(0);        
+        }
+        if((BSA_target_seed = (int *)shmat(target_seed_shm_id, NULL, 0)) == (void *)-1){
+            perror("BSA_target_seed shmat failed");
+            exit(0);        
+        }
+        *BSA_fuzz_req = 0;
+        *BSA_target_path = -1;
+        *BSA_target_seed = -1;
         // set_mac_addr();
         // set_container_id();
         create_output_top_dir();
@@ -216,6 +243,7 @@ void BSA_initial(void){
         //memset(BSA_entry_value_map, 0, sizeof(u8)*MAP_SIZE);
         
         for(int i = 0 ; i< MAP_SIZE ; i++){
+            Invivo_entry_seed_map[i].fuzz_count = 0;
             Invivo_entry_seed_map[i].seed_count = 0;
             Invivo_entry_seed_map[i].seed_head = NULL;
             Invivo_entry_seed_map[i].seed_tail = NULL;
@@ -258,7 +286,7 @@ void BSA_checkpoint_nofork(int id, char *function_name){
     case BSARun:
         
         // if ( (req_bbid == 0 && is_entry && *(BSA_entry_value_map+_function_edge)) ){
-        if ( (*BSA_fuzz_req == AUTO_FUZZ && *(BSA_entry_value_map+_function_edge)) ){
+        if ( (*BSA_fuzz_req >0) && *(BSA_entry_value_map+_function_edge) && (_function_edge == *BSA_target_path) ){
         //|| (*BSA_fuzz_req == FUNCTION_FUZZ && fuzz_function!=NULL && !strcmp(fuzz_function , function_name))){
             
             // if(!container_checkpoint(invivo_count)){

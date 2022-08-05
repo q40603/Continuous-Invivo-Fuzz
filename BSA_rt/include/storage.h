@@ -25,24 +25,23 @@ struct BSA_buf{
     uint8_t* data;
     size_t  len;
     int _invivo_edge;
-    int mem_allocation;
-    int mem_operation;
-    int str_operation;
+    int sensitive_count;
     int exec_trace_path;
+    int finish_trace;
     char ip_port[40];
 };
 
 struct BSA_seed_list{
     int exec_trace_path;
-    float mem_allocation;
-    float mem_operation;
-    float str_operation;
+    float sensitive_count;
     int code_coverage;
     int unique_crash;
+    int fuzz_count;
     struct BSA_seed_list* next;
 };
 
 struct BSA_seed_map{
+    int fuzz_count;
     ssize_t seed_count;
     struct BSA_seed_list* seed_head;
     struct BSA_seed_list* seed_tail;
